@@ -57,7 +57,11 @@ param(
     [switch]$IgnoreCertErrors,
 
     # Folder for the log + CSV output. Default: .\Logs next to the script.
-    [string]$LogPath
+    [string]$LogPath,
+
+    # Shared run identifier. Pass the SAME value to the DC-side script so the
+    # two logs can be correlated. Generated automatically when omitted.
+    [string]$RunId
 )
 
 Set-StrictMode -Version 2.0
@@ -72,16 +76,21 @@ if (-not (Test-Path -LiteralPath $LogPath)) {
     New-Item -Path $LogPath -ItemType Directory -Force | Out-Null
 }
 
-$stamp   = Get-Date -Format 'yyyyMMdd_HHmmss'
-$LogFile = Join-Path $LogPath "SslCheck_$stamp.log"
-$CsvFile = Join-Path $LogPath "SslCheck_$stamp.csv"
+if ([string]::IsNullOrWhiteSpace($RunId)) {
+    $RunId = (Get-Date -Format 'yyyyMMdd_HHmmss') + '_' + ([guid]::NewGuid().ToString('N').Substring(0, 6))
+}
+
+# CLIENT = the side that initiates the connection.
+$LogFile = Join-Path $LogPath "SslCheck_${RunId}_CLIENT.log"
+$CsvFile = Join-Path $LogPath "SslCheck_${RunId}_CLIENT.csv"
 
 function Write-Log {
     param(
         [Parameter(Mandatory = $true)][string]$Message,
         [ValidateSet('INFO', 'WARN', 'ERROR', 'OK')][string]$Level = 'INFO'
     )
-    $line = '{0} [{1,-5}] {2}' -f (Get-Date -Format 'yyyy-MM-dd HH:mm:ss'), $Level, $Message
+    $line = '{0} [{1,-5}] [CLIENT] [{2}] {3}' -f `
+            (Get-Date -Format 'yyyy-MM-dd HH:mm:ss'), $Level, $RunId, $Message
     Add-Content -LiteralPath $LogFile -Value $line -Encoding UTF8
     switch ($Level) {
         'ERROR' { Write-Host $line -ForegroundColor Red }
@@ -101,6 +110,10 @@ function Test-SslEndpoint {
     )
 
     $result = [ordered]@{
+        RunId            = $RunId
+        Side             = 'CLIENT'
+        Source           = $env:COMPUTERNAME
+        Timestamp        = Get-Date
         Target           = $ComputerName
         Port             = $TcpPort
         TcpConnect       = $false
@@ -198,7 +211,7 @@ try {
 }
 catch { Write-Verbose "Could not raise SecurityProtocol: $($_.Exception.Message)" }
 
-Write-Log "SSL connectivity check started by $env:USERDOMAIN\$env:USERNAME on $env:COMPUTERNAME"
+Write-Log "SSL connectivity check (initiating side) started by $env:USERDOMAIN\$env:USERNAME on $env:COMPUTERNAME"
 Write-Log ("Targets: {0} | Port: {1} | Protocol: {2} | Timeout: {3} ms | IgnoreCertErrors: {4}" -f `
            ($Target -join ', '), $Port, $SslProtocol, $TimeoutMs, [bool]$IgnoreCertErrors)
 

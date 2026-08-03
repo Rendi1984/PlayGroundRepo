@@ -62,8 +62,10 @@ if ([string]::IsNullOrWhiteSpace($LogPath)) { $LogPath = Join-Path $root 'Logs' 
 if (-not (Test-Path -LiteralPath $LogPath)) {
     New-Item -Path $LogPath -ItemType Directory -Force | Out-Null
 }
-$stamp      = Get-Date -Format 'yyyyMMdd_HHmmss'
-$serverJson = Join-Path $LogPath "SslCheck_ServerSide_$stamp.json"
+# One shared run identifier stamped into BOTH sides' logs.
+$RunId      = (Get-Date -Format 'yyyyMMdd_HHmmss') + '_' + ([guid]::NewGuid().ToString('N').Substring(0, 6))
+$serverJson = Join-Path $LogPath "SslCheck_${RunId}_SERVER.json"
+Write-Host "RunId: $RunId" -ForegroundColor Cyan
 
 # Local IP the DC will see - best effort, used to filter inbound connections.
 $clientIp = $null
@@ -84,14 +86,17 @@ if ($Credential) { $sessionParams['Credential'] = $Credential }
 
 $session = New-PSSession @sessionParams
 try {
+    # Positional: Port, ClientAddress, WatchSeconds, LogPath, RunId.
+    # LogPath is $null so the DC writes to its own Logs folder next to the script.
     $job = Invoke-Command -Session $session -FilePath $serverScript -AsJob `
-               -ArgumentList $Port, $clientIp, $WatchSeconds
+               -ArgumentList $Port, $clientIp, $WatchSeconds, $null, $RunId
 
     Start-Sleep -Seconds 2   # let the collector reach its watch loop
 
     Write-Host "Running client-side test from $env:COMPUTERNAME ..." -ForegroundColor Cyan
     $global:LASTEXITCODE = 0
-    & $clientScript -Target $DomainController -Port $Port -LogPath $LogPath -IgnoreCertErrors
+    & $clientScript -Target $DomainController -Port $Port -LogPath $LogPath `
+                    -RunId $RunId -IgnoreCertErrors
     $clientExit = $global:LASTEXITCODE
 
     Write-Host 'Waiting for the server-side collector to finish ...' -ForegroundColor Cyan
@@ -133,4 +138,8 @@ elseif (-not $serverResult.Listening) {
 else {
     Write-Host 'Traffic reached the DC but the TLS handshake failed - check the certificate and protocol details above.' -ForegroundColor Red
 }
-Write-Host "Server-side detail saved to: $serverJson"
+Write-Host ''
+Write-Host "RunId $RunId - correlated logs:" -ForegroundColor Cyan
+Write-Host ("  initiating side ({0}): {1}\SslCheck_{2}_CLIENT.log (+ .csv)" -f $env:COMPUTERNAME, $LogPath, $RunId)
+Write-Host ("  receiving side  ({0}): {1}" -f $serverResult.Server, $serverResult.LogFile)
+Write-Host ("  server-side detail copied locally: {0}" -f $serverJson)

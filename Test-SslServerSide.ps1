@@ -34,7 +34,14 @@ param(
 
     [string]$ClientAddress,
 
-    [int]$WatchSeconds = 20
+    [int]$WatchSeconds = 20,
+
+    # Folder for the DC-side log. Default: .\Logs next to the script.
+    [string]$LogPath,
+
+    # Shared run identifier - pass the SAME value used on the initiating side
+    # so both logs can be correlated. Generated automatically when omitted.
+    [string]$RunId
 )
 
 Set-StrictMode -Version 2.0
@@ -42,7 +49,34 @@ $ErrorActionPreference = 'Continue'
 
 $startTime = Get-Date
 
+# --- Logging (SERVER = the side that receives the connection) -----------------
+if ([string]::IsNullOrWhiteSpace($LogPath)) {
+    if ($PSScriptRoot) { $LogPath = Join-Path $PSScriptRoot 'Logs' }
+    else               { $LogPath = Join-Path (Get-Location).Path 'Logs' }
+}
+if (-not (Test-Path -LiteralPath $LogPath)) {
+    New-Item -Path $LogPath -ItemType Directory -Force | Out-Null
+}
+if ([string]::IsNullOrWhiteSpace($RunId)) {
+    $RunId = (Get-Date -Format 'yyyyMMdd_HHmmss') + '_' + ([guid]::NewGuid().ToString('N').Substring(0, 6))
+}
+$LogFile = Join-Path $LogPath "SslCheck_${RunId}_SERVER.log"
+
+function Write-Log {
+    param(
+        [Parameter(Mandatory = $true)][string]$Message,
+        [ValidateSet('INFO', 'WARN', 'ERROR', 'OK')][string]$Level = 'INFO'
+    )
+    $line = '{0} [{1,-5}] [SERVER] [{2}] {3}' -f `
+            (Get-Date -Format 'yyyy-MM-dd HH:mm:ss'), $Level, $RunId, $Message
+    Add-Content -LiteralPath $LogFile -Value $line -Encoding UTF8
+    Write-Verbose $line
+}
+
 $out = [ordered]@{
+    RunId               = $RunId
+    Side                = 'SERVER'
+    LogFile             = $LogFile
     Server              = $env:COMPUTERNAME
     Port                = $Port
     StartTime           = $startTime
@@ -55,6 +89,10 @@ $out = [ordered]@{
     SchannelEvents      = @()
     Notes               = @()
 }
+
+$clientLabel = if ($ClientAddress) { $ClientAddress } else { 'any client' }
+Write-Log ("Receiving side started on {0}: port {1}, watching {2} for {3} s" -f `
+           $env:COMPUTERNAME, $Port, $clientLabel, $WatchSeconds)
 
 # --- 1. Is the port listening? ------------------------------------------------
 try {
@@ -76,6 +114,13 @@ catch {
     else {
         $out.Notes += "Port $Port is NOT listening on this server."
     }
+}
+
+if ($out.Listening) {
+    Write-Log ("Port {0} is listening: {1}" -f $Port, $out.ListeningProcess) -Level OK
+}
+else {
+    Write-Log ("Port {0} is NOT listening on this server" -f $Port) -Level ERROR
 }
 
 # --- 2. Candidate server-auth certificates ------------------------------------
@@ -107,6 +152,11 @@ try {
 }
 catch {
     $out.Notes += "Certificate store read failed: $($_.Exception.Message)"
+}
+
+foreach ($c in $out.Certificates) {
+    Write-Log ("Candidate certificate '{0}' | SAN: {1} | matches FQDN: {2} | expires {3} ({4} days)" -f `
+               $c.Subject, $c.DnsNames, $c.MatchesFqdn, $c.NotAfter, $c.DaysToExpiry)
 }
 
 # --- 3. Schannel protocol enablement (registry) -------------------------------
@@ -161,6 +211,10 @@ while ((Get-Date) -lt $deadline) {
     Start-Sleep -Milliseconds 500
 }
 $out.InboundConnections = @($seen.Values)
+foreach ($c in $out.InboundConnections) {
+    Write-Log ("Inbound connection observed from {0}:{1} state {2}" -f `
+               $c.RemoteAddress, $c.RemotePort, $c.State) -Level OK
+}
 
 if ($out.InboundConnections.Count -eq 0) {
     $filter = if ($ClientAddress) { " from $ClientAddress" } else { '' }
@@ -181,5 +235,11 @@ try {
 catch {
     # No matching events is the normal, healthy case.
 }
+
+foreach ($e in $out.SchannelEvents) {
+    Write-Log ("Event {0} ({1}) at {2}: {3}" -f $e.Id, $e.LevelDisplayName, $e.TimeCreated, $e.Message) -Level WARN
+}
+foreach ($n in $out.Notes) { Write-Log $n -Level WARN }
+Write-Log ("Receiving side finished. Log: {0}" -f $LogFile)
 
 New-Object PSObject -Property $out

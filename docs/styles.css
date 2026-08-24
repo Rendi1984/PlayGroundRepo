@@ -94,3 +94,6 @@ button{cursor:pointer;font-family:inherit}
   background:linear-gradient(180deg,rgba(224,87,127,.14),rgba(224,87,127,.04))}
 .bigcode{font-family:"Suez One",Georgia,serif;font-size:2.6rem;letter-spacing:.3em;
   color:var(--gold);margin:6px 0 10px;padding-inline-start:.3em}
+
+.genders{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.label{font-size:.7rem;letter-spacing:.22em;color:var(--muted)}

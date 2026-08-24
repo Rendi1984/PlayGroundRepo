@@ -23,6 +23,7 @@
   let meId = store.get('wheel.id');
   if (!meId) { meId = 'p' + Math.random().toString(36).slice(2, 10); store.set('wheel.id', meId); }
   let myName = store.get('wheel.name') || '';
+  let myGender = store.get('wheel.g') === 'f' ? 'f' : 'm';
 
   // ---------- app state ----------
   let screen = 'lobby', code = null, isHost = false;
@@ -85,8 +86,17 @@
   }
 
   // ---------- the rules (host only) ----------
-  const fill = (text, you, them) =>
-    text.replace(/\{you\}/g, you).replace(/\{them\}/g, them);
+  // {זכר|נקבה} נוטה לפי מי שמבצע/ת, [זכר|נקבה] לפי בן/בת הזוג
+  const fill = (text, you, them, gYou, gThem) =>
+    text.replace(/\{([^{}|]*)\|([^{}|]*)\}/g, (m, a, b) => gYou === 'f' ? b : a)
+        .replace(/\[([^\[\]|]*)\|([^\[\]|]*)\]/g, (m, a, b) => gThem === 'f' ? b : a)
+        .replace(/\{you\}/g, you).replace(/\{them\}/g, them);
+
+  const taskId = (key, i) => key + ':' + i;
+  const unused = (key, lvl) => TASKS[key]
+    .map((t, i) => ({ ...t, id: taskId(key, i) }))
+    .filter(t => t.level <= lvl && !(state.used || []).includes(t.id));
+  const liveSegments = () => SEGMENTS.map((s2, i) => i).filter(i => unused(SEGMENTS[i].key, state.level).length);
 
   function onAction(a) {
     const p = state.players.find(x => x.id === a.from);
@@ -97,12 +107,16 @@
     if (a.t === 'join') {
       if (!p) {
         if (state.players.length >= 2) return;        // a table for two
-        state.players.push({ id: a.from, name: String(a.name || 'שחקן/ית').slice(0, 14),
-          score: 0, seen: Date.now(), online: true });
-      } else p.name = String(a.name || p.name).slice(0, 14);
+        state.players.push({ id: a.from, name: String(a.name || 'שחקן').slice(0, 14),
+          g: a.g === 'f' ? 'f' : 'm', score: 0, seen: Date.now(), online: true });
+      } else { p.name = String(a.name || p.name).slice(0, 14); if (a.g) p.g = a.g === 'f' ? 'f' : 'm'; }
     } else if (a.t === 'level') {
       const lvl = LEVELS.find(l => l.id === a.level);
-      if (lvl) state.level = lvl.id;
+      if (lvl) { state.level = lvl.id; state.manual = true; }
+    } else if (a.t === 'again') {
+      state.used = []; state.round = 1; state.level = 1; state.manual = false;
+      state.phase = 'idle'; state.task = null; state.log = [];
+      for (const q of state.players) q.score = 0;
     } else if (a.t === 'spin') {
       if (state.phase !== 'idle' || a.from !== state.turn) return;
       return doSpin();
@@ -115,21 +129,26 @@
   }
 
   function doSpin() {
-    const seg = Math.floor(Math.random() * SEGMENTS.length);
-    const all = TASKS[SEGMENTS[seg].key].filter(t => t.level <= state.level);
-    // levels 1–2 are additive; from 3 up, keep the heat where the dial is
-    const hot = state.level >= 3 ? all.filter(t => t.level >= state.level - 1) : [];
-    const pool = hot.length ? hot : all;
+    const live = liveSegments();
+    if (!live.length) { state.phase = 'done'; sendState(); render(); return; }
+
+    const seg = live[Math.floor(Math.random() * live.length)];
+    const left = unused(SEGMENTS[seg].key, state.level);
+    // levels 1–2 are additive; from 3 up the wheel stops offering the gentle cards
+    const hot = state.level >= 3 ? left.filter(t => t.level >= state.level - 1) : [];
+    const pool = hot.length ? hot : left;
     const pick = pool[Math.floor(Math.random() * pool.length)];
 
     const you = turnPlayer();
     const them = state.players.find(p => p.id !== you.id);
     state.seg = seg;
     state.task = {
+      id: pick.id,
       icon: SEGMENTS[seg].icon,
       cat: SEGMENTS[seg].label,
       level: pick.level,
-      text: fill(pick.text, you ? you.name : 'את/ה', them ? them.name : 'בן/בת הזוג'),
+      text: fill(pick.text, you ? you.name : 'את/ה', them ? them.name : 'בן/בת הזוג',
+        you ? you.g : 'm', them ? them.g : 'f'),
     };
 
     // land the chosen segment under the pointer, after four full turns
@@ -145,14 +164,19 @@
 
   function finish(done) {
     const you = turnPlayer();
-    if (done && you) {
-      you.score += 1;
-      state.log = [{ name: you.name, icon: state.task.icon, text: state.task.text }, ...(state.log || [])].slice(0, 4);
+    if (done) {
+      if (you) {
+        you.score += 1;
+        state.log = [{ name: you.name, icon: state.task.icon, text: state.task.text }, ...(state.log || [])].slice(0, 4);
+      }
+      state.used = [...(state.used || []), state.task.id];   // performed — off the wheel
     }
     const other = state.players.find(p => p.id !== state.turn);
     if (other) state.turn = other.id;
     state.round += 1;
-    state.phase = 'idle';
+    // starts gentle and climbs fast: two rounds per level, unless someone set the dial by hand
+    if (!state.manual) state.level = Math.min(4, Math.ceil(state.round / 2));
+    state.phase = liveSegments().length ? 'idle' : 'done';
     state.task = null;
     sendState(); render();
   }
@@ -162,10 +186,11 @@
     () => 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[Math.floor(Math.random() * 32)]).join('');
 
   function host(name) {
-    myName = name || 'שחקן/ית'; store.set('wheel.name', myName);
+    myName = name || 'שחקן'; store.set('wheel.name', myName);
     code = newCode(); isHost = true; screen = 'table';
-    state = { code, round: 1, phase: 'idle', level: 2, turn: meId, rotation: 0, seg: 0, task: null, log: [],
-      players: [{ id: meId, name: myName, score: 0, seen: Date.now(), online: true }] };
+    state = { code, round: 1, phase: 'idle', level: 1, manual: false, used: [], turn: meId,
+      rotation: 0, seg: 0, task: null, log: [],
+      players: [{ id: meId, name: myName, g: myGender, score: 0, seen: Date.now(), online: true }] };
     connect(() => sendState());
     clearInterval(beat);
     // heartbeat: publishes the table and refreshes our own view, so a partner
@@ -175,9 +200,9 @@
   }
 
   function join(name, c) {
-    myName = name || 'שחקן/ית'; store.set('wheel.name', myName);
+    myName = name || 'שחקן'; store.set('wheel.name', myName);
     code = c; isHost = false; screen = 'table'; state = null;
-    connect(() => act({ t: 'join', name: myName }));
+    connect(() => act({ t: 'join', name: myName, g: myGender }));
     clearInterval(beat);
     beat = setInterval(() => act({ t: 'ping' }), 5000);
     render();
@@ -187,6 +212,7 @@
   function drawWheel() {
     const cv = document.getElementById('wheel');
     if (!cv) return;
+    const spent = state ? SEGMENTS.map(sg => !unused(sg.key, 4).length) : SEGMENTS.map(() => false);
     const S = 640, R = S / 2, ctx = cv.getContext('2d');
     cv.width = S; cv.height = S;
     ctx.clearRect(0, 0, S, S);
@@ -198,7 +224,7 @@
       ctx.moveTo(R, R);
       ctx.arc(R, R, R - 4, a0, a0 + step);
       ctx.closePath();
-      ctx.fillStyle = seg.hue;
+      ctx.fillStyle = spent[i] ? '#3a2b3c' : seg.hue;
       ctx.fill();
       ctx.strokeStyle = 'rgba(27,15,28,.55)';
       ctx.lineWidth = 4;
@@ -209,11 +235,13 @@
       ctx.rotate(a0 + step / 2);
       ctx.textAlign = 'right';
       ctx.textBaseline = 'middle';
-      ctx.fillStyle = '#fff';
+      ctx.fillStyle = spent[i] ? 'rgba(255,255,255,.32)' : '#fff';
+      ctx.globalAlpha = spent[i] ? .55 : 1;
       ctx.font = '600 34px Assistant, system-ui, sans-serif';
       ctx.fillText(seg.label, R - 74, 0);
       ctx.font = '40px system-ui, sans-serif';
       ctx.fillText(seg.icon, R - 26, 2);
+      ctx.globalAlpha = 1;
       ctx.restore();
     });
   }
@@ -242,13 +270,21 @@
         <h1>גלגל הזוגות</h1>
         <p class="muted" style="margin:10px 0 16px">מסובבים את הגלגל, הוא נוחת על משימה — ומבצעים. טלפון אחד פותח שולחן, השני מצטרף עם הקוד.</p>
         <input id="name" maxlength="14" placeholder="השם שלך" autocomplete="nickname" value="${esc(myName)}">
-        <div class="actions" style="margin-top:10px"><button class="btn rose" id="btnHost">פתיחת שולחן</button></div>
+        <p class="label" style="margin:14px 0 7px">לפנות אליך ב…</p>
+        <div class="genders">
+          <button class="level" data-g="m" aria-pressed="${myGender === 'm'}">לשון זכר</button>
+          <button class="level" data-g="f" aria-pressed="${myGender === 'f'}">לשון נקבה</button>
+        </div>
+        <div class="actions" style="margin-top:12px"><button class="btn rose" id="btnHost">פתיחת שולחן</button></div>
         <p class="or">או</p>
         <input id="code" maxlength="4" placeholder="קוד" autocapitalize="characters">
         <div class="actions" style="margin-top:10px"><button class="btn" id="btnJoin">הצטרפות</button></div>
         <p class="note" id="note">${esc(err)}</p>
       </div>`;
     drawWheel();
+    app().querySelectorAll('.genders .level').forEach(b => b.onclick = () => {
+      myGender = b.dataset.g; store.set('wheel.g', myGender); render();
+    });
     const nameOf = () => document.getElementById('name').value.trim();
     document.getElementById('btnHost').onclick = () => host(nameOf());
     document.getElementById('btnJoin').onclick = () => {
@@ -330,13 +366,19 @@
             <button class="btn" id="btnSkip">דלגו</button>
           </div>
         </div>` : `
+        ${state.phase === 'done' ? `
+        <div class="panel waiting">
+          <p class="eyebrow">הגלגל נגמר</p>
+          <p class="muted" style="margin:0">עברתם על כל המשימות. אפשר להתחיל מחדש — או להפסיק לשחק.</p>
+          <button class="btn rose" id="btnAgain" style="margin-top:12px">מהתחלה</button>
+        </div>` : `
         <div class="actions">
           <button class="btn rose" id="btnSpin" ${state.phase === 'idle' && (myTurn() || alone) ? '' : 'disabled'}>
-            ${state.phase === 'spinning' ? 'מסתובב…' : myTurn() || alone ? 'סובבו את הגלגל' : 'ממתינים לתור שלכם'}</button>
-        </div>`}
+            ${state.phase === 'spinning' ? 'מסתובב…' : myTurn() || alone ? 'סובבו את הגלגל' : 'ממתינים לתורך'}</button>
+        </div>`}`}
 
       <div class="panel">
-        <p class="eyebrow">רמת החום</p>
+        <p class="eyebrow">רמת החום · נשארו ${SEGMENTS.reduce((n, sg) => n + unused(sg.key, 4).length, 0)} משימות</p>
         <div class="levels">${LEVELS.map(l =>
           `<button class="level" data-level="${l.id}" aria-pressed="${l.id === state.level}">${l.name}<small>${l.note}</small></button>`).join('')}</div>
       </div>
@@ -365,6 +407,7 @@
 
     const on = (id, fn) => { const el = document.getElementById(id); if (el) el.onclick = fn; };
     on('btnSpin', () => act({ t: 'spin' }));
+    on('btnAgain', () => act({ t: 'again' }));
     on('btnDone', () => act({ t: 'done' }));
     on('btnSkip', () => act({ t: 'skip' }));
     app().querySelectorAll('.level').forEach(b =>
@@ -385,7 +428,7 @@
   document.addEventListener('visibilitychange', () => {
     if (!document.hidden && code && conn !== 'on') {
       try { client.end(true); } catch {}
-      connect(() => isHost ? sendState() : act({ t: 'join', name: myName }));
+      connect(() => isHost ? sendState() : act({ t: 'join', name: myName, g: myGender }));
     }
   });
 

@@ -35,7 +35,7 @@ h1{font-family:"Suez One",Georgia,serif;font-weight:400;font-size:2rem;line-heig
   font:inherit;font-size:.88rem}
 .room b{letter-spacing:.24em;color:var(--gold)}
 .score{display:flex;gap:6px}
-.pill{padding:8px 11px;border-radius:999px;border:1px solid var(--line);background:#2a1430;font-size:.82rem;white-space:nowrap}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:8px 11px;border-radius:999px;border:1px solid var(--line);background:#2a1430;font-size:.82rem;white-space:nowrap}
 .pill.turn{border-color:var(--rose);background:rgba(224,87,127,.14);color:var(--cream)}
 .pill b{font-variant-numeric:tabular-nums;color:var(--gold)}
 
@@ -65,7 +65,7 @@ canvas{width:100%;height:100%;display:block;border-radius:50%;
 .task .who{font-size:.9rem;color:var(--muted)}
 
 /* level dial */
-.levels{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.levels{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
 .level{padding:11px 6px;border-radius:12px;border:1px solid var(--line);background:#2a1430;color:var(--cream);
   font:inherit;font-weight:600;font-size:.92rem;line-height:1.3}
 .level small{display:block;font-weight:400;font-size:.68rem;color:var(--muted);margin-top:2px}
@@ -93,6 +93,12 @@ input{width:100%;padding:15px;border-radius:14px;border:1px solid var(--line);ba
 .log div{display:flex;gap:7px;align-items:baseline}
 .log b{color:var(--cream);font-weight:600}
 button{cursor:pointer;font-family:inherit}
+
+/* waiting room */
+.waiting{text-align:center;border-color:var(--rose-2);
+  background:linear-gradient(180deg,rgba(224,87,127,.14),rgba(224,87,127,.04))}
+.bigcode{font-family:"Suez One",Georgia,serif;font-size:2.6rem;letter-spacing:.3em;
+  color:var(--gold);margin:6px 0 10px;padding-inline-start:.3em}
 </style>
 
 <div class="wrap" id="app"></div>
@@ -101,7 +107,7 @@ button{cursor:pointer;font-family:inherit}
 'use strict';
 /*
  * Wheel segments and the task pool behind each one.
- * level: 1 = רומנטי, 2 = שובב, 3 = לוהט. A round draws from every level
+ * level: 1 = רומנטי, 2 = שובב, 3 = לוהט, 4 = בלי בושה. A round draws from every level
  * up to the one the couple picked, so raising the dial adds spice without
  * throwing away the gentler cards.
  * {you} is the player whose turn it is, {them} is their partner.
@@ -119,6 +125,9 @@ const SEGMENTS = [
 
 const TASKS = {
   kiss: [
+    { level: 4, text: 'נשיקה שלא נגמרת עד ש{them} מבקש/ת עוד. אתם לא עוצרים ראשונים.' },
+    { level: 4, text: 'נשיקה בכל מקום ש{them} מצביע/ה עליו. שלוש תחנות, עשר שניות בכל אחת.' },
+    { level: 3, text: 'נשיקה עם עיניים פקוחות. אסור להשפיל מבט.' },
     { level: 1, text: 'נשיקה על המצח, ואז אחת על גב היד.' },
     { level: 1, text: 'נשיקה של עשר שניות — בלי ידיים.' },
     { level: 2, text: '{them} בוחר/ת את המקום, {you} נותן/ת את הנשיקה.' },
@@ -127,6 +136,9 @@ const TASKS = {
     { level: 3, text: 'נשיקה של דקה שלמה — מי שמפסיק/ה ראשון/ה מפסיד/ה.' },
   ],
   touch: [
+    { level: 4, text: 'כסו את העיניים של {them}. הם צריכים לנחש איפה אתם נוגעים — בלי לדבר.' },
+    { level: 4, text: 'שתי דקות מגע. {them} אומר/ת רק שתי מילים: "עוד" או "מספיק".' },
+    { level: 3, text: 'ליטוף איטי לאורך הגב, מלמעלה למטה. עוצרים בדיוק איפה ש{them} אומר/ת.' },
     { level: 1, text: 'עיסוי כתפיים של דקה.' },
     { level: 1, text: 'עיסוי כפות ידיים, אצבע-אצבע.' },
     { level: 2, text: 'עיסוי גב של שלוש דקות — בלי לדבר בכלל.' },
@@ -135,6 +147,9 @@ const TASKS = {
     { level: 3, text: 'שתי דקות מגע איטי — {them} מנחה במילה אחת בכל פעם.' },
   ],
   whisper: [
+    { level: 4, text: 'לחשו בדיוק מה אתם רוצים שיקרה הלילה. בלי לרכך, בלי לצחוק באמצע.' },
+    { level: 4, text: 'ספרו על הפעם שהכי רציתם אותם ולא עשיתם כלום. עם כל הפרטים.' },
+    { level: 3, text: 'תארו באוזן איך {them} נראה/ית בעיניכם ברגע הזה.' },
     { level: 1, text: 'לחשו ל{them} משהו אחד שאתם אוהבים בו/בה.' },
     { level: 1, text: 'לחשו זיכרון משותף שגורם לכם לחייך.' },
     { level: 2, text: 'לחשו מה הכי מושך בו/בה הרגע.' },
@@ -143,6 +158,8 @@ const TASKS = {
     { level: 3, text: 'תארו באוזן איך הייתם רוצים שהערב ייגמר.' },
   ],
   dance: [
+    { level: 4, text: 'ריקוד פרטי, שיר אחד שלם. {them} יושב/ת, מסתכל/ת, ואסור לו/ה לגעת.' },
+    { level: 3, text: 'ריקוד צמוד שבו {them} מוביל/ה לגמרי ואתם רק הולכים אחריהם.' },
     { level: 1, text: 'ריקוד איטי צמוד — שיר אחד, מהתחלה עד הסוף.' },
     { level: 1, text: 'רקדו שלושים שניות בלי מוזיקה בכלל.' },
     { level: 2, text: 'לימדו את {them} מהלך ריקוד אחד. הם חייבים לחזור עליו.' },
@@ -150,6 +167,9 @@ const TASKS = {
     { level: 3, text: 'ריקוד איטי — {them} מוביל/ה, {you} עוצם/ת עיניים.' },
   ],
   words: [
+    { level: 4, text: 'שלושת הרגעים הכי לוהטים שהיו לכם יחד — בקול, לפי הסדר.' },
+    { level: 4, text: 'אמרו משפט אחד שמעולם לא אמרתם להם בקול. עכשיו.' },
+    { level: 3, text: 'תארו מה עובר לכם בראש כש{them} נכנס/ת לחדר.' },
     { level: 1, text: 'שלוש מחמאות: אחת על המראה, אחת על האופי, אחת על משהו שעשה/תה השבוע.' },
     { level: 1, text: 'אמרו במשפט אחד למה בחרתם בו/בה.' },
     { level: 2, text: 'ספרו על רגע אחד שבו הוא/היא הפתיע/ה אתכם לטובה.' },
@@ -157,6 +177,9 @@ const TASKS = {
     { level: 3, text: 'אמרו בקול מה הכי מושך בו/בה, ואל תשפילו מבט תוך כדי.' },
   ],
   treat: [
+    { level: 4, text: 'קוביית קרח. {them} בוחר/ת את המסלול, אתם רק מבצעים.' },
+    { level: 4, text: 'האכילו את {them} בלי ידיים. הם בעיניים עצומות.' },
+    { level: 3, text: 'פינוק של שלוש דקות ש{them} מזמין/ה מראש, כמו מתפריט.' },
     { level: 1, text: 'הכינו ל{them} שתייה והגישו. בלי שיאמרו מה הם רוצים.' },
     { level: 1, text: 'האכילו את {them} משהו מתוק — בעיניים עצומות.' },
     { level: 2, text: 'קובייה של קרח או משהו קר. {them} בוחר/ת איפה.' },
@@ -164,6 +187,10 @@ const TASKS = {
     { level: 3, text: 'פינוק לבחירת {them}, שתי דקות. אתם רק מבצעים.' },
   ],
   dare: [
+    { level: 4, text: 'פריט לבוש אחד יורד. {them} בוחר/ת איזה.' },
+    { level: 4, text: 'שלוש דקות בלי ידיים בכלל — רק שפתיים.' },
+    { level: 4, text: 'שאלה אחת ש{them} תמיד רצה/תה לשאול. חייבים לענות, בכנות מלאה.' },
+    { level: 3, text: 'עמדו קרוב, פנים מול פנים, דקה — בלי לגעת בכלל.' },
     { level: 1, text: 'שלושים שניות של מבט בעיניים. מי שצוחק/ת ראשון/ה מפסיד/ה.' },
     { level: 1, text: 'החליפו פריט לבוש אחד ביניכם והישארו איתו עד הסיבוב הבא.' },
     { level: 2, text: 'דקה שלמה בלי לגעת בכלל — רק מבט. גם זה משימה.' },
@@ -172,6 +199,9 @@ const TASKS = {
     { level: 3, text: 'הסיבוב הבא שלכם — {them} מחליט/ה מה קורה בו.' },
   ],
   choice: [
+    { level: 4, text: '{them} מקבל/ת שליטה מלאה לחמש דקות. התפקיד שלכם הוא להגיד כן.' },
+    { level: 4, text: 'בחרו: לבצע את המשימה הקודמת בכפול, או לתת ל{them} להמציא לכם אחת חדשה.' },
+    { level: 3, text: 'המשימה הבאה של {them} — אתם כותבים אותה.' },
     { level: 1, text: '{them} בוחר/ת לכם משימה משלהם. אתם מבצעים.' },
     { level: 1, text: 'חזרו על המשימה הקודמת — הפעם לאט יותר.' },
     { level: 2, text: 'החליפו תורות: {them} מסובב/ת במקומכם.' },
@@ -184,11 +214,11 @@ const LEVELS = [
   { id: 1, name: 'רומנטי', note: 'חמים, בלי להסמיק' },
   { id: 2, name: 'שובב',   note: 'קצת מתגרה' },
   { id: 3, name: 'לוהט',   note: 'לערב שכולו שלכם' },
+  { id: 4, name: 'בלי בושה', note: 'רק אם שניכם בעניין' },
 ];
 
 </script>
 <script>
-
 (() => {
   'use strict';
   const SPIN_MS = 4700;
@@ -222,7 +252,10 @@ const LEVELS = [
 
   function spin() {
     const seg = Math.floor(Math.random() * SEGMENTS.length);
-    const pool = TASKS[SEGMENTS[seg].key].filter(t => t.level <= level);
+    const all = TASKS[SEGMENTS[seg].key].filter(t => t.level <= level);
+    // levels 1–2 are additive; from 3 up, keep the heat where the dial is
+    const hot = level >= 3 ? all.filter(t => t.level >= level - 1) : [];
+    const pool = hot.length ? hot : all;
     const pick = pool[Math.floor(Math.random() * pool.length)];
     task = { icon: SEGMENTS[seg].icon, cat: SEGMENTS[seg].label, level: pick.level,
       text: fill(pick.text, names[turn], names[1 - turn]) };

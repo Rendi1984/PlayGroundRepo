@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<meta name="theme-color" content="#0b1220">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>רולטה מרובת משתתפים</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<main id="app">
+
+  <!-- Lobby -->
+  <section id="lobby" class="screen">
+    <h1>🎰 רולטה</h1>
+    <p class="sub">שחקו יחד משני טלפונים או יותר</p>
+    <label class="field">
+      <span>השם שלך</span>
+      <input id="name" type="text" maxlength="16" autocomplete="nickname" placeholder="שחקן">
+    </label>
+    <button id="btnCreate" class="btn primary">פתיחת חדר חדש</button>
+    <div class="or">או</div>
+    <label class="field">
+      <span>קוד חדר</span>
+      <input id="code" type="text" inputmode="text" autocapitalize="characters" maxlength="4" placeholder="ABCD">
+    </label>
+    <button id="btnJoin" class="btn">הצטרפות לחדר</button>
+    <p id="lobbyErr" class="err" hidden></p>
+  </section>
+
+  <!-- Game -->
+  <section id="game" class="screen" hidden>
+    <header class="topbar">
+      <button id="btnShare" class="chip-btn">חדר <b id="roomCode">----</b> · שיתוף</button>
+      <div class="balance">🪙 <b id="chips">0</b></div>
+    </header>
+
+    <div class="wheel-wrap">
+      <div id="wheel" class="wheel"><div id="ball" class="ball"></div>
+        <div class="hub"><span id="resultNum">–</span></div>
+      </div>
+      <div id="phase" class="phase">ממתינים לתחילת סיבוב…</div>
+      <div id="timer" class="timer"></div>
+    </div>
+
+    <div id="history" class="history"></div>
+    <div id="players" class="players"></div>
+
+    <div class="stakes">
+      <span>ז'טון:</span>
+      <div class="stake-row" id="stakes"></div>
+    </div>
+
+    <div id="board" class="board"></div>
+
+    <div class="outside" id="outside"></div>
+
+    <div class="actions">
+      <button id="btnClear" class="btn ghost">ניקוי הימורים</button>
+      <button id="btnStart" class="btn primary" hidden>התחלת סיבוב</button>
+      <button id="btnSpin" class="btn primary" hidden>סובב עכשיו</button>
+    </div>
+
+    <p id="gameMsg" class="msg"></p>
+  </section>
+</main>
+<script src="app.js"></script>
+</body>
+</html>

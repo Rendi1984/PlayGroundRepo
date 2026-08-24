@@ -1,0 +1,354 @@
+<title>רולטה עם חברים</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;800&family=Heebo:wght@400;500;700&display=swap">
+
+<script type="application/json" id="game-state">{"round":1,"phase":"betting","players":[],"result":null,"history":[],"spinBy":null}</script>
+
+<style>
+:root{
+  --felt:#0c2b23; --felt-2:#10382d; --rail:#0a1f19; --brass:#c9a227; --brass-2:#8d6f13;
+  --ivory:#f2ece0; --muted:#93a99f; --wine:#9d1f2f; --coal:#171a19; --win:#4fd48a; --lose:#ef7c8c;
+  --safe-b: env(safe-area-inset-bottom, 0px);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{
+  margin:0; padding:14px 14px calc(22px + var(--safe-b));
+  background:
+    radial-gradient(120% 80% at 50% -10%, #164a3b 0%, transparent 60%),
+    var(--felt);
+  color:var(--ivory); font-family:Heebo,system-ui,Arial,sans-serif;
+  direction:rtl; overscroll-behavior-y:contain;
+}
+.wrap{max-width:520px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+
+h1{font-family:"Frank Ruhl Libre",Georgia,serif;font-weight:800;font-size:1.9rem;margin:0;text-wrap:balance}
+.eyebrow{font-size:.72rem;letter-spacing:.22em;color:var(--brass);margin:0 0 4px}
+.muted{color:var(--muted)}
+.panel{background:linear-gradient(180deg,var(--felt-2),#0e3227);border:1px solid #1d4d3f;border-radius:14px;padding:14px}
+
+/* header */
+.head{display:flex;align-items:flex-end;justify-content:space-between;gap:10px}
+.purse{font-family:"Frank Ruhl Libre",Georgia,serif;font-size:1.5rem;font-weight:800;color:var(--brass);
+  font-variant-numeric:tabular-nums;white-space:nowrap}
+.purse small{display:block;font-family:Heebo,sans-serif;font-size:.68rem;letter-spacing:.18em;color:var(--muted);font-weight:500}
+
+/* wheel */
+.stage{display:flex;flex-direction:column;align-items:center;gap:10px}
+.wheel{position:relative;width:min(52vw,190px);aspect-ratio:1;border-radius:50%;
+  border:7px solid;border-image:linear-gradient(145deg,#e6c65c,#7a5f10) 1;
+  background:repeating-conic-gradient(var(--coal) 0 9.73deg, var(--wine) 0 19.46deg);
+  box-shadow:0 14px 34px rgba(0,0,0,.55), inset 0 0 26px rgba(0,0,0,.6)}
+.wheel.turning{animation:turn .9s cubic-bezier(.32,0,.2,1) infinite}
+@keyframes turn{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.wheel.turning{animation-duration:2.6s;animation-timing-function:linear}}
+.hub{position:absolute;inset:20%;border-radius:50%;background:var(--rail);border:2px solid #2b6252;
+  display:grid;place-items:center}
+.wheel.turning .hub{animation:turn .9s linear infinite reverse}
+.hub b{font-family:"Frank Ruhl Libre",Georgia,serif;font-size:2rem;line-height:1;font-variant-numeric:tabular-nums}
+.callout{text-align:center;font-size:1.02rem;min-height:1.4em}
+.callout b{color:var(--brass)}
+
+.history{display:flex;gap:5px;flex-wrap:wrap;justify-content:center;min-height:24px}
+.hist{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-size:.72rem;font-weight:700;
+  font-variant-numeric:tabular-nums;border:1px solid rgba(255,255,255,.18)}
+
+/* players */
+.players{display:grid;gap:6px}
+.player{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 12px;border-radius:11px;
+  background:rgba(0,0,0,.22);border:1px solid #1d4d3f;font-size:.9rem}
+.player.me{border-color:var(--brass-2);background:rgba(201,162,39,.09)}
+.player .who{display:flex;align-items:center;gap:7px;min-width:0}
+.player .who span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tag{font-size:.66rem;letter-spacing:.1em;padding:2px 6px;border-radius:6px;border:1px solid #2b6252;color:var(--muted)}
+.tag.in{color:var(--brass);border-color:var(--brass-2)}
+.num{font-variant-numeric:tabular-nums}
+.win{color:var(--win)}.lose{color:var(--lose)}
+
+/* chips + board */
+.label{font-size:.72rem;letter-spacing:.2em;color:var(--muted);margin-bottom:7px}
+.chips{display:flex;gap:7px}
+.chip{flex:1;padding:11px 0;border-radius:999px;border:2px dashed rgba(242,236,224,.25);background:rgba(0,0,0,.25);
+  color:var(--ivory);font-weight:700;font-variant-numeric:tabular-nums;font-size:1rem}
+.chip[aria-pressed="true"]{background:linear-gradient(180deg,#e6c65c,#b58e1c);color:#231b03;border:2px solid #7a5f10}
+
+.board{display:grid;grid-template-columns:repeat(6,1fr);gap:5px}
+.cell{position:relative;height:46px;border-radius:9px;border:1px solid rgba(255,255,255,.14);color:#fff;
+  font-weight:700;font-size:.95rem;font-variant-numeric:tabular-nums;background:var(--coal)}
+.cell.red{background:var(--wine)}
+.cell.zero{grid-column:span 6;background:#126b4b;height:38px}
+.outside{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
+.out{position:relative;padding:12px 4px;border-radius:9px;border:1px solid #2b6252;background:rgba(0,0,0,.25);
+  color:var(--ivory);font-weight:500;font-size:.86rem}
+.stake{position:absolute;top:-7px;inset-inline-end:-5px;background:linear-gradient(180deg,#e6c65c,#b58e1c);color:#231b03;
+  border-radius:999px;padding:1px 6px;font-size:.68rem;font-weight:700;font-variant-numeric:tabular-nums}
+.locked .cell,.locked .out{opacity:.42}
+
+/* buttons */
+.btn{width:100%;padding:15px;border-radius:12px;border:1px solid #2b6252;background:rgba(0,0,0,.28);
+  color:var(--ivory);font:inherit;font-weight:700;font-size:1rem}
+.btn.gold{background:linear-gradient(180deg,#e6c65c,#b58e1c);color:#231b03;border-color:#7a5f10}
+.btn[disabled]{opacity:.4}
+.btn:focus-visible,.cell:focus-visible,.out:focus-visible,.chip:focus-visible{outline:3px solid var(--brass);outline-offset:2px}
+.actions{display:grid;gap:8px}
+input{width:100%;padding:14px;border-radius:12px;border:1px solid #2b6252;background:rgba(0,0,0,.28);
+  color:var(--ivory);font:inherit;font-size:1.05rem}
+.note{font-size:.8rem;color:var(--muted);text-align:center;min-height:1.2em}
+button{cursor:pointer;font-family:inherit}
+</style>
+
+<div class="wrap" id="app"></div>
+
+<script>
+(() => {
+  'use strict';
+  const RED = new Set([1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36]);
+  const colorOf = n => n === 0 ? 'green' : RED.has(n) ? 'red' : 'black';
+  const STAKES = [5, 25, 100, 500];
+  const START = 1000;
+
+  const OUTSIDE = [
+    ['red','אדום · 1:1'], ['black','שחור · 1:1'], ['even','זוגי · 1:1'],
+    ['odd','אי-זוגי · 1:1'], ['low','1–18 · 1:1'], ['high','19–36 · 1:1'],
+    ['dozen1','1–12 · 2:1'], ['dozen2','13–24 · 2:1'], ['dozen3','25–36 · 2:1'],
+  ];
+  const LABEL = Object.fromEntries(OUTSIDE);
+
+  const payout = (bet, n) => {
+    const c = colorOf(n);
+    switch (bet.kind) {
+      case 'number': return bet.value === n ? 36 : 0;
+      case 'red': return c === 'red' ? 2 : 0;
+      case 'black': return c === 'black' ? 2 : 0;
+      case 'even': return n !== 0 && n % 2 === 0 ? 2 : 0;
+      case 'odd': return n % 2 === 1 ? 2 : 0;
+      case 'low': return n >= 1 && n <= 18 ? 2 : 0;
+      case 'high': return n >= 19 && n <= 36 ? 2 : 0;
+      case 'dozen1': return n >= 1 && n <= 12 ? 3 : 0;
+      case 'dozen2': return n >= 13 && n <= 24 ? 3 : 0;
+      case 'dozen3': return n >= 25 && n <= 36 ? 3 : 0;
+      default: return 0;
+    }
+  };
+
+  // ---- identity: this device's seat at the table ----
+  const KEY = 'roulette.me';
+  let meId = null;
+  try { meId = localStorage.getItem(KEY); } catch {}
+  if (!meId) {
+    meId = 'p' + Math.random().toString(36).slice(2, 10);
+    try { localStorage.setItem(KEY, meId); } catch {}
+  }
+
+  const state = JSON.parse(document.getElementById('game-state').textContent);
+  const me = () => state.players.find(p => p.id === meId);
+
+  let stake = 25;
+  let staged = [];      // bets placed on this device, not yet sent to the table
+  let busy = false;
+  let source = null;    // the page's own served HTML, used to publish a new version
+  let writable = true;
+
+  const stagedTotal = () => staged.reduce((s, b) => s + b.amount, 0);
+  const purse = () => { const m = me(); return m ? m.chips - stagedTotal() : 0; };
+
+  // ---- publishing: the page saves a new version of itself ----
+  async function loadSource() {
+    try { source = await (await fetch(location.href, { cache: 'no-store' })).text(); }
+    catch { source = null; }
+  }
+
+  function withState(next) {
+    const open = '<scr' + 'ipt type="application/json" id="game-state">';
+    const close = '</scr' + 'ipt>';
+    const i = source.indexOf(open);
+    if (i < 0) throw new Error('state block not found');
+    const j = source.indexOf(close, i);
+    const json = JSON.stringify(next).replace(/</g, '\\u003c');
+    return source.slice(0, i + open.length) + json + source.slice(j);
+  }
+
+  async function commit(mutate, pendingNote) {
+    if (busy) return;
+    const api = await window.claude?.use?.('artifact');
+    if (!api || !source) { note('השמירה לא זמינה בתצוגה הזו — פתחו את הלינק של הארטיפקט.'); return; }
+    busy = true;
+    note(pendingNote || 'שומר…');
+    render();
+    try {
+      mutate(state);
+      await api.publish(withState(state));   // every open view reloads to this version
+    } catch (e) {
+      const code = e && e.code;
+      if (code === 'conflict') return;       // someone was faster; all views reload to their version
+      if (code === 'not_writer' || code === 'not_granted' || code === 'consent_required') {
+        writable = false;
+        note('התצוגה הזו לצפייה בלבד. בקשו מבעל הארטיפקט הרשאת עריכה.');
+      } else {
+        note('השמירה נכשלה. נסו שוב.');
+      }
+      busy = false; render();
+    }
+  }
+
+  const note = t => { const n = document.getElementById('note'); if (n) n.textContent = t; };
+
+  // ---- actions ----
+  const join = name => commit(s => {
+    s.players.push({ id: meId, name: name.slice(0, 14) || 'שחקן', chips: START, bets: [], last: null });
+  }, 'מצטרפים לשולחן…');
+
+  function place(kind, value) {
+    if (state.phase !== 'betting') return note('הסיבוב הסתיים — פתחו סיבוב חדש');
+    if (me()?.bets.length) return note('כבר שלחתם הימור לסיבוב הזה');
+    if (purse() < stake) return note('אין מספיק ז\'טונים');
+    const hit = staged.find(b => b.kind === kind && b.value === value);
+    if (hit) hit.amount += stake; else staged.push({ kind, value, amount: stake });
+    note('');
+    render();
+  }
+
+  const send = () => commit(s => {
+    const m = s.players.find(p => p.id === meId);
+    m.chips -= stagedTotal();
+    m.bets = staged;
+    staged = [];
+  }, 'שולחים את ההימורים…');
+
+  const spin = () => commit(s => {
+    const n = Math.floor(Math.random() * 37);
+    for (const p of s.players) {
+      if (!p.bets.length) { p.last = null; continue; }
+      const back = p.bets.reduce((t, b) => t + b.amount * payout(b, n), 0);
+      const risked = p.bets.reduce((t, b) => t + b.amount, 0);
+      p.chips += back;
+      p.last = back - risked;
+    }
+    s.result = { number: n, color: colorOf(n) };
+    s.history = [s.result, ...s.history].slice(0, 14);
+    s.phase = 'result';
+    s.spinBy = meId;
+  }, 'מסובבים…');
+
+  const nextRound = () => commit(s => {
+    for (const p of s.players) { if (p.chips <= 0) p.chips = 100; p.bets = []; }
+    s.result = null;
+    s.phase = 'betting';
+    s.round += 1;
+    s.spinBy = null;
+  }, 'פותחים סיבוב חדש…');
+
+  // ---- render ----
+  const esc = t => String(t).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const swatch = c => c === 'red' ? 'background:#9d1f2f' : c === 'black' ? 'background:#171a19' : 'background:#126b4b';
+  const betLabel = b => b.kind === 'number' ? 'מספר ' + b.value : LABEL[b.kind].split(' ·')[0];
+
+  function render() {
+    const app = document.getElementById('app');
+    const m = me();
+
+    if (!m) {
+      app.innerHTML = `
+        <div class="stage"><div class="wheel"><div class="hub"><b>🎲</b></div></div></div>
+        <div class="panel">
+          <p class="eyebrow">שולחן פתוח</p>
+          <h1>רולטה עם חברים</h1>
+          <p class="muted" style="margin:8px 0 14px">כל מי שפותח את הלינק הזה מצטרף לאותו שולחן. ${state.players.length} כבר בפנים.</p>
+          <input id="name" type="text" maxlength="14" placeholder="השם שלך" autocomplete="nickname">
+          <div class="actions" style="margin-top:10px">
+            <button class="btn gold" id="btnJoin">שבו לשולחן</button>
+          </div>
+          <p class="note" id="note"></p>
+        </div>`;
+      const go = () => join(document.getElementById('name').value.trim());
+      document.getElementById('btnJoin').onclick = go;
+      document.getElementById('name').addEventListener('keydown', e => { if (e.key === 'Enter') go(); });
+      return;
+    }
+
+    const spinning = busy && state.phase === 'betting';
+    const anyBets = state.players.some(p => p.bets.length);
+    const sent = m.bets.length > 0;
+    const locked = state.phase !== 'betting' || sent || busy;
+    const shown = sent ? m.bets : staged;
+    const byNum = new Map(), byKind = new Map();
+    for (const b of shown) b.kind === 'number' ? byNum.set(b.value, b.amount) : byKind.set(b.kind, b.amount);
+
+    const callout = state.phase === 'result' && state.result
+      ? `יצא <b>${state.result.number}</b> · ${{red:'אדום',black:'שחור',green:'ירוק'}[state.result.color]}`
+      : sent ? 'ההימור נשלח — ממתינים לסיבוב' : 'הניחו ז\'טונים על השולחן';
+
+    app.innerHTML = `
+      <div class="head">
+        <div><p class="eyebrow">סיבוב ${state.round}</p><h1>רולטה עם חברים</h1></div>
+        <div class="purse"><small>הקופה שלך</small>${purse()}</div>
+      </div>
+
+      <div class="stage">
+        <div class="wheel ${spinning ? 'turning' : ''}">
+          <div class="hub"><b>${state.phase === 'result' && state.result ? state.result.number : '·'}</b></div>
+        </div>
+        <p class="callout">${callout}</p>
+        <div class="history">${state.history.map(h =>
+          `<div class="hist" style="${swatch(h.color)}">${h.number}</div>`).join('')}</div>
+      </div>
+
+      <div class="players">${state.players.map(p => {
+        const res = p.last === null || p.last === undefined ? ''
+          : `<span class="${p.last >= 0 ? 'win' : 'lose'} num">${p.last >= 0 ? '+' : ''}${p.last}</span> · `;
+        const risked = p.bets.reduce((t, b) => t + b.amount, 0);
+        return `<div class="player${p.id === meId ? ' me' : ''}">
+          <div class="who"><span>${esc(p.name)}</span>
+            ${p.bets.length ? `<i class="tag in">הימר ${risked}</i>` : `<i class="tag">ממתין</i>`}</div>
+          <div>${res}<span class="num">🪙 ${p.chips}</span></div></div>`;
+      }).join('')}</div>
+
+      <div class="panel">
+        <p class="label">ערך הז'טון</p>
+        <div class="chips">${STAKES.map(s =>
+          `<button class="chip" data-stake="${s}" aria-pressed="${s === stake}">${s}</button>`).join('')}</div>
+      </div>
+
+      <div class="${locked ? 'locked' : ''}">
+        <div class="board" id="board">
+          <button class="cell zero" data-n="0">0${byNum.has(0) ? `<i class="stake">${byNum.get(0)}</i>` : ''}</button>
+          ${Array.from({ length: 36 }, (_, i) => i + 1).map(n =>
+            `<button class="cell ${colorOf(n)}" data-n="${n}">${n}${
+              byNum.has(n) ? `<i class="stake">${byNum.get(n)}</i>` : ''}</button>`).join('')}
+        </div>
+        <div class="outside" style="margin-top:5px" id="outside">
+          ${OUTSIDE.map(([k, l]) =>
+            `<button class="out" data-kind="${k}">${l}${
+              byKind.has(k) ? `<i class="stake">${byKind.get(k)}</i>` : ''}</button>`).join('')}
+        </div>
+      </div>
+
+      <div class="actions">
+        ${state.phase === 'betting' && !sent ? `
+          <button class="btn gold" id="btnSend" ${staged.length && !busy ? '' : 'disabled'}>
+            שליחת הימור${staged.length ? ` · ${stagedTotal()} ז'טונים` : ''}</button>
+          <button class="btn" id="btnClear" ${staged.length && !busy ? '' : 'disabled'}>ניקוי השולחן</button>` : ''}
+        ${state.phase === 'betting' && sent ? `
+          <button class="btn gold" id="btnSpin" ${busy ? 'disabled' : ''}>סובבו את הגלגל</button>` : ''}
+        ${state.phase === 'result' ? `
+          <button class="btn gold" id="btnNext" ${busy ? 'disabled' : ''}>סיבוב חדש</button>` : ''}
+      </div>
+      <p class="note" id="note">${anyBets || state.phase === 'result' ? '' : 'כל שחקן שולח הימור, ואז מי שמוכן מסובב.'}</p>`;
+
+    app.querySelectorAll('.chip').forEach(b => b.onclick = () => { stake = +b.dataset.stake; render(); });
+    if (!locked) {
+      app.querySelectorAll('.cell').forEach(b => b.onclick = () => place('number', +b.dataset.n));
+      app.querySelectorAll('.out').forEach(b => b.onclick = () => place(b.dataset.kind, null));
+    }
+    const on = (id, fn) => { const el = document.getElementById(id); if (el) el.onclick = fn; };
+    on('btnSend', send);
+    on('btnClear', () => { staged = []; render(); });
+    on('btnSpin', spin);
+    on('btnNext', nextRound);
+    if (!writable) note('התצוגה הזו לצפייה בלבד.');
+  }
+
+  render();
+  loadSource().then(render);
+})();
+</script>

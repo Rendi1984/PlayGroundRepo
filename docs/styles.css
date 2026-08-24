@@ -1,0 +1,104 @@
+
+:root{
+  --felt:#0c2b23; --felt-2:#10382d; --rail:#0a1f19; --brass:#c9a227; --brass-2:#8d6f13;
+  --ivory:#f2ece0; --muted:#93a99f; --wine:#9d1f2f; --coal:#171a19; --win:#4fd48a; --lose:#ef7c8c;
+  --safe-b: env(safe-area-inset-bottom, 0px);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{
+  margin:0; padding:14px 14px calc(22px + var(--safe-b));
+  background:
+    radial-gradient(120% 80% at 50% -10%, #164a3b 0%, transparent 60%),
+    var(--felt);
+  color:var(--ivory); font-family:Heebo,system-ui,Arial,sans-serif;
+  direction:rtl; overscroll-behavior-y:contain;
+}
+.wrap{max-width:520px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+
+h1{font-family:"Frank Ruhl Libre",Georgia,serif;font-weight:800;font-size:1.9rem;margin:0;text-wrap:balance}
+.eyebrow{font-size:.72rem;letter-spacing:.22em;color:var(--brass);margin:0 0 4px}
+.muted{color:var(--muted)}
+.panel{background:linear-gradient(180deg,var(--felt-2),#0e3227);border:1px solid #1d4d3f;border-radius:14px;padding:14px}
+
+/* header */
+.head{display:flex;align-items:flex-end;justify-content:space-between;gap:10px}
+.purse{font-family:"Frank Ruhl Libre",Georgia,serif;font-size:1.5rem;font-weight:800;color:var(--brass);
+  font-variant-numeric:tabular-nums;white-space:nowrap}
+.purse small{display:block;font-family:Heebo,sans-serif;font-size:.68rem;letter-spacing:.18em;color:var(--muted);font-weight:500}
+
+/* wheel */
+.stage{display:flex;flex-direction:column;align-items:center;gap:10px}
+.wheel{position:relative;width:min(52vw,190px);aspect-ratio:1;border-radius:50%;
+  border:7px solid;border-image:linear-gradient(145deg,#e6c65c,#7a5f10) 1;
+  background:repeating-conic-gradient(var(--coal) 0 9.73deg, var(--wine) 0 19.46deg);
+  box-shadow:0 14px 34px rgba(0,0,0,.55), inset 0 0 26px rgba(0,0,0,.6)}
+.wheel.turning{animation:turn .9s cubic-bezier(.32,0,.2,1) infinite}
+@keyframes turn{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.wheel.turning{animation-duration:2.6s;animation-timing-function:linear}}
+.hub{position:absolute;inset:20%;border-radius:50%;background:var(--rail);border:2px solid #2b6252;
+  display:grid;place-items:center}
+.wheel.turning .hub{animation:turn .9s linear infinite reverse}
+.hub b{font-family:"Frank Ruhl Libre",Georgia,serif;font-size:2rem;line-height:1;font-variant-numeric:tabular-nums}
+.callout{text-align:center;font-size:1.02rem;min-height:1.4em}
+.callout b{color:var(--brass)}
+
+.history{display:flex;gap:5px;flex-wrap:wrap;justify-content:center;min-height:24px}
+.hist{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-size:.72rem;font-weight:700;
+  font-variant-numeric:tabular-nums;border:1px solid rgba(255,255,255,.18)}
+
+/* players */
+.players{display:grid;gap:6px}
+.player{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 12px;border-radius:11px;
+  background:rgba(0,0,0,.22);border:1px solid #1d4d3f;font-size:.9rem}
+.player.me{border-color:var(--brass-2);background:rgba(201,162,39,.09)}
+.player .who{display:flex;align-items:center;gap:7px;min-width:0}
+.player .who span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tag{font-size:.66rem;letter-spacing:.1em;padding:2px 6px;border-radius:6px;border:1px solid #2b6252;color:var(--muted)}
+.tag.in{color:var(--brass);border-color:var(--brass-2)}
+.num{font-variant-numeric:tabular-nums}
+.win{color:var(--win)}.lose{color:var(--lose)}
+
+/* chips + board */
+.label{font-size:.72rem;letter-spacing:.2em;color:var(--muted);margin-bottom:7px}
+.chips{display:flex;gap:7px}
+.chip{flex:1;padding:11px 0;border-radius:999px;border:2px dashed rgba(242,236,224,.25);background:rgba(0,0,0,.25);
+  color:var(--ivory);font-weight:700;font-variant-numeric:tabular-nums;font-size:1rem}
+.chip[aria-pressed="true"]{background:linear-gradient(180deg,#e6c65c,#b58e1c);color:#231b03;border:2px solid #7a5f10}
+
+.board{display:grid;grid-template-columns:repeat(6,1fr);gap:5px}
+.cell{position:relative;height:46px;border-radius:9px;border:1px solid rgba(255,255,255,.14);color:#fff;
+  font-weight:700;font-size:.95rem;font-variant-numeric:tabular-nums;background:var(--coal)}
+.cell.red{background:var(--wine)}
+.cell.zero{grid-column:span 6;background:#126b4b;height:38px}
+.outside{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
+.out{position:relative;padding:12px 4px;border-radius:9px;border:1px solid #2b6252;background:rgba(0,0,0,.25);
+  color:var(--ivory);font-weight:500;font-size:.86rem}
+.stake{position:absolute;top:-7px;inset-inline-end:-5px;background:linear-gradient(180deg,#e6c65c,#b58e1c);color:#231b03;
+  border-radius:999px;padding:1px 6px;font-size:.68rem;font-weight:700;font-variant-numeric:tabular-nums}
+.locked .cell,.locked .out{opacity:.42}
+
+/* buttons */
+.btn{width:100%;padding:15px;border-radius:12px;border:1px solid #2b6252;background:rgba(0,0,0,.28);
+  color:var(--ivory);font:inherit;font-weight:700;font-size:1rem}
+.btn.gold{background:linear-gradient(180deg,#e6c65c,#b58e1c);color:#231b03;border-color:#7a5f10}
+.btn[disabled]{opacity:.4}
+.btn:focus-visible,.cell:focus-visible,.out:focus-visible,.chip:focus-visible{outline:3px solid var(--brass);outline-offset:2px}
+.actions{display:grid;gap:8px}
+input{width:100%;padding:14px;border-radius:12px;border:1px solid #2b6252;background:rgba(0,0,0,.28);
+  color:var(--ivory);font:inherit;font-size:1.05rem}
+.note{font-size:.8rem;color:var(--muted);text-align:center;min-height:1.2em}
+button{cursor:pointer;font-family:inherit}
+
+/* lobby + connection chrome (static build) */
+.topbar{display:flex;gap:8px;align-items:center;justify-content:space-between}
+.room{padding:9px 12px;border-radius:10px;border:1px solid #2b6252;background:rgba(0,0,0,.28);
+  color:var(--ivory);font:inherit;font-size:.9rem}
+.room b{letter-spacing:.24em;color:var(--brass);font-variant-numeric:tabular-nums}
+.link{display:flex;align-items:center;gap:6px;font-size:.78rem;color:var(--muted);justify-content:center}
+.dot{width:8px;height:8px;border-radius:50%;background:#5b6b64;flex:none}
+.dot.on{background:var(--win)}
+.dot.bad{background:var(--lose)}
+#code{text-align:center;letter-spacing:.45em;font-size:1.5rem;text-transform:uppercase;
+  font-family:"Frank Ruhl Libre",Georgia,serif}
+.or{text-align:center;color:var(--muted);font-size:.8rem;letter-spacing:.2em;margin:2px 0}
+.timer{font-variant-numeric:tabular-nums;color:var(--brass);font-size:.86rem;min-height:1.2em;text-align:center}

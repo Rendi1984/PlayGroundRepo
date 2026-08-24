@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: multiplayer-roulette
+    runtime: node
+    plan: free
+    rootDir: roulette
+    buildCommand: "echo no build step"
+    startCommand: "node server.js"
+    healthCheckPath: /
+    envVars:
+      - key: NODE_VERSION
+        value: "22"

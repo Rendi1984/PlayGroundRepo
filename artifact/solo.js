@@ -91,6 +91,7 @@
     rotation += 4 * 360 + ((target - now) + 360) % 360;
 
     phase = 'spinning'; render(); save();
+    Sound.spin(SPIN_MS, n);
     const cv = document.getElementById('wheel');
     if (cv) requestAnimationFrame(() => { cv.style.transform = `rotate(${rotation}deg)`; });
     setTimeout(() => { phase = 'task'; render(); save(); }, SPIN_MS);
@@ -155,6 +156,7 @@
     app().innerHTML = `
       <div class="topbar">
         <button class="room" id="btnReset">משחק חדש</button>
+        <button class="room" id="btnSound" title="קול">${Sound.on ? '🔊' : '🔇'}</button>
         <div class="score">${names.map((n, i) =>
           `<span class="pill${i === turn ? ' turn' : ''}">${esc(n)} <b>${score[i]}</b></span>`).join('')}</div>
       </div>
@@ -209,6 +211,7 @@
     on('btnDone', () => finish(true));
     on('btnSkip', () => finish(false));
     on('btnAgain', restart);
+    on('btnSound', () => { Sound.toggle(); render(); });
     on('btnReset', () => { restart(); phase = 'setup'; render(); });
   }
 

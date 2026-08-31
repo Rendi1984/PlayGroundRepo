@@ -279,6 +279,7 @@
   function spinWheel() {
     const cv = document.getElementById('wheel');
     if (cv && state) cv.style.transform = `rotate(${state.rotation}deg)`;
+    Sound.spin(SPIN_MS, (state && state.board && state.board.length) || 8);
   }
 
   // ---------- view ----------
@@ -355,6 +356,7 @@
     app().innerHTML = `
       <div class="topbar">
         <button class="room" id="btnShare">שולחן <b>${esc(code)}</b> · שיתוף</button>
+        <button class="room" id="btnSound" title="קול">${Sound.on ? '🔊' : '🔇'}</button>
         <button class="room" id="btnLeave" title="יציאה">יציאה</button>
         <div class="score">${state.players.map(p =>
           `<span class="pill${p.id === state.turn ? ' turn' : ''}"><i class="dot${
@@ -439,6 +441,7 @@
     const on = (id, fn) => { const el = document.getElementById(id); if (el) el.onclick = fn; };
     on('btnSpin', () => act({ t: 'spin' }));
     on('btnAgain', () => act({ t: 'again' }));
+    on('btnSound', () => { Sound.toggle(); render(); });
     on('btnLeave', () => {
       forget();
       try { client.end(true); } catch {}

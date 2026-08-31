@@ -102,6 +102,10 @@ button{cursor:pointer;font-family:inherit}
 
 .genders{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
 .label{font-size:.7rem;letter-spacing:.22em;color:var(--muted)}
+
+.heat{text-align:center;border-color:var(--rose-2);padding:12px;
+  background:linear-gradient(180deg,rgba(224,87,127,.12),rgba(224,87,127,.03))}
+.heat .eyebrow{letter-spacing:.3em}
 </style>
 
 <div class="wrap" id="app"></div>
@@ -116,7 +120,8 @@ button{cursor:pointer;font-family:inherit}
  *   [זכר|נקבה]  — נוטה לפי המגדר של בן/בת הזוג
  *   {you} {them} — השמות עצמם
  *
- * level: 1 מתחילים בקלות, 4 בלי גבולות. הגלגל מטפס לבד עם הסיבובים.
+ * אין רמות ואין בורר: כל המשימות באותה בריכה, בלי גבולות.
+ * שדה level נשאר בנתונים לצורך סדר וקריאוּת בלבד — הוא לא מסנן כלום.
  */
 const SEGMENTS = [
   { key: 'kiss',    label: 'נשיקה', icon: '💋', hue: '#e0577f' },
@@ -212,20 +217,28 @@ const TASKS = {
   ],
 };
 
-const LEVELS = [
-  { id: 1, name: 'חימום',     note: 'נשיקות ומגע' },
-  { id: 2, name: 'מתחמם',     note: 'הידיים נכנסות' },
-  { id: 3, name: 'לוהט',      note: 'בגדים יורדים' },
-  { id: 4, name: 'בלי גבולות', note: 'הכל פתוח' },
-];
+const HEAT = 'בלי גבולות';
 
 </script>
 <script>
 (() => {
   'use strict';
   const SPIN_MS = 4700;
-  let names = ['', ''], genders = ['m', 'f'], level = 1, manual = false;
-  let turn = 0, round = 1, phase = 'setup', rotation = 0, task = null, score = [0, 0], log = [], used = [];
+  let names = ['', ''], genders = ['m', 'f'];
+  let turn = 0, round = 1, phase = 'setup', rotation = 0, task = null;
+  let score = [0, 0], log = [], used = [], board = [];
+
+  const KEY = 'wheel.solo';
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(
+    { names, genders, turn, round, phase: phase === 'spinning' ? 'task' : phase, rotation, task, score, log, used, board })); } catch {} };
+  const restore = () => {
+    try {
+      const d = JSON.parse(localStorage.getItem(KEY) || 'null');
+      if (!d || !d.names || !d.names[0]) return false;
+      ({ names, genders, turn, round, phase, rotation, task, score, log, used, board } = d);
+      return true;
+    } catch { return false; }
+  };
 
   const esc = t => String(t).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const app = () => document.getElementById('app');
@@ -237,69 +250,86 @@ const LEVELS = [
         .replace(/\{you\}/g, you).replace(/\{them\}/g, them);
 
   const taskId = (key, i) => key + ':' + i;
-  const unused = (key, lvl) => TASKS[key]
-    .map((t, i) => ({ ...t, id: taskId(key, i) }))
-    .filter(t => t.level <= lvl && !used.includes(t.id));
-  const liveSegments = () => SEGMENTS.map((s, i) => i).filter(i => unused(SEGMENTS[i].key, level).length);
+  const segOf = key => SEGMENTS.find(sg => sg.key === key) || SEGMENTS[0];
+
+  // every task not performed yet — one pool, no levels
+  const poolOf = () => SEGMENTS.flatMap(sg =>
+    TASKS[sg.key].map((t, i) => ({ ...t, key: sg.key, id: taskId(sg.key, i) }))
+      .filter(t => !used.includes(t.id)));
+
+  // deal a fresh wheel: up to one task per category
+  function deal() {
+    const from = poolOf();
+    const out = [];
+    for (const sg of SEGMENTS) {
+      const mine = from.filter(t => t.key === sg.key);
+      if (mine.length) out.push(mine[Math.floor(Math.random() * mine.length)]);
+    }
+    const rest = from.filter(t => !out.some(b => b.id === t.id));
+    while (out.length < 8 && rest.length) out.push(rest.splice(Math.floor(Math.random() * rest.length), 1)[0]);
+    return out.sort(() => Math.random() - 0.5);
+  }
 
   function drawWheel() {
     const cv = document.getElementById('wheel');
     if (!cv) return;
-    const spent = SEGMENTS.map(sg => !unused(sg.key, 4).length);
+    const slices = board.length ? board : SEGMENTS.map(sg => ({ key: sg.key }));
+    const n = slices.length;
     const S = 640, R = S / 2, ctx = cv.getContext('2d');
     cv.width = S; cv.height = S;
-    const step = (Math.PI * 2) / SEGMENTS.length;
-    SEGMENTS.forEach((seg, i) => {
+    ctx.clearRect(0, 0, S, S);
+    if (!n) return;
+    const step = (Math.PI * 2) / n;
+    slices.forEach((slice, i) => {
+      const sg = segOf(slice.key);
       const a0 = -Math.PI / 2 + i * step;
       ctx.beginPath(); ctx.moveTo(R, R); ctx.arc(R, R, R - 4, a0, a0 + step); ctx.closePath();
-      ctx.fillStyle = spent[i] ? '#3a2b3c' : seg.hue; ctx.fill();
+      ctx.fillStyle = sg.hue; ctx.fill();
       ctx.strokeStyle = 'rgba(27,15,28,.55)'; ctx.lineWidth = 4; ctx.stroke();
       ctx.save(); ctx.translate(R, R); ctx.rotate(a0 + step / 2);
-      ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
-      ctx.fillStyle = spent[i] ? 'rgba(255,255,255,.32)' : '#fff';
-      ctx.globalAlpha = spent[i] ? .55 : 1;
-      ctx.font = '600 34px Assistant, system-ui, sans-serif';
-      ctx.fillText(seg.label, R - 74, 0);
-      ctx.font = '40px system-ui, sans-serif';
-      ctx.fillText(seg.icon, R - 26, 2);
-      ctx.globalAlpha = 1; ctx.restore();
+      ctx.textAlign = 'right'; ctx.textBaseline = 'middle'; ctx.fillStyle = '#fff';
+      ctx.font = '600 ' + (n > 6 ? 34 : 40) + 'px Assistant, system-ui, sans-serif';
+      ctx.fillText(sg.label, R - 74, 0);
+      ctx.font = (n > 6 ? 40 : 46) + 'px system-ui, sans-serif';
+      ctx.fillText(sg.icon, R - 26, 2);
+      ctx.restore();
     });
   }
 
   function spin() {
-    const live = liveSegments();
-    if (!live.length) { phase = 'done'; render(); return; }
-    const seg = live[Math.floor(Math.random() * live.length)];
-    const left = unused(SEGMENTS[seg].key, level);
-    // levels 1–2 are additive; from 3 up the wheel stops offering the gentle cards
-    const hot = level >= 3 ? left.filter(t => t.level >= level - 1) : [];
-    const pool = hot.length ? hot : left;
-    const pick = pool[Math.floor(Math.random() * pool.length)];
+    if (!board.length) board = deal();
+    if (!board.length) { phase = 'done'; render(); return; }
 
-    task = { id: pick.id, icon: SEGMENTS[seg].icon, cat: SEGMENTS[seg].label, level: pick.level,
-      text: fill(pick.text, names[turn], names[1 - turn], genders[turn], genders[1 - turn]) };
+    const n = board.length;
+    const seg = Math.floor(Math.random() * n);
+    const pickd = board[seg];
+    const sg = segOf(pickd.key);
 
-    const target = ((-45 * seg - 22.5) % 360 + 360) % 360;
+    task = { id: pickd.id, icon: sg.icon, cat: sg.label,
+      text: fill(pickd.text, names[turn], names[1 - turn], genders[turn], genders[1 - turn]) };
+
+    const step = 360 / n;
+    const target = ((-step * seg - step / 2) % 360 + 360) % 360;
     const now = ((rotation % 360) + 360) % 360;
     rotation += 4 * 360 + ((target - now) + 360) % 360;
 
-    phase = 'spinning'; render();
+    phase = 'spinning'; render(); save();
     const cv = document.getElementById('wheel');
     if (cv) requestAnimationFrame(() => { cv.style.transform = `rotate(${rotation}deg)`; });
-    setTimeout(() => { phase = 'task'; render(); }, SPIN_MS);
+    setTimeout(() => { phase = 'task'; render(); save(); }, SPIN_MS);
   }
 
   function finish(done) {
     if (done) {
       score[turn] += 1;
       log = [{ name: names[turn], icon: task.icon, text: task.text }, ...log].slice(0, 4);
-      used = [...used, task.id];             // performed — off the wheel
+      used = [...used, task.id];                 // performed — gone for good
     }
+    board = board.filter(b => b.id !== task.id); // either way the slice leaves the wheel
     turn = 1 - turn; round += 1;
-    // starts gentle and climbs fast: two rounds per level, unless the dial was set by hand
-    if (!manual) level = Math.min(4, Math.ceil(round / 2));
-    phase = liveSegments().length ? 'idle' : 'done';
-    task = null; render();
+    if (!board.length) board = deal();
+    phase = board.length ? 'idle' : 'done';
+    task = null; render(); save();
   }
 
   const wheelBox = icon => `<div class="wheelbox"><div class="pointer"></div>
@@ -334,12 +364,12 @@ const LEVELS = [
       document.getElementById('btnGo').onclick = () => {
         names = [document.getElementById('n0').value.trim() || 'שחקן',
                  document.getElementById('n1').value.trim() || 'שחקנית'];
-        phase = 'idle'; render();
+        board = deal(); phase = 'idle'; render(); save();
       };
       return;
     }
 
-    const left = SEGMENTS.reduce((n, sg) => n + unused(sg.key, 4).length, 0);
+    const left = 64 - used.length;
     const callout = phase === 'spinning' ? 'הגלגל מסתובב…'
       : phase === 'task' ? `המשימה של <b>${esc(names[turn])}</b>`
       : phase === 'done' ? 'עברתם על הכל'
@@ -360,7 +390,7 @@ const LEVELS = [
       ${phase === 'task' && task ? `
         <div class="task">
           <div class="icon">${task.icon}</div>
-          <p class="cat">${esc(task.cat)} · ${esc((LEVELS.find(l => l.id === task.level) || {}).name || '')}</p>
+          <p class="cat">${esc(task.cat)}</p>
           <p>${esc(task.text)}</p>
           <p class="who">סיבוב ${round}</p>
         </div>
@@ -379,10 +409,9 @@ const LEVELS = [
             ${phase === 'spinning' ? 'מסתובב…' : 'סובבו את הגלגל'}</button>
         </div>`}
 
-      <div class="panel">
-        <p class="eyebrow">רמת החום · נשארו ${left} משימות</p>
-        <div class="levels">${LEVELS.map(l =>
-          `<button class="level" data-level="${l.id}" aria-pressed="${l.id === level}">${l.name}<small>${l.note}</small></button>`).join('')}</div>
+      <div class="panel heat">
+        <p class="eyebrow" style="margin:0">${HEAT}</p>
+        <p class="muted" style="margin:6px 0 0">${board.length} על הגלגל · ${left} משימות נשארו</p>
       </div>
 
       ${log.length ? `<div class="log">${log.map(l =>
@@ -397,17 +426,16 @@ const LEVELS = [
       cv.style.transition = '';
     }
     const on = (id, fn) => { const el = document.getElementById(id); if (el) el.onclick = fn; };
-    const restart = () => { score = [0, 0]; log = []; used = []; round = 1; turn = 0;
-      level = 1; manual = false; phase = 'idle'; task = null; render(); };
+    const restart = () => { score = [0, 0]; log = []; used = []; board = deal();
+      round = 1; turn = 0; phase = 'idle'; task = null; render(); save(); };
     on('btnSpin', spin);
     on('btnDone', () => finish(true));
     on('btnSkip', () => finish(false));
     on('btnAgain', restart);
     on('btnReset', () => { restart(); phase = 'setup'; render(); });
-    app().querySelectorAll('.levels .level').forEach(b =>
-      b.onclick = () => { level = +b.dataset.level; manual = true; render(); });
   }
 
+  restore();
   render();
 })();
 

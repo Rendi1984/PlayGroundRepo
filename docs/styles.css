@@ -97,3 +97,7 @@ button{cursor:pointer;font-family:inherit}
 
 .genders{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
 .label{font-size:.7rem;letter-spacing:.22em;color:var(--muted)}
+
+.heat{text-align:center;border-color:var(--rose-2);padding:12px;
+  background:linear-gradient(180deg,rgba(224,87,127,.12),rgba(224,87,127,.03))}
+.heat .eyebrow{letter-spacing:.3em}

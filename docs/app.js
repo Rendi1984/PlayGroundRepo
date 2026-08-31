@@ -78,7 +78,18 @@
   };
 
   function onState(s) {
-    if (isHost) return;
+    if (isHost) {
+      // coming back after a refresh: take back the table we published before
+      if (!state && s && s.code === code) {
+        state = s;
+        screen = 'table';
+        const mine = state.players.find(p => p.id === meId);
+        if (mine) { mine.online = true; mine.seen = Date.now(); }
+        if (state.phase === 'spinning') state.phase = 'task';   // the timer died with the old page
+        sendState(); render();
+      }
+      return;
+    }
     const wasSpinning = state && state.phase === 'spinning';
     state = s; gotStateAt = Date.now(); screen = 'table';
     render();
@@ -93,10 +104,27 @@
         .replace(/\{you\}/g, you).replace(/\{them\}/g, them);
 
   const taskId = (key, i) => key + ':' + i;
-  const unused = (key, lvl) => TASKS[key]
-    .map((t, i) => ({ ...t, id: taskId(key, i) }))
-    .filter(t => t.level <= lvl && !(state.used || []).includes(t.id));
-  const liveSegments = () => SEGMENTS.map((s2, i) => i).filter(i => unused(SEGMENTS[i].key, state.level).length);
+
+  // every task the couple has not performed yet — one pool, no levels
+  const poolOf = used => SEGMENTS.flatMap(sg =>
+    TASKS[sg.key].map((t, i) => ({ ...t, key: sg.key, id: taskId(sg.key, i) }))
+      .filter(t => !used.includes(t.id)));
+
+  // deal a fresh wheel: up to one task per category
+  function deal(used) {
+    const from = poolOf(used);
+    const board = [];
+    for (const sg of SEGMENTS) {
+      const mine = from.filter(t => t.key === sg.key);
+      if (mine.length) board.push(mine[Math.floor(Math.random() * mine.length)]);
+    }
+    // if categories ran dry, top the wheel back up from whatever is left
+    const rest = from.filter(t => !board.some(b => b.id === t.id));
+    while (board.length < 8 && rest.length) board.push(rest.splice(Math.floor(Math.random() * rest.length), 1)[0]);
+    return board.sort(() => Math.random() - 0.5);
+  }
+
+  const segOf = key => SEGMENTS.find(sg => sg.key === key) || SEGMENTS[0];
 
   function onAction(a) {
     const p = state.players.find(x => x.id === a.from);
@@ -111,11 +139,10 @@
           g: a.g === 'f' ? 'f' : 'm', score: 0, seen: Date.now(), online: true });
       } else { p.name = String(a.name || p.name).slice(0, 14); if (a.g) p.g = a.g === 'f' ? 'f' : 'm'; }
     } else if (a.t === 'level') {
-      const lvl = LEVELS.find(l => l.id === a.level);
-      if (lvl) { state.level = lvl.id; state.manual = true; }
+      return;                                          // the dial is gone: one heat, no choice
     } else if (a.t === 'again') {
-      state.used = []; state.round = 1; state.level = 1; state.manual = false;
-      state.phase = 'idle'; state.task = null; state.log = [];
+      state.used = []; state.round = 1;
+      state.phase = 'idle'; state.task = null; state.log = []; state.board = deal([]);
       for (const q of state.players) q.score = 0;
     } else if (a.t === 'spin') {
       if (state.phase !== 'idle' || a.from !== state.turn) return;
@@ -129,30 +156,26 @@
   }
 
   function doSpin() {
-    const live = liveSegments();
-    if (!live.length) { state.phase = 'done'; sendState(); render(); return; }
+    if (!state.board || !state.board.length) state.board = deal(state.used || []);
+    if (!state.board.length) { state.phase = 'done'; sendState(); render(); return; }
 
-    const seg = live[Math.floor(Math.random() * live.length)];
-    const left = unused(SEGMENTS[seg].key, state.level);
-    // levels 1–2 are additive; from 3 up the wheel stops offering the gentle cards
-    const hot = state.level >= 3 ? left.filter(t => t.level >= state.level - 1) : [];
-    const pool = hot.length ? hot : left;
-    const pick = pool[Math.floor(Math.random() * pool.length)];
+    const n = state.board.length;
+    const seg = Math.floor(Math.random() * n);
+    const pick = state.board[seg];
+    const sg = segOf(pick.key);
 
     const you = turnPlayer();
     const them = state.players.find(p => p.id !== you.id);
     state.seg = seg;
     state.task = {
-      id: pick.id,
-      icon: SEGMENTS[seg].icon,
-      cat: SEGMENTS[seg].label,
-      level: pick.level,
+      id: pick.id, icon: sg.icon, cat: sg.label, level: pick.level,
       text: fill(pick.text, you ? you.name : 'את/ה', them ? them.name : 'בן/בת הזוג',
         you ? you.g : 'm', them ? them.g : 'f'),
     };
 
-    // land the chosen segment under the pointer, after four full turns
-    const target = ((-45 * seg - 22.5) % 360 + 360) % 360;
+    // land this slice under the pointer, after four full turns
+    const step = 360 / n;
+    const target = ((-step * seg - step / 2) % 360 + 360) % 360;
     const now = ((state.rotation % 360) + 360) % 360;
     state.rotation += 4 * 360 + ((target - now) + 360) % 360;
 
@@ -164,19 +187,20 @@
 
   function finish(done) {
     const you = turnPlayer();
-    if (done) {
-      if (you) {
-        you.score += 1;
-        state.log = [{ name: you.name, icon: state.task.icon, text: state.task.text }, ...(state.log || [])].slice(0, 4);
-      }
-      state.used = [...(state.used || []), state.task.id];   // performed — off the wheel
+    if (done && you) {
+      you.score += 1;
+      state.log = [{ name: you.name, icon: state.task.icon, text: state.task.text }, ...(state.log || [])].slice(0, 4);
     }
+    if (done) state.used = [...(state.used || []), state.task.id];   // performed — gone for good
+    // either way the slice comes off the wheel, so every spin leaves one fewer
+    state.board = (state.board || []).filter(b => b.id !== state.task.id);
+
     const other = state.players.find(p => p.id !== state.turn);
     if (other) state.turn = other.id;
     state.round += 1;
     // starts gentle and climbs fast: two rounds per level, unless someone set the dial by hand
-    if (!state.manual) state.level = Math.min(4, Math.ceil(state.round / 2));
-    state.phase = liveSegments().length ? 'idle' : 'done';
+    if (!state.board.length) state.board = deal(state.used || []);   // a fresh wheel
+    state.phase = state.board.length ? 'idle' : 'done';
     state.task = null;
     sendState(); render();
   }
@@ -185,10 +209,14 @@
   const newCode = () => Array.from({ length: 4 },
     () => 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[Math.floor(Math.random() * 32)]).join('');
 
+  const remember = () => store.set('wheel.table', JSON.stringify({ code, isHost }));
+  const forget = () => store.set('wheel.table', '');
+
   function host(name) {
     myName = name || 'שחקן'; store.set('wheel.name', myName);
     code = newCode(); isHost = true; screen = 'table';
-    state = { code, round: 1, phase: 'idle', level: 1, manual: false, used: [], turn: meId,
+    remember();
+    state = { code, round: 1, phase: 'idle', used: [], board: deal([]), turn: meId,
       rotation: 0, seg: 0, task: null, log: [],
       players: [{ id: meId, name: myName, g: myGender, score: 0, seen: Date.now(), online: true }] };
     connect(() => sendState());
@@ -202,6 +230,7 @@
   function join(name, c) {
     myName = name || 'שחקן'; store.set('wheel.name', myName);
     code = c; isHost = false; screen = 'table'; state = null;
+    remember();
     connect(() => act({ t: 'join', name: myName, g: myGender }));
     clearInterval(beat);
     beat = setInterval(() => act({ t: 'ping' }), 5000);
@@ -212,19 +241,22 @@
   function drawWheel() {
     const cv = document.getElementById('wheel');
     if (!cv) return;
-    const spent = state ? SEGMENTS.map(sg => !unused(sg.key, 4).length) : SEGMENTS.map(() => false);
+    const board = (state && state.board) || SEGMENTS.map(sg => ({ key: sg.key }));
+    const n = board.length;
     const S = 640, R = S / 2, ctx = cv.getContext('2d');
     cv.width = S; cv.height = S;
     ctx.clearRect(0, 0, S, S);
-    const step = (Math.PI * 2) / SEGMENTS.length;
+    if (!n) return;
+    const step = (Math.PI * 2) / n;
 
-    SEGMENTS.forEach((seg, i) => {
+    board.forEach((slice, i) => {
+      const sg = segOf(slice.key);
       const a0 = -Math.PI / 2 + i * step;
       ctx.beginPath();
       ctx.moveTo(R, R);
       ctx.arc(R, R, R - 4, a0, a0 + step);
       ctx.closePath();
-      ctx.fillStyle = spent[i] ? '#3a2b3c' : seg.hue;
+      ctx.fillStyle = sg.hue;
       ctx.fill();
       ctx.strokeStyle = 'rgba(27,15,28,.55)';
       ctx.lineWidth = 4;
@@ -235,13 +267,11 @@
       ctx.rotate(a0 + step / 2);
       ctx.textAlign = 'right';
       ctx.textBaseline = 'middle';
-      ctx.fillStyle = spent[i] ? 'rgba(255,255,255,.32)' : '#fff';
-      ctx.globalAlpha = spent[i] ? .55 : 1;
-      ctx.font = '600 34px Assistant, system-ui, sans-serif';
-      ctx.fillText(seg.label, R - 74, 0);
-      ctx.font = '40px system-ui, sans-serif';
-      ctx.fillText(seg.icon, R - 26, 2);
-      ctx.globalAlpha = 1;
+      ctx.fillStyle = '#fff';
+      ctx.font = '600 ' + (n > 6 ? 34 : 40) + 'px Assistant, system-ui, sans-serif';
+      ctx.fillText(sg.label, R - 74, 0);
+      ctx.font = (n > 6 ? 40 : 46) + 'px system-ui, sans-serif';
+      ctx.fillText(sg.icon, R - 26, 2);
       ctx.restore();
     });
   }
@@ -325,6 +355,7 @@
     app().innerHTML = `
       <div class="topbar">
         <button class="room" id="btnShare">שולחן <b>${esc(code)}</b> · שיתוף</button>
+        <button class="room" id="btnLeave" title="יציאה">יציאה</button>
         <div class="score">${state.players.map(p =>
           `<span class="pill${p.id === state.turn ? ' turn' : ''}"><i class="dot${
             p.online ? ' on' : ' bad'}"></i>${esc(p.name)} <b>${p.score}</b></span>`).join('')}</div>
@@ -356,7 +387,7 @@
       ${state.phase === 'task' && t ? `
         <div class="task">
           <div class="icon">${t.icon}</div>
-          <p class="cat">${esc(t.cat)} · ${esc((LEVELS.find(l => l.id === t.level) || {}).name || '')}</p>
+          <p class="cat">${esc(t.cat)}</p>
           <p>${esc(t.text)}</p>
           <p class="who">סיבוב ${state.round}</p>
         </div>
@@ -377,10 +408,10 @@
             ${state.phase === 'spinning' ? 'מסתובב…' : myTurn() || alone ? 'סובבו את הגלגל' : 'ממתינים לתורך'}</button>
         </div>`}`}
 
-      <div class="panel">
-        <p class="eyebrow">רמת החום · נשארו ${SEGMENTS.reduce((n, sg) => n + unused(sg.key, 4).length, 0)} משימות</p>
-        <div class="levels">${LEVELS.map(l =>
-          `<button class="level" data-level="${l.id}" aria-pressed="${l.id === state.level}">${l.name}<small>${l.note}</small></button>`).join('')}</div>
+      <div class="panel heat">
+        <p class="eyebrow" style="margin:0">${HEAT}</p>
+        <p class="muted" style="margin:6px 0 0">${(state.board || []).length} על הגלגל · ${
+          64 - (state.used || []).length} משימות נשארו</p>
       </div>
 
       ${(state.log || []).length ? `<div class="log">${state.log.map(l =>
@@ -408,10 +439,15 @@
     const on = (id, fn) => { const el = document.getElementById(id); if (el) el.onclick = fn; };
     on('btnSpin', () => act({ t: 'spin' }));
     on('btnAgain', () => act({ t: 'again' }));
+    on('btnLeave', () => {
+      forget();
+      try { client.end(true); } catch {}
+      clearInterval(beat);
+      code = null; state = null; screen = 'lobby'; conn = 'off';
+      render();
+    });
     on('btnDone', () => act({ t: 'done' }));
     on('btnSkip', () => act({ t: 'skip' }));
-    app().querySelectorAll('.level').forEach(b =>
-      b.onclick = () => act({ t: 'level', level: +b.dataset.level }));
     const share = async () => {
       const link = `${location.origin}${location.pathname}?code=${code}`;
       const text = `בוא/י נשחק — קוד השולחן ${code}`;
@@ -432,8 +468,34 @@
     }
   });
 
+  function resume() {
+    let saved = null;
+    try { saved = JSON.parse(store.get('wheel.table') || 'null'); } catch {}
+    if (!saved || !saved.code) return false;
+    code = saved.code; isHost = !!saved.isHost; screen = 'table'; state = null;
+    if (isHost) {
+      // the retained table arrives on subscribe; if nothing comes back, open a fresh one
+      connect(() => setTimeout(() => {
+        if (!state) {
+          state = { code, round: 1, phase: 'idle', used: [], board: deal([]),
+            turn: meId, rotation: 0, seg: 0, task: null, log: [],
+            players: [{ id: meId, name: myName, g: myGender, score: 0, seen: Date.now(), online: true }] };
+          sendState(); render();
+        }
+      }, 2500));
+      clearInterval(beat);
+      beat = setInterval(() => { sendState(); render(); }, 4000);
+    } else {
+      connect(() => act({ t: 'join', name: myName, g: myGender }));
+      clearInterval(beat);
+      beat = setInterval(() => act({ t: 'ping' }), 5000);
+    }
+    render();
+    return true;
+  }
+
   const qs = new URLSearchParams(location.search).get('code');
-  render();
+  if (!resume()) render();
   if (qs && /^[A-Z0-9]{4}$/i.test(qs)) {
     const el = document.getElementById('code');
     if (el) el.value = qs.toUpperCase();

@@ -128,3 +128,40 @@ input,select{-webkit-appearance:none;appearance:none;font-size:16px}  /* 16px st
 .secret .eyebrow{color:var(--gold)}
 .picker{width:100%;padding:14px;border-radius:14px;border:1px solid var(--line);background:#2a1430;
   color:var(--cream);font:inherit;font-size:.95rem}
+
+/* ---------- game picker ---------- */
+.games{display:grid;gap:10px}
+.game{display:flex;align-items:center;gap:12px;padding:14px;border-radius:16px;text-align:right;
+  border:1px solid var(--line);background:linear-gradient(180deg,#2c1630,#241128);color:var(--cream);font:inherit}
+.game .ico{font-size:1.9rem;line-height:1;flex:none}
+.game b{display:block;font-family:"Suez One",Georgia,serif;font-weight:400;font-size:1.15rem}
+.game small{color:var(--muted);font-size:.8rem}
+.game[aria-pressed="true"]{border-color:var(--rose);background:linear-gradient(180deg,rgba(224,87,127,.18),rgba(224,87,127,.06))}
+
+/* ---------- 21 ---------- */
+.bj{display:flex;flex-direction:column;gap:14px}
+.seat{border:1px solid var(--line);border-radius:16px;padding:12px;
+  background:linear-gradient(180deg,#2c1630,#241128);transition:border-color .25s}
+.seat.turn{border-color:var(--rose);box-shadow:0 0 0 1px rgba(224,87,127,.35)}
+.seat.shed{border-color:var(--gold)}
+.seat-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px}
+.seat-head .who{font-weight:700}
+.seat-head .tot{font-family:"Suez One",Georgia,serif;font-size:1.25rem;color:var(--gold);
+  font-variant-numeric:tabular-nums}
+
+.hand{display:flex;gap:7px;flex-wrap:wrap;min-height:74px}
+.card{width:52px;height:72px;border-radius:9px;flex:none;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:2px;
+  background:linear-gradient(160deg,#fdf6f0,#efe0e6);color:#2a1430;
+  box-shadow:0 3px 10px rgba(0,0,0,.45);animation:deal .28s ease-out}
+.card b{font-family:"Suez One",Georgia,serif;font-size:1.35rem;line-height:1}
+.card span{font-size:1.05rem;line-height:1}
+.card.hot{color:var(--rose-2)}
+.card.back{background:repeating-linear-gradient(45deg,#5a2a52,#5a2a52 6px,#47204a 6px,#47204a 12px);
+  color:rgba(255,255,255,.75);box-shadow:0 3px 10px rgba(0,0,0,.5)}
+@keyframes deal{from{transform:translateY(-14px) rotate(-6deg);opacity:0}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){.card{animation:none}}
+
+.rags{display:flex;gap:6px;margin-top:10px;font-size:1.15rem}
+.rag{transition:opacity .3s,filter .3s}
+.rag.off{opacity:.22;filter:grayscale(1)}

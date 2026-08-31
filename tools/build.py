@@ -17,7 +17,7 @@ APP_VERSION = re.search(r"APP_VERSION\s*=\s*'([^']+)'", version_src).group(1)
 # 1. cache-bust the two-phone build's assets
 index = root / 'docs/index.html'
 html_in = index.read_text()
-stamped = re.sub(r'(href="styles\.css|src="(?:version|gate|tasks|sound|app)\.js)(\?v=[^"]*)?"',
+stamped = re.sub(r'(href="styles\.css|src="(?:version|gate|blackjack|tasks|sound|app)\.js)(\?v=[^"]*)?"',
                  lambda m: f'{m.group(1)}?v={APP_VERSION}"', html_in)
 if stamped != html_in:
     index.write_text(stamped)
@@ -27,6 +27,7 @@ css = (root / 'docs/styles.css').read_text()
 tasks = (root / 'docs/tasks.js').read_text()
 version = (root / 'docs/version.js').read_text()
 gate = (root / 'docs/gate.js').read_text()
+blackjack = (root / 'docs/blackjack.js').read_text()
 sound = (root / 'docs/sound.js').read_text()
 solo = (root / 'artifact/solo.js').read_text()
 
@@ -44,6 +45,9 @@ page = f"""<title>גלגל הזוגות</title>
 </script>
 <script>
 {gate}
+</script>
+<script>
+{blackjack}
 </script>
 <script>
 {tasks}

@@ -6,16 +6,25 @@
   let score = [0, 0], log = [], used = [], board = [], custom = [];
   let secret = false, taps = 0, tapAt = 0, draft = '', pickId = '';
   let gateCode = '', gateErr = '';
+  let game = 'wheel', bj = null;
+
+  const GAMES = [
+    { id: 'wheel', icon: '🎡', name: 'גלגל הזוגות', note: 'מסובבים, נוחתים על משימה, מבצעים' },
+    { id: 'bj',    icon: '🃏', name: '21', note: 'מי שעובר 21 מוריד פריט. מי שנשאר בלי כלום הפסיד' },
+  ];
+  const seats = () => [{ id: 'p0', name: names[0] }, { id: 'p1', name: names[1] }];
 
   const KEY = 'wheel.solo';
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(
-    { names, genders, turn, round, phase: phase === 'spinning' ? 'task' : phase, rotation, task, score, log, used, board, custom })); } catch {} };
+    { names, genders, turn, round, phase: phase === 'spinning' ? 'task' : phase, rotation, task, score, log, used, board, custom, game, bj })); } catch {} };
   const restore = () => {
     try {
       const d = JSON.parse(localStorage.getItem(KEY) || 'null');
       if (!d || !d.names || !d.names[0]) return false;
       ({ names, genders, turn, round, phase, rotation, task, score, log, used, board } = d);
       custom = d.custom || [];
+      game = d.game === 'bj' ? 'bj' : 'wheel';
+      bj = d.bj || null;
       return true;
     } catch { return false; }
   };
@@ -131,6 +140,7 @@
         <div class="actions">
           <button class="btn" id="scRefill">החזרת כל המשימות לגלגל</button>
           <button class="btn" id="scPass">העברת התור לצד השני</button>
+          <button class="btn" id="scSwitch">מעבר ל${game === 'bj' ? 'גלגל הזוגות' : 'משחק 21'}</button>
           <button class="btn" id="scLock">נעילת המשחק במכשיר הזה</button>
         </div>
         <p class="label" style="margin:14px 0 7px">משימה משלכם</p>
@@ -184,6 +194,32 @@
     document.getElementById('gateGo').onclick = submit;
   }
 
+  function renderBJ() {
+    const ids = seats().map(p => p.id);
+    if (!bj) { bj = BJ.fresh(ids); BJ.newHand(bj, ids); }
+    // one phone: the active player holds it, so their hand is open and the other's is not
+    const holder = bj.phase === 'play' ? bj.active : ids[0];
+    app().innerHTML = `
+      <div class="topbar">
+        <button class="room" id="btnReset">משחק חדש</button>
+        <button class="room" id="btnSound" title="קול">${Sound.on ? '🔊' : '🔇'}</button>
+      </div>
+      ${BJ.view(bj, seats(), holder)}
+      <p class="version" id="ver">גרסה ${APP_VERSION}</p>
+      ${secret ? secretPanel() : ''}`;
+
+    const on = (id, fn) => { const el = document.getElementById(id); if (el) el.onclick = fn; };
+    on('bjHit', () => { BJ.hit(bj, bj.active, ids); render(); save(); });
+    on('bjStand', () => { BJ.stand(bj, bj.active, ids); render(); save(); });
+    on('bjNext', () => { BJ.newHand(bj, ids); render(); save(); });
+    on('bjAgain', () => { bj = BJ.fresh(ids); BJ.newHand(bj, ids); render(); save(); });
+    on('btnReset', () => { bj = null; phase = 'setup'; render(); save(); });
+    on('btnSound', () => { Sound.toggle(); render(); });
+    const ver = document.getElementById('ver');
+    if (ver) ver.onclick = tapped;
+    wireSecret();
+  }
+
   function render() {
     if (!Gate.open) return renderGate();
     if (phase === 'setup') {
@@ -192,7 +228,13 @@
         <div class="panel">
           <p class="eyebrow">משחק לשניים · טלפון אחד</p>
           <h1>גלגל הזוגות</h1>
-          <p class="muted" style="margin:10px 0 16px">מסובבים, הגלגל נוחת על משימה — ומבצעים. מעבירים את הטלפון בכל תור. משימה שבוצעה יורדת מהגלגל.</p>
+          <p class="muted" style="margin:10px 0 14px">מעבירים את הטלפון ביניכם בכל תור.</p>
+          <p class="label" style="margin:0 0 8px">איזה משחק</p>
+          <div class="games">${GAMES.map(g => `
+            <button class="game" data-game="${g.id}" aria-pressed="${g.id === game}">
+              <span class="ico">${g.icon}</span><span><b>${g.name}</b><small>${g.note}</small></span>
+            </button>`).join('')}</div>
+          <div style="height:16px"></div>
           <input id="n0" maxlength="14" placeholder="השם שלך" value="${esc(names[0])}">
           ${genderPicker(0)}
           <div style="height:14px"></div>
@@ -201,6 +243,10 @@
           <div class="actions" style="margin-top:14px"><button class="btn rose" id="btnGo">מתחילים</button></div>
         </div>`;
       drawWheel();
+      app().querySelectorAll('.games .game').forEach(b => b.onclick = () => {
+        names = [document.getElementById('n0').value, document.getElementById('n1').value];
+        game = b.dataset.game; render();
+      });
       app().querySelectorAll('.genders .level').forEach(b => b.onclick = () => {
         names = [document.getElementById('n0').value, document.getElementById('n1').value];
         genders[+b.dataset.who] = b.dataset.g;
@@ -209,10 +255,14 @@
       document.getElementById('btnGo').onclick = () => {
         names = [document.getElementById('n0').value.trim() || 'שחקן',
                  document.getElementById('n1').value.trim() || 'שחקנית'];
-        board = deal(); phase = 'idle'; render(); save();
+        board = deal(); phase = 'idle';
+        if (game === 'bj') { bj = BJ.fresh(seats().map(p => p.id)); BJ.newHand(bj, seats().map(p => p.id)); }
+        render(); save();
       };
       return;
     }
+
+    if (game === 'bj') return renderBJ();
 
     const left = 64 - used.length;
     const callout = phase === 'spinning' ? 'הגלגל מסתובב…'
@@ -280,11 +330,17 @@
     on('btnDone', () => finish(true));
     on('btnSkip', () => finish(false));
     on('btnAgain', restart);
+    on('btnReset', () => { restart(); phase = 'setup'; render(); save(); });
     on('btnSound', () => { Sound.toggle(); render(); });
 
     const ver = document.getElementById('ver');
     if (ver) ver.onclick = tapped;
 
+    wireSecret();
+  }
+
+  function wireSecret() {
+    const on = (id, fn) => { const el = document.getElementById(id); if (el) el.onclick = fn; };
     if (secret) {
       const txt = document.getElementById('scText');
       if (txt) txt.addEventListener('input', () => { draft = txt.value; });
@@ -310,8 +366,12 @@
       });
       on('scClose', () => { secret = false; pickId = ''; render(); });
       on('scLock', () => { Gate.lock(); secret = false; pickId = ''; render(); });
+      on('scSwitch', () => {
+        game = game === 'bj' ? 'wheel' : 'bj';
+        if (game === 'bj') { const ids = seats().map(p => p.id); bj = BJ.fresh(ids); BJ.newHand(bj, ids); }
+        secret = false; render(); save();
+      });
     }
-    on('btnReset', () => { restart(); phase = 'setup'; render(); });
   }
 
   restore();

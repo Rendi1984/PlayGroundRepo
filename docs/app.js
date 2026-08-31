@@ -27,6 +27,12 @@
   let formName = myName, formCode = '';
   let secret = false, taps = 0, tapAt = 0, customDraft = '', pickId = '', deferred = false;
   let gateCode = '', gateErr = '';
+  let pickGame = 'wheel';           // what a new table will play
+
+  const GAMES = [
+    { id: 'wheel', icon: '🎡', name: 'גלגל הזוגות', note: 'מסובבים, נוחתים על משימה, מבצעים' },
+    { id: 'bj',    icon: '🃏', name: '21', note: 'מי שעובר 21 מוריד פריט. מי שנשאר בלי כלום הפסיד' },
+  ];
 
   // ---------- app state ----------
   let screen = 'lobby', code = null, isHost = false;
@@ -144,9 +150,29 @@
         if (state.players.length >= 2) return;        // a table for two
         state.players.push({ id: a.from, name: String(a.name || 'שחקן').slice(0, 14),
           g: a.g === 'f' ? 'f' : 'm', score: 0, seen: Date.now(), online: true });
+        if (state.game === 'bj' && state.players.length === 2) {
+          state.bj = BJ.fresh(state.players.map(q => q.id));
+          BJ.newHand(state.bj, state.players.map(q => q.id));
+        }
       } else { p.name = String(a.name || p.name).slice(0, 14); if (a.g) p.g = a.g === 'f' ? 'f' : 'm'; }
     } else if (a.t === 'level') {
       return;                                          // the dial is gone: one heat, no choice
+    } else if (a.t === 'bj') {
+      const ids = state.players.map(q => q.id);
+      if (ids.length < 2) return;
+      if (!state.bj) state.bj = BJ.fresh(ids);
+      if (a.do === 'deal') BJ.newHand(state.bj, ids);
+      else if (a.do === 'hit') BJ.hit(state.bj, a.from, ids);
+      else if (a.do === 'stand') BJ.stand(state.bj, a.from, ids);
+      else if (a.do === 'again') { state.bj = BJ.fresh(ids); BJ.newHand(state.bj, ids); }
+      else return;
+    } else if (a.t === 'switch') {
+      state.game = a.game === 'bj' ? 'bj' : 'wheel';
+      if (state.game === 'bj') {
+        const ids = state.players.map(q => q.id);
+        state.bj = BJ.fresh(ids);
+        if (ids.length >= 2) BJ.newHand(state.bj, ids);
+      }
     } else if (a.t === 'refill') {
       state.used = []; state.board = deal([], state.custom || []); state.phase = 'idle'; state.task = null;
     } else if (a.t === 'pass') {
@@ -244,7 +270,7 @@
     myName = name || 'שחקן'; store.set('wheel.name', myName);
     code = newCode(); isHost = true; screen = 'table';
     remember();
-    state = { code, round: 1, phase: 'idle', used: [], board: deal([], []), turn: meId,
+    state = { code, game: pickGame, round: 1, phase: 'idle', used: [], board: deal([], []), turn: meId,
       rotation: 0, seg: 0, task: null, log: [],
       players: [{ id: meId, name: myName, g: myGender, score: 0, seen: Date.now(), online: true }] };
     connect(() => sendState());
@@ -331,6 +357,7 @@
         <div class="actions">
           <button class="btn" id="scRefill">החזרת כל המשימות לגלגל</button>
           <button class="btn" id="scPass">העברת התור לצד השני</button>
+          <button class="btn" id="scSwitch">מעבר ל${state.game === 'bj' ? 'גלגל הזוגות' : 'משחק 21'}</button>
           <button class="btn" id="scLock">נעילת המשחק במכשיר הזה</button>
         </div>
         <p class="label" style="margin:14px 0 7px">משימה משלכם</p>
@@ -402,7 +429,13 @@
       <div class="panel">
         <p class="eyebrow">משחק לשניים</p>
         <h1>גלגל הזוגות</h1>
-        <p class="muted" style="margin:10px 0 16px">מסובבים את הגלגל, הוא נוחת על משימה — ומבצעים. טלפון אחד פותח שולחן, השני מצטרף עם הקוד.</p>
+        <p class="muted" style="margin:10px 0 14px">טלפון אחד פותח שולחן, השני מצטרף עם הקוד.</p>
+        <p class="label" style="margin:0 0 8px">איזה משחק</p>
+        <div class="games">${GAMES.map(g => `
+          <button class="game" data-game="${g.id}" aria-pressed="${g.id === pickGame}">
+            <span class="ico">${g.icon}</span><span><b>${g.name}</b><small>${g.note}</small></span>
+          </button>`).join('')}</div>
+        <p class="label" style="margin:16px 0 7px">השם שלך</p>
         <input id="name" maxlength="14" placeholder="השם שלך" autocomplete="nickname" value="${esc(formName)}">
         <p class="label" style="margin:14px 0 7px">לפנות אליך ב…</p>
         <div class="genders">
@@ -422,9 +455,12 @@
 
     // formName/formCode are the source of truth: the inputs are re-created on
     // every render, so anything read only from the DOM would be lost
+    app().querySelectorAll('.games .game').forEach(b => b.onclick = () => {
+      pickGame = b.dataset.game; render({ force: true });
+    });
     app().querySelectorAll('.genders .level').forEach(b => b.onclick = () => {
       myGender = b.dataset.g; store.set('wheel.g', myGender);
-      render();
+      render({ force: true });
     });
     document.getElementById('btnHost').onclick = () => host(formName.trim());
     document.getElementById('btnJoin').onclick = () => {
@@ -432,6 +468,12 @@
       if (c.length !== 4) { err = 'קוד שולחן הוא 4 תווים'; render(); return; }
       join(formName.trim(), c);
     };
+  }
+
+  function bjBody() {
+    if (state.players.length < 2) return '';
+    if (!state.bj) return '<p class="callout">מחלקים…</p>';
+    return BJ.view(state.bj, state.players, meId);
   }
 
   function renderTable() {
@@ -486,6 +528,7 @@
             המשחק ממתין — ברגע שהמכשיר השני יחזור, הנקודה תחזור לירוק.</p>
         </div>` : ''}
 
+      ${state.game === 'bj' ? bjBody() : `
       <div class="stage">
         <div class="wheelbox">
           <div class="pointer"></div>
@@ -493,8 +536,9 @@
           <div class="cap">${state.phase === 'task' && t ? t.icon : '💞'}</div>
         </div>
         <p class="callout">${callout}</p>
-      </div>
+      </div>`}
 
+      ${state.game === 'bj' ? '' : `
       ${state.phase === 'task' && t ? `
         <div class="task">
           <div class="icon">${t.icon}</div>
@@ -528,6 +572,7 @@
       ${(state.log || []).length ? `<div class="log">${state.log.map(l =>
         `<div><span>${l.icon}</span><b>${esc(l.name)}</b><span>${esc(l.text)}</span></div>`).join('')}</div>` : ''}
 
+      `}
       <p class="link"><i class="dot ${dotClass}"></i>${connText} · ${
         alone ? 'רק אתם בשולחן' : dropped ? `${esc(other.name)} מנותק/ת` : `${esc(other.name)} מחובר/ת`
       }${stale ? ' · השולחן לא משדר' : ''}</p>
@@ -535,7 +580,7 @@
       ${secret ? secretPanel() : ''}
       <p class="note" id="note">${esc(err)}</p>`;
 
-    drawWheel();
+    if (state.game !== 'bj') drawWheel();
     const cv = document.getElementById('wheel');
     if (cv) {
       // land instantly when re-rendering mid-state; animate only on a fresh spin
@@ -550,6 +595,10 @@
     }
 
     const on = (id, fn) => { const el = document.getElementById(id); if (el) el.onclick = fn; };
+    on('bjHit', () => act({ t: 'bj', do: 'hit' }));
+    on('bjStand', () => act({ t: 'bj', do: 'stand' }));
+    on('bjNext', () => act({ t: 'bj', do: 'deal' }));
+    on('bjAgain', () => act({ t: 'bj', do: 'again' }));
     on('btnSpin', () => act({ t: 'spin' }));
     on('btnAgain', () => act({ t: 'again' }));
     on('btnSound', () => { Sound.toggle(); render(); });
@@ -581,6 +630,7 @@
       });
       on('scClose', () => { pickId = ''; closeSecret(); });
       on('scLock', () => { Gate.lock(); pickId = ''; closeSecret(); });
+      on('scSwitch', () => { act({ t: 'switch', game: state.game === 'bj' ? 'wheel' : 'bj' }); closeSecret(); });
     }
     on('btnLeave', () => {
       forget();
@@ -620,7 +670,7 @@
       // the retained table arrives on subscribe; if nothing comes back, open a fresh one
       connect(() => setTimeout(() => {
         if (!state) {
-          state = { code, round: 1, phase: 'idle', used: [], board: deal([], []),
+          state = { code, game: pickGame, round: 1, phase: 'idle', used: [], board: deal([], []),
             turn: meId, rotation: 0, seg: 0, task: null, log: [],
             players: [{ id: meId, name: myName, g: myGender, score: 0, seen: Date.now(), online: true }] };
           sendState(); render();

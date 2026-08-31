@@ -25,6 +25,7 @@
   let myName = store.get('wheel.name') || '';
   let myGender = store.get('wheel.g') === 'f' ? 'f' : 'm';
   let formName = myName, formCode = '';
+  let secret = false, taps = 0, tapAt = 0, customDraft = '';
 
   // ---------- app state ----------
   let screen = 'lobby', code = null, isHost = false;
@@ -106,17 +107,21 @@
 
   const taskId = (key, i) => key + ':' + i;
 
-  // every task the couple has not performed yet — one pool, no levels
-  const poolOf = used => SEGMENTS.flatMap(sg =>
-    TASKS[sg.key].map((t, i) => ({ ...t, key: sg.key, id: taskId(sg.key, i) }))
-      .filter(t => !used.includes(t.id)));
+  // the whole book: the built-in tasks plus anything added from the secret menu
+  const allTasks = custom => SEGMENTS.flatMap(sg =>
+    TASKS[sg.key].map((t, i) => ({ ...t, key: sg.key, id: taskId(sg.key, i) })))
+    .concat((custom || []).map(c => ({ ...c, key: c.key || 'choice' })));
+
+  const poolOf = (used, custom) => allTasks(custom).filter(t => !used.includes(t.id));
 
   // deal a fresh wheel: up to one task per category
-  function deal(used) {
-    const from = poolOf(used);
-    const board = [];
+  function deal(used, custom) {
+    const from = poolOf(used, custom);
+    // tasks the couple wrote themselves go on first — they added them to play them
+    const board = from.filter(t => String(t.id).startsWith('custom:')).slice(0, 3);
     for (const sg of SEGMENTS) {
-      const mine = from.filter(t => t.key === sg.key);
+      if (board.length >= 8) break;
+      const mine = from.filter(t => t.key === sg.key && !board.some(b => b.id === t.id));
       if (mine.length) board.push(mine[Math.floor(Math.random() * mine.length)]);
     }
     // if categories ran dry, top the wheel back up from whatever is left
@@ -141,9 +146,30 @@
       } else { p.name = String(a.name || p.name).slice(0, 14); if (a.g) p.g = a.g === 'f' ? 'f' : 'm'; }
     } else if (a.t === 'level') {
       return;                                          // the dial is gone: one heat, no choice
+    } else if (a.t === 'refill') {
+      state.used = []; state.board = deal([], state.custom || []); state.phase = 'idle'; state.task = null;
+    } else if (a.t === 'pass') {
+      const nxt = state.players.find(q => q.id !== state.turn);
+      if (nxt) state.turn = nxt.id;
+      state.phase = 'idle'; state.task = null;
+    } else if (a.t === 'force') {
+      const t = allTasks(state.custom || []).find(x => x.id === a.id);
+      if (!t) return;
+      const you = turnPlayer(), them = state.players.find(q => q.id !== (you || {}).id);
+      state.task = { id: t.id, icon: segOf(t.key).icon, cat: segOf(t.key).label,
+        text: fill(t.text, you ? you.name : 'את/ה', them ? them.name : 'בן/בת הזוג',
+          you ? you.g : 'm', them ? them.g : 'f') };
+      state.phase = 'task';
+    } else if (a.t === 'custom') {
+      const text = String(a.text || '').trim().slice(0, 160);
+      if (!text) return;
+      const id = 'custom:' + ((state.custom || []).length + 1) + ':' + Date.now().toString(36);
+      state.custom = [...(state.custom || []), { id, key: 'choice', level: 4, text }];
+      // a task they just wrote should be on the wheel right away, even if it is full
+      if (state.phase === 'idle') state.board = [...state.board, state.custom[state.custom.length - 1]];
     } else if (a.t === 'again') {
       state.used = []; state.round = 1;
-      state.phase = 'idle'; state.task = null; state.log = []; state.board = deal([]);
+      state.phase = 'idle'; state.task = null; state.log = []; state.board = deal([], []);
       for (const q of state.players) q.score = 0;
     } else if (a.t === 'spin') {
       if (state.phase !== 'idle' || a.from !== state.turn) return;
@@ -157,7 +183,7 @@
   }
 
   function doSpin() {
-    if (!state.board || !state.board.length) state.board = deal(state.used || []);
+    if (!state.board || !state.board.length) state.board = deal(state.used || [], state.custom || []);
     if (!state.board.length) { state.phase = 'done'; sendState(); render(); return; }
 
     const n = state.board.length;
@@ -200,7 +226,7 @@
     if (other) state.turn = other.id;
     state.round += 1;
     // starts gentle and climbs fast: two rounds per level, unless someone set the dial by hand
-    if (!state.board.length) state.board = deal(state.used || []);   // a fresh wheel
+    if (!state.board.length) state.board = deal(state.used || [], state.custom || []);   // a fresh wheel
     state.phase = state.board.length ? 'idle' : 'done';
     state.task = null;
     sendState(); render();
@@ -217,7 +243,7 @@
     myName = name || 'שחקן'; store.set('wheel.name', myName);
     code = newCode(); isHost = true; screen = 'table';
     remember();
-    state = { code, round: 1, phase: 'idle', used: [], board: deal([]), turn: meId,
+    state = { code, round: 1, phase: 'idle', used: [], board: deal([], []), turn: meId,
       rotation: 0, seg: 0, task: null, log: [],
       players: [{ id: meId, name: myName, g: myGender, score: 0, seen: Date.now(), online: true }] };
     connect(() => sendState());
@@ -286,6 +312,42 @@
   // ---------- view ----------
   const esc = t => String(t).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const app = () => document.getElementById('app');
+  // ten taps within two seconds of each other
+  function tapped() {
+    const now = Date.now();
+    taps = now - tapAt > 2000 ? 1 : taps + 1;
+    tapAt = now;
+    if (taps >= 10) { taps = 0; secret = true; render(); }
+  }
+
+  function secretPanel() {
+    const custom = state.custom || [];
+    const list = allTasks(custom);
+    const used = state.used || [];
+    return `
+      <div class="panel secret">
+        <p class="eyebrow" style="margin:0 0 10px">תפריט סודי</p>
+        <div class="actions">
+          <button class="btn" id="scRefill">החזרת כל המשימות לגלגל</button>
+          <button class="btn" id="scPass">העברת התור לצד השני</button>
+        </div>
+        <p class="label" style="margin:14px 0 7px">משימה משלכם</p>
+        <input id="scText" maxlength="160" placeholder="כתבו משימה ולחצו הוספה" value="${esc(customDraft)}">
+        <div class="actions" style="margin-top:8px"><button class="btn" id="scAdd">הוספה לגלגל</button></div>
+        <p class="label" style="margin:14px 0 7px">בחירת משימה ידנית</p>
+        <select id="scPick" class="picker">
+          <option value="">— בחרו —</option>
+          ${list.map(t => `<option value="${esc(t.id)}"${used.includes(t.id) ? ' data-used="1"' : ''}>${
+            segOf(t.key).icon} ${esc(t.text.replace(/[{}\[\]]/g, '').slice(0, 42))}${used.includes(t.id) ? ' ✔' : ''}</option>`).join('')}
+        </select>
+        <div class="actions" style="margin-top:8px"><button class="btn" id="scForce">הצגת המשימה</button></div>
+        <p class="muted" style="font-size:.78rem;margin:14px 0 0">
+          שולחן ${esc(code)} · גרסה ${APP_VERSION} · ${used.length} בוצעו · ${list.length} סה"כ${
+          custom.length ? ` · ${custom.length} משלכם` : ''}</p>
+        <div class="actions" style="margin-top:10px"><button class="btn rose" id="scClose">סגירה</button></div>
+      </div>`;
+  }
+
   const CONN = { off: ['', 'מנותק'], connecting: ['', 'מתחבר…'], on: ['on', 'מחוברים'], lost: ['bad', 'מחפש חיבור…'] };
 
   function render() {
@@ -429,7 +491,8 @@
       <p class="link"><i class="dot ${dotClass}"></i>${connText} · ${
         alone ? 'רק אתם בשולחן' : dropped ? `${esc(other.name)} מנותק/ת` : `${esc(other.name)} מחובר/ת`
       }${stale ? ' · השולחן לא משדר' : ''}</p>
-      <p class="version">גרסה ${APP_VERSION}</p>
+      <p class="version" id="ver">גרסה ${APP_VERSION}</p>
+      ${secret ? secretPanel() : ''}
       <p class="note" id="note">${esc(err)}</p>`;
 
     drawWheel();
@@ -450,6 +513,24 @@
     on('btnSpin', () => act({ t: 'spin' }));
     on('btnAgain', () => act({ t: 'again' }));
     on('btnSound', () => { Sound.toggle(); render(); });
+
+    const ver = document.getElementById('ver');
+    if (ver) ver.onclick = tapped;
+    const connLine = app().querySelector('.link');   // not `conn` — that is the connection state
+    if (connLine) connLine.onclick = tapped;
+
+    if (secret) {
+      const txt = document.getElementById('scText');
+      if (txt) txt.addEventListener('input', () => { customDraft = txt.value; });
+      on('scRefill', () => act({ t: 'refill' }));
+      on('scPass', () => act({ t: 'pass' }));
+      on('scAdd', () => { if (customDraft.trim()) { act({ t: 'custom', text: customDraft }); customDraft = ''; render(); } });
+      on('scForce', () => {
+        const sel = document.getElementById('scPick');
+        if (sel && sel.value) { act({ t: 'force', id: sel.value }); secret = false; render(); }
+      });
+      on('scClose', () => { secret = false; render(); });
+    }
     on('btnLeave', () => {
       forget();
       try { client.end(true); } catch {}
@@ -488,7 +569,7 @@
       // the retained table arrives on subscribe; if nothing comes back, open a fresh one
       connect(() => setTimeout(() => {
         if (!state) {
-          state = { code, round: 1, phase: 'idle', used: [], board: deal([]),
+          state = { code, round: 1, phase: 'idle', used: [], board: deal([], []),
             turn: meId, rotation: 0, seg: 0, task: null, log: [],
             players: [{ id: meId, name: myName, g: myGender, score: 0, seen: Date.now(), online: true }] };
           sendState(); render();

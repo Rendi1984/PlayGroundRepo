@@ -3,16 +3,18 @@
   const SPIN_MS = 4700;
   let names = ['', ''], genders = ['m', 'f'];
   let turn = 0, round = 1, phase = 'setup', rotation = 0, task = null;
-  let score = [0, 0], log = [], used = [], board = [];
+  let score = [0, 0], log = [], used = [], board = [], custom = [];
+  let secret = false, taps = 0, tapAt = 0, draft = '';
 
   const KEY = 'wheel.solo';
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(
-    { names, genders, turn, round, phase: phase === 'spinning' ? 'task' : phase, rotation, task, score, log, used, board })); } catch {} };
+    { names, genders, turn, round, phase: phase === 'spinning' ? 'task' : phase, rotation, task, score, log, used, board, custom })); } catch {} };
   const restore = () => {
     try {
       const d = JSON.parse(localStorage.getItem(KEY) || 'null');
       if (!d || !d.names || !d.names[0]) return false;
       ({ names, genders, turn, round, phase, rotation, task, score, log, used, board } = d);
+      custom = d.custom || [];
       return true;
     } catch { return false; }
   };
@@ -29,17 +31,20 @@
   const taskId = (key, i) => key + ':' + i;
   const segOf = key => SEGMENTS.find(sg => sg.key === key) || SEGMENTS[0];
 
-  // every task not performed yet — one pool, no levels
-  const poolOf = () => SEGMENTS.flatMap(sg =>
-    TASKS[sg.key].map((t, i) => ({ ...t, key: sg.key, id: taskId(sg.key, i) }))
-      .filter(t => !used.includes(t.id)));
+  // the whole book: built-in tasks plus anything added from the secret menu
+  const allTasks = () => SEGMENTS.flatMap(sg =>
+    TASKS[sg.key].map((t, i) => ({ ...t, key: sg.key, id: taskId(sg.key, i) })))
+    .concat(custom.map(c => ({ ...c, key: c.key || 'choice' })));
+  const poolOf = () => allTasks().filter(t => !used.includes(t.id));
 
   // deal a fresh wheel: up to one task per category
   function deal() {
     const from = poolOf();
-    const out = [];
+    // tasks the couple wrote themselves go on first — they added them to play them
+    const out = from.filter(t => String(t.id).startsWith('custom:')).slice(0, 3);
     for (const sg of SEGMENTS) {
-      const mine = from.filter(t => t.key === sg.key);
+      if (out.length >= 8) break;
+      const mine = from.filter(t => t.key === sg.key && !out.some(b => b.id === t.id));
       if (mine.length) out.push(mine[Math.floor(Math.random() * mine.length)]);
     }
     const rest = from.filter(t => !out.some(b => b.id === t.id));
@@ -108,6 +113,38 @@
     if (!board.length) board = deal();
     phase = board.length ? 'idle' : 'done';
     task = null; render(); save();
+  }
+
+  function tapped() {
+    const now = Date.now();
+    taps = now - tapAt > 2000 ? 1 : taps + 1;
+    tapAt = now;
+    if (taps >= 10) { taps = 0; secret = true; render(); }
+  }
+
+  function secretPanel() {
+    const list = allTasks();
+    return `
+      <div class="panel secret">
+        <p class="eyebrow" style="margin:0 0 10px">תפריט סודי</p>
+        <div class="actions">
+          <button class="btn" id="scRefill">החזרת כל המשימות לגלגל</button>
+          <button class="btn" id="scPass">העברת התור לצד השני</button>
+        </div>
+        <p class="label" style="margin:14px 0 7px">משימה משלכם</p>
+        <input id="scText" maxlength="160" placeholder="כתבו משימה ולחצו הוספה" value="${esc(draft)}">
+        <div class="actions" style="margin-top:8px"><button class="btn" id="scAdd">הוספה לגלגל</button></div>
+        <p class="label" style="margin:14px 0 7px">בחירת משימה ידנית</p>
+        <select id="scPick" class="picker">
+          <option value="">— בחרו —</option>
+          ${list.map(t => `<option value="${esc(t.id)}">${segOf(t.key).icon} ${
+            esc(t.text.replace(/[{}\[\]]/g, '').slice(0, 42))}${used.includes(t.id) ? ' ✔' : ''}</option>`).join('')}
+        </select>
+        <div class="actions" style="margin-top:8px"><button class="btn" id="scForce">הצגת המשימה</button></div>
+        <p class="muted" style="font-size:.78rem;margin:14px 0 0">גרסה ${APP_VERSION} · ${
+          used.length} בוצעו · ${list.length} סה"כ${custom.length ? ` · ${custom.length} משלכם` : ''}</p>
+        <div class="actions" style="margin-top:10px"><button class="btn rose" id="scClose">סגירה</button></div>
+      </div>`;
   }
 
   const wheelBox = icon => `<div class="wheelbox"><div class="pointer"></div>
@@ -195,7 +232,8 @@
 
       ${log.length ? `<div class="log">${log.map(l =>
         `<div><span>${l.icon}</span><b>${esc(l.name)}</b><span>${esc(l.text)}</span></div>`).join('')}</div>` : ''}
-      <p class="version">גרסה ${APP_VERSION}</p>`;
+      <p class="version" id="ver">גרסה ${APP_VERSION}</p>
+      ${secret ? secretPanel() : ''}`;
 
     drawWheel();
     const cv = document.getElementById('wheel');
@@ -213,6 +251,33 @@
     on('btnSkip', () => finish(false));
     on('btnAgain', restart);
     on('btnSound', () => { Sound.toggle(); render(); });
+
+    const ver = document.getElementById('ver');
+    if (ver) ver.onclick = tapped;
+
+    if (secret) {
+      const txt = document.getElementById('scText');
+      if (txt) txt.addEventListener('input', () => { draft = txt.value; });
+      on('scRefill', () => { used = []; board = deal(); phase = 'idle'; task = null; render(); save(); });
+      on('scPass', () => { turn = 1 - turn; phase = 'idle'; task = null; render(); save(); });
+      on('scAdd', () => {
+        const text = draft.trim().slice(0, 160);
+        if (!text) return;
+        const item = { id: 'custom:' + (custom.length + 1) + ':' + Date.now().toString(36), key: 'choice', text };
+        custom = [...custom, item];
+        if (phase === 'idle') board = [...board, item];
+        draft = ''; render(); save();
+      });
+      on('scForce', () => {
+        const sel = document.getElementById('scPick');
+        const t = sel && allTasks().find(x => x.id === sel.value);
+        if (!t) return;
+        task = { id: t.id, icon: segOf(t.key).icon, cat: segOf(t.key).label,
+          text: fill(t.text, names[turn], names[1 - turn], genders[turn], genders[1 - turn]) };
+        phase = 'task'; secret = false; render(); save();
+      });
+      on('scClose', () => { secret = false; render(); });
+    }
     on('btnReset', () => { restart(); phase = 'setup'; render(); });
   }
 

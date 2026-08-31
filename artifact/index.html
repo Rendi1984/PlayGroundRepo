@@ -147,7 +147,7 @@ input,select{-webkit-appearance:none;appearance:none;font-size:16px}  /* 16px st
  *
  * פורמט 1.MINOR.PATCH:  פיצ'ר חדש מעלה את MINOR, תיקון באג מעלה את PATCH.
  */
-const APP_VERSION = '1.1.0';
+const APP_VERSION = '1.1.1';
 
 </script>
 <script>
@@ -356,7 +356,7 @@ const Sound = (() => {
   let names = ['', ''], genders = ['m', 'f'];
   let turn = 0, round = 1, phase = 'setup', rotation = 0, task = null;
   let score = [0, 0], log = [], used = [], board = [], custom = [];
-  let secret = false, taps = 0, tapAt = 0, draft = '';
+  let secret = false, taps = 0, tapAt = 0, draft = '', pickId = '';
 
   const KEY = 'wheel.solo';
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(
@@ -489,7 +489,7 @@ const Sound = (() => {
         <p class="label" style="margin:14px 0 7px">בחירת משימה ידנית</p>
         <select id="scPick" class="picker">
           <option value="">— בחרו —</option>
-          ${list.map(t => `<option value="${esc(t.id)}">${segOf(t.key).icon} ${
+          ${list.map(t => `<option value="${esc(t.id)}"${t.id === pickId ? ' selected' : ''}>${segOf(t.key).icon} ${
             esc(t.text.replace(/[{}\[\]]/g, '').slice(0, 42))}${used.includes(t.id) ? ' ✔' : ''}</option>`).join('')}
         </select>
         <div class="actions" style="margin-top:8px"><button class="btn" id="scForce">הצגת המשימה</button></div>
@@ -620,15 +620,17 @@ const Sound = (() => {
         if (phase === 'idle') board = [...board, item];
         draft = ''; render(); save();
       });
+      const sel = document.getElementById('scPick');
+      if (sel) sel.addEventListener('change', () => { pickId = sel.value; });
       on('scForce', () => {
-        const sel = document.getElementById('scPick');
-        const t = sel && allTasks().find(x => x.id === sel.value);
+        const id = (sel && sel.value) || pickId;
+        const t = allTasks().find(x => x.id === id);
         if (!t) return;
         task = { id: t.id, icon: segOf(t.key).icon, cat: segOf(t.key).label,
           text: fill(t.text, names[turn], names[1 - turn], genders[turn], genders[1 - turn]) };
-        phase = 'task'; secret = false; render(); save();
+        phase = 'task'; secret = false; pickId = ''; render(); save();
       });
-      on('scClose', () => { secret = false; render(); });
+      on('scClose', () => { secret = false; pickId = ''; render(); });
     }
     on('btnReset', () => { restart(); phase = 'setup'; render(); });
   }

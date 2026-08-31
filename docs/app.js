@@ -25,7 +25,7 @@
   let myName = store.get('wheel.name') || '';
   let myGender = store.get('wheel.g') === 'f' ? 'f' : 'm';
   let formName = myName, formCode = '';
-  let secret = false, taps = 0, tapAt = 0, customDraft = '';
+  let secret = false, taps = 0, tapAt = 0, customDraft = '', pickId = '', deferred = false;
 
   // ---------- app state ----------
   let screen = 'lobby', code = null, isHost = false;
@@ -317,7 +317,7 @@
     const now = Date.now();
     taps = now - tapAt > 2000 ? 1 : taps + 1;
     tapAt = now;
-    if (taps >= 10) { taps = 0; secret = true; render(); }
+    if (taps >= 10) { taps = 0; secret = true; render({ force: true }); }
   }
 
   function secretPanel() {
@@ -337,7 +337,7 @@
         <p class="label" style="margin:14px 0 7px">בחירת משימה ידנית</p>
         <select id="scPick" class="picker">
           <option value="">— בחרו —</option>
-          ${list.map(t => `<option value="${esc(t.id)}"${used.includes(t.id) ? ' data-used="1"' : ''}>${
+          ${list.map(t => `<option value="${esc(t.id)}"${t.id === pickId ? ' selected' : ''}>${
             segOf(t.key).icon} ${esc(t.text.replace(/[{}\[\]]/g, '').slice(0, 42))}${used.includes(t.id) ? ' ✔' : ''}</option>`).join('')}
         </select>
         <div class="actions" style="margin-top:8px"><button class="btn" id="scForce">הצגת המשימה</button></div>
@@ -350,8 +350,18 @@
 
   const CONN = { off: ['', 'מנותק'], connecting: ['', 'מתחבר…'], on: ['on', 'מחוברים'], lost: ['bad', 'מחפש חיבור…'] };
 
-  function render() {
+  // The heartbeat re-renders every few seconds. That is fine normally, but it
+  // would tear down an open <select> mid-scroll, so while the hidden menu is up
+  // we hold updates and apply them once it closes.
+  function render(opts) {
+    if (secret && !(opts && opts.force)) { deferred = true; return; }
+    deferred = false;
     screen === 'lobby' ? renderLobby() : renderTable();
+  }
+
+  function closeSecret() {
+    secret = false;
+    render({ force: true });
   }
 
   function renderLobby() {
@@ -522,14 +532,24 @@
     if (secret) {
       const txt = document.getElementById('scText');
       if (txt) txt.addEventListener('input', () => { customDraft = txt.value; });
-      on('scRefill', () => act({ t: 'refill' }));
-      on('scPass', () => act({ t: 'pass' }));
-      on('scAdd', () => { if (customDraft.trim()) { act({ t: 'custom', text: customDraft }); customDraft = ''; render(); } });
-      on('scForce', () => {
-        const sel = document.getElementById('scPick');
-        if (sel && sel.value) { act({ t: 'force', id: sel.value }); secret = false; render(); }
+      const sel = document.getElementById('scPick');
+      if (sel) sel.addEventListener('change', () => { pickId = sel.value; });
+      on('scRefill', () => { act({ t: 'refill' }); render({ force: true }); });
+      on('scPass', () => { act({ t: 'pass' }); render({ force: true }); });
+      on('scAdd', () => {
+        if (!customDraft.trim()) return;
+        act({ t: 'custom', text: customDraft });
+        customDraft = '';
+        render({ force: true });
       });
-      on('scClose', () => { secret = false; render(); });
+      on('scForce', () => {
+        const id = (sel && sel.value) || pickId;
+        if (!id) return;
+        act({ t: 'force', id });
+        pickId = '';
+        closeSecret();
+      });
+      on('scClose', () => { pickId = ''; closeSecret(); });
     }
     on('btnLeave', () => {
       forget();

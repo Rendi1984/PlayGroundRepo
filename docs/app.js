@@ -24,6 +24,7 @@
   if (!meId) { meId = 'p' + Math.random().toString(36).slice(2, 10); store.set('wheel.id', meId); }
   let myName = store.get('wheel.name') || '';
   let myGender = store.get('wheel.g') === 'f' ? 'f' : 'm';
+  let formName = myName, formCode = '';
 
   // ---------- app state ----------
   let screen = 'lobby', code = null, isHost = false;
@@ -300,7 +301,7 @@
         <p class="eyebrow">משחק לשניים</p>
         <h1>גלגל הזוגות</h1>
         <p class="muted" style="margin:10px 0 16px">מסובבים את הגלגל, הוא נוחת על משימה — ומבצעים. טלפון אחד פותח שולחן, השני מצטרף עם הקוד.</p>
-        <input id="name" maxlength="14" placeholder="השם שלך" autocomplete="nickname" value="${esc(myName)}">
+        <input id="name" maxlength="14" placeholder="השם שלך" autocomplete="nickname" value="${esc(formName)}">
         <p class="label" style="margin:14px 0 7px">לפנות אליך ב…</p>
         <div class="genders">
           <button class="level" data-g="m" aria-pressed="${myGender === 'm'}">לשון זכר</button>
@@ -308,20 +309,26 @@
         </div>
         <div class="actions" style="margin-top:12px"><button class="btn rose" id="btnHost">פתיחת שולחן</button></div>
         <p class="or">או</p>
-        <input id="code" maxlength="4" placeholder="קוד" autocapitalize="characters">
+        <input id="code" maxlength="4" placeholder="קוד" autocapitalize="characters" value="${esc(formCode)}">
         <div class="actions" style="margin-top:10px"><button class="btn" id="btnJoin">הצטרפות</button></div>
         <p class="note" id="note">${esc(err)}</p>
       </div>`;
     drawWheel();
+    const nameEl = document.getElementById('name'), codeEl = document.getElementById('code');
+    nameEl.addEventListener('input', () => { formName = nameEl.value; });
+    codeEl.addEventListener('input', () => { formCode = codeEl.value; });
+
+    // formName/formCode are the source of truth: the inputs are re-created on
+    // every render, so anything read only from the DOM would be lost
     app().querySelectorAll('.genders .level').forEach(b => b.onclick = () => {
-      myGender = b.dataset.g; store.set('wheel.g', myGender); render();
+      myGender = b.dataset.g; store.set('wheel.g', myGender);
+      render();
     });
-    const nameOf = () => document.getElementById('name').value.trim();
-    document.getElementById('btnHost').onclick = () => host(nameOf());
+    document.getElementById('btnHost').onclick = () => host(formName.trim());
     document.getElementById('btnJoin').onclick = () => {
-      const c = document.getElementById('code').value.trim().toUpperCase();
+      const c = formCode.trim().toUpperCase();
       if (c.length !== 4) { err = 'קוד שולחן הוא 4 תווים'; render(); return; }
-      join(nameOf(), c);
+      join(formName.trim(), c);
     };
   }
 
@@ -499,9 +506,6 @@
   }
 
   const qs = new URLSearchParams(location.search).get('code');
+  if (qs && /^[A-Z0-9]{4}$/i.test(qs)) formCode = qs.toUpperCase();
   if (!resume()) render();
-  if (qs && /^[A-Z0-9]{4}$/i.test(qs)) {
-    const el = document.getElementById('code');
-    if (el) el.value = qs.toUpperCase();
-  }
 })();

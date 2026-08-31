@@ -140,7 +140,6 @@
         <div class="actions">
           <button class="btn" id="scRefill">החזרת כל המשימות לגלגל</button>
           <button class="btn" id="scPass">העברת התור לצד השני</button>
-          <button class="btn" id="scSwitch">מעבר ל${game === 'bj' ? 'גלגל הזוגות' : 'משחק 21'}</button>
           <button class="btn" id="scLock">נעילת המשחק במכשיר הזה</button>
         </div>
         <p class="label" style="margin:14px 0 7px">משימה משלכם</p>
@@ -202,6 +201,7 @@
     app().innerHTML = `
       <div class="topbar">
         <button class="room" id="btnReset">משחק חדש</button>
+        <button class="room" id="btnGame" title="החלפת משחק">🎡</button>
         <button class="room" id="btnSound" title="קול">${Sound.on ? '🔊' : '🔇'}</button>
       </div>
       ${BJ.view(bj, seats(), holder)}
@@ -209,6 +209,13 @@
       ${secret ? secretPanel() : ''}`;
 
     const on = (id, fn) => { const el = document.getElementById(id); if (el) el.onclick = fn; };
+    const swap = () => {
+      game = game === 'bj' ? 'wheel' : 'bj';
+      if (game === 'bj') { const ids = seats().map(p => p.id); if (!bj) bj = BJ.fresh(ids); BJ.newHand(bj, ids); }
+      else if (!board.length) board = deal();
+      render(); save();
+    };
+    on('btnGame', swap);
     on('bjHit', () => { BJ.hit(bj, bj.active, ids); render(); save(); });
     on('bjStand', () => { BJ.stand(bj, bj.active, ids); render(); save(); });
     on('bjNext', () => { BJ.newHand(bj, ids); render(); save(); });
@@ -274,6 +281,7 @@
       <div class="topbar">
         <button class="room" id="btnReset">משחק חדש</button>
         <button class="room" id="btnSound" title="קול">${Sound.on ? '🔊' : '🔇'}</button>
+        <button class="room" id="btnGame" title="החלפת משחק">🃏</button>
         <div class="score">${names.map((n, i) =>
           `<span class="pill${i === turn ? ' turn' : ''}">${esc(n)} <b>${score[i]}</b></span>`).join('')}</div>
       </div>
@@ -331,6 +339,12 @@
     on('btnSkip', () => finish(false));
     on('btnAgain', restart);
     on('btnReset', () => { restart(); phase = 'setup'; render(); save(); });
+    on('btnGame', () => {
+      game = 'bj';
+      const ids = seats().map(p => p.id);
+      bj = BJ.fresh(ids); BJ.newHand(bj, ids);
+      render(); save();
+    });
     on('btnSound', () => { Sound.toggle(); render(); });
 
     const ver = document.getElementById('ver');
@@ -366,11 +380,6 @@
       });
       on('scClose', () => { secret = false; pickId = ''; render(); });
       on('scLock', () => { Gate.lock(); secret = false; pickId = ''; render(); });
-      on('scSwitch', () => {
-        game = game === 'bj' ? 'wheel' : 'bj';
-        if (game === 'bj') { const ids = seats().map(p => p.id); bj = BJ.fresh(ids); BJ.newHand(bj, ids); }
-        secret = false; render(); save();
-      });
     }
   }
 

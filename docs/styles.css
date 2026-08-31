@@ -140,28 +140,62 @@ input,select{-webkit-appearance:none;appearance:none;font-size:16px}  /* 16px st
 
 /* ---------- 21 ---------- */
 .bj{display:flex;flex-direction:column;gap:14px}
-.seat{border:1px solid var(--line);border-radius:16px;padding:12px;
-  background:linear-gradient(180deg,#2c1630,#241128);transition:border-color .25s}
-.seat.turn{border-color:var(--rose);box-shadow:0 0 0 1px rgba(224,87,127,.35)}
+.seat{border:1px solid var(--line);border-radius:18px;padding:14px 12px;
+  background:
+    radial-gradient(120% 80% at 50% 0%, rgba(224,87,127,.10), transparent 60%),
+    linear-gradient(180deg,#2c1630,#241128);
+  transition:border-color .25s,box-shadow .25s}
+.seat.turn{border-color:var(--rose);box-shadow:0 0 0 1px rgba(224,87,127,.35),0 8px 26px rgba(224,87,127,.12)}
 .seat.shed{border-color:var(--gold)}
-.seat-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px}
-.seat-head .who{font-weight:700}
-.seat-head .tot{font-family:"Suez One",Georgia,serif;font-size:1.25rem;color:var(--gold);
-  font-variant-numeric:tabular-nums}
+.seat-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:12px}
+.seat-head .who{font-weight:700;display:flex;align-items:baseline;gap:8px;min-width:0}
+.seat-head .wins{font-style:normal;font-size:.72rem;color:var(--muted);white-space:nowrap}
+.seat-head .tot{font-family:"Suez One",Georgia,serif;font-size:1.5rem;color:var(--gold);
+  font-variant-numeric:tabular-nums;line-height:1}
 
-.hand{display:flex;gap:7px;flex-wrap:wrap;min-height:74px}
-.card{width:52px;height:72px;border-radius:9px;flex:none;display:flex;flex-direction:column;
-  align-items:center;justify-content:center;gap:2px;
-  background:linear-gradient(160deg,#fdf6f0,#efe0e6);color:#2a1430;
-  box-shadow:0 3px 10px rgba(0,0,0,.45);animation:deal .28s ease-out}
-.card b{font-family:"Suez One",Georgia,serif;font-size:1.35rem;line-height:1}
-.card span{font-size:1.05rem;line-height:1}
-.card.hot{color:var(--rose-2)}
-.card.back{background:repeating-linear-gradient(45deg,#5a2a52,#5a2a52 6px,#47204a 6px,#47204a 12px);
-  color:rgba(255,255,255,.75);box-shadow:0 3px 10px rgba(0,0,0,.5)}
-@keyframes deal{from{transform:translateY(-14px) rotate(-6deg);opacity:0}to{transform:none;opacity:1}}
-@media (prefers-reduced-motion:reduce){.card{animation:none}}
+/* the felt the cards lie on */
+.hand{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-start;padding:12px 10px;border-radius:14px;
+  min-height:calc(clamp(62px,17vw,88px) * 1.4 + 24px);
+  background:radial-gradient(120% 100% at 50% 0%, #1d4b3c, #14332a);
+  box-shadow:inset 0 2px 14px rgba(0,0,0,.5)}
 
-.rags{display:flex;gap:6px;margin-top:10px;font-size:1.15rem}
+/* a card: white face, corner indices, one big centre pip */
+.pcard{position:relative;flex:none;width:clamp(62px,17vw,88px);aspect-ratio:5/7;border-radius:10px;
+  background:linear-gradient(158deg,#fffdfb 0%,#f6ecec 62%,#efe0e4 100%);
+  color:#241128;border:1px solid rgba(0,0,0,.16);
+  box-shadow:0 4px 12px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.9);
+  animation:deal .3s cubic-bezier(.2,.8,.3,1) both}
+.pcard.hot{color:var(--rose-2)}
+.pcard .corner{position:absolute;display:flex;flex-direction:column;align-items:center;line-height:.95}
+.pcard .corner b{font-family:"Suez One",Georgia,serif;font-size:clamp(.85rem,3.4vw,1.1rem)}
+.pcard .corner i{font-style:normal;font-size:clamp(.6rem,2.3vw,.78rem)}
+.pcard .corner.tl{inset-block-start:6px;inset-inline-start:7px}
+.pcard .corner.br{inset-block-end:6px;inset-inline-end:7px;transform:rotate(180deg)}
+.pcard .pip{position:absolute;inset:0;display:grid;place-items:center;
+  font-size:clamp(1.5rem,6.4vw,2.1rem);filter:drop-shadow(0 1px 1px rgba(0,0,0,.18))}
+.pcard.back{background:
+    repeating-linear-gradient(45deg,#6b2f5f 0 7px,#54244d 7px 14px);
+  border-color:rgba(255,255,255,.18)}
+.pcard.back .mono{position:absolute;inset:0;display:grid;place-items:center;
+  font-size:clamp(1.2rem,5vw,1.7rem);opacity:.85}
+@keyframes deal{from{transform:translateY(-18px) rotate(-7deg);opacity:0}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){.pcard{animation:none}}
+
+/* clothing left */
+.rags{display:flex;gap:8px;margin-top:12px;font-size:clamp(1.1rem,4.4vw,1.35rem)}
 .rag{transition:opacity .3s,filter .3s}
-.rag.off{opacity:.22;filter:grayscale(1)}
+.rag.off{opacity:.2;filter:grayscale(1)}
+
+.scoreboard{display:flex;flex-wrap:wrap;align-items:center;gap:10px;justify-content:center;
+  padding:11px 12px;border-radius:14px;border:1px solid var(--gold);
+  background:linear-gradient(180deg,rgba(217,164,65,.14),rgba(217,164,65,.04))}
+.sb-title{font-size:.68rem;letter-spacing:.24em;color:var(--gold)}
+.sb{font-size:.86rem;color:var(--cream);font-variant-numeric:tabular-nums}
+.sb b{font-weight:700}
+.sb i{font-style:normal;color:var(--muted);margin:0 2px}
+
+/* desktop: cards get more room, hands sit side by side */
+@media (min-width:760px){
+  .bj{gap:16px}
+  .hand{min-height:150px}
+}

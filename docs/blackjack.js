@@ -49,6 +49,7 @@ const BJ = (() => {
   // a fresh game: everyone dressed, nobody out
   const fresh = ids => ({
     clothes: Object.fromEntries(ids.map(id => [id, START_ITEMS])),
+    score: Object.fromEntries(ids.map(id => [id, 0])),
     round: 0, phase: 'deal', hands: {}, stood: {}, active: ids[0], starter: ids[0],
     shed: [], message: '', loser: null, deck: [],
   });
@@ -103,6 +104,12 @@ const BJ = (() => {
     }
     for (const id of shed) bj.clothes[id] = Math.max(0, (bj.clothes[id] || 0) - 1);
     bj.shed = shed;
+    // one point to whoever took the hand; nothing on a double bust or a tie
+    bj.score = bj.score || Object.fromEntries(ids.map(id => [id, 0]));
+    if (shed.length === 1) {
+      const winner = ids.find(id => id !== shed[0]);
+      if (winner) bj.score[winner] = (bj.score[winner] || 0) + 1;
+    }
     const out = ids.find(id => bj.clothes[id] === 0);
     bj.phase = out ? 'over' : 'reveal';
     bj.loser = out || null;
@@ -112,10 +119,16 @@ const BJ = (() => {
   // ---------- view ----------
   const esc = t => String(t).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
-  const cardHtml = (c, hidden) => hidden
-    ? `<div class="card back"><span>💞</span></div>`
-    : `<div class="card${SUITS[c.s].hot ? ' hot' : ''}">
-         <b>${RANKS[c.r]}</b><span>${SUITS[c.s].icon}</span></div>`;
+  const cardHtml = (c, hidden) => {
+    if (hidden) return `<div class="pcard back" aria-label="קלף סגור"><span class="mono">💞</span></div>`;
+    const su = SUITS[c.s], r = RANKS[c.r];
+    const corner = `<b>${r}</b><i>${su.icon}</i>`;
+    return `<div class="pcard${su.hot ? ' hot' : ''}" aria-label="${r} ${su.icon}">
+      <span class="corner tl">${corner}</span>
+      <span class="pip">${su.icon}</span>
+      <span class="corner br">${corner}</span>
+    </div>`;
+  };
 
   const wardrobe = n => ITEMS.map((it, i) =>
     `<i class="rag${i < n ? '' : ' off'}" title="${it.name}">${it.icon}</i>`).join('');
@@ -143,7 +156,8 @@ const BJ = (() => {
         <div class="seat${bj.active === p.id && bj.phase === 'play' ? ' turn' : ''}${
           bj.shed.includes(p.id) ? ' shed' : ''}">
           <div class="seat-head">
-            <span class="who">${esc(p.name)}${isMe ? ' (את/ה)' : ''}</span>
+            <span class="who">${esc(p.name)}${isMe ? ' (את/ה)' : ''}
+              <em class="wins">${(bj.score || {})[p.id] || 0} ניצחונות</em></span>
             <span class="tot">${isMe || reveal ? state : (bj.stood[p.id] ? 'עצר/ה' : '')}</span>
           </div>
           <div class="hand">${hand.map((c, i) =>
@@ -168,6 +182,12 @@ const BJ = (() => {
         <p class="callout">${banner}</p>
         ${seat(them)}
         ${seat(me)}
+        ${bj.phase !== 'play' ? `
+          <div class="scoreboard">
+            <span class="sb-title">ניקוד</span>
+            ${players.map(p => `<span class="sb"><b>${esc(p.name)}</b> ${
+              (bj.score || {})[p.id] || 0} <i>·</i> ${bj.clothes[p.id] || 0} פריטים</span>`).join('')}
+          </div>` : ''}
         <div class="actions">
           ${bj.phase === 'play' ? `
             <div class="btn two">

@@ -145,31 +145,65 @@ input,select{-webkit-appearance:none;appearance:none;font-size:16px}  /* 16px st
 
 /* ---------- 21 ---------- */
 .bj{display:flex;flex-direction:column;gap:14px}
-.seat{border:1px solid var(--line);border-radius:16px;padding:12px;
-  background:linear-gradient(180deg,#2c1630,#241128);transition:border-color .25s}
-.seat.turn{border-color:var(--rose);box-shadow:0 0 0 1px rgba(224,87,127,.35)}
+.seat{border:1px solid var(--line);border-radius:18px;padding:14px 12px;
+  background:
+    radial-gradient(120% 80% at 50% 0%, rgba(224,87,127,.10), transparent 60%),
+    linear-gradient(180deg,#2c1630,#241128);
+  transition:border-color .25s,box-shadow .25s}
+.seat.turn{border-color:var(--rose);box-shadow:0 0 0 1px rgba(224,87,127,.35),0 8px 26px rgba(224,87,127,.12)}
 .seat.shed{border-color:var(--gold)}
-.seat-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px}
-.seat-head .who{font-weight:700}
-.seat-head .tot{font-family:"Suez One",Georgia,serif;font-size:1.25rem;color:var(--gold);
-  font-variant-numeric:tabular-nums}
+.seat-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:12px}
+.seat-head .who{font-weight:700;display:flex;align-items:baseline;gap:8px;min-width:0}
+.seat-head .wins{font-style:normal;font-size:.72rem;color:var(--muted);white-space:nowrap}
+.seat-head .tot{font-family:"Suez One",Georgia,serif;font-size:1.5rem;color:var(--gold);
+  font-variant-numeric:tabular-nums;line-height:1}
 
-.hand{display:flex;gap:7px;flex-wrap:wrap;min-height:74px}
-.card{width:52px;height:72px;border-radius:9px;flex:none;display:flex;flex-direction:column;
-  align-items:center;justify-content:center;gap:2px;
-  background:linear-gradient(160deg,#fdf6f0,#efe0e6);color:#2a1430;
-  box-shadow:0 3px 10px rgba(0,0,0,.45);animation:deal .28s ease-out}
-.card b{font-family:"Suez One",Georgia,serif;font-size:1.35rem;line-height:1}
-.card span{font-size:1.05rem;line-height:1}
-.card.hot{color:var(--rose-2)}
-.card.back{background:repeating-linear-gradient(45deg,#5a2a52,#5a2a52 6px,#47204a 6px,#47204a 12px);
-  color:rgba(255,255,255,.75);box-shadow:0 3px 10px rgba(0,0,0,.5)}
-@keyframes deal{from{transform:translateY(-14px) rotate(-6deg);opacity:0}to{transform:none;opacity:1}}
-@media (prefers-reduced-motion:reduce){.card{animation:none}}
+/* the felt the cards lie on */
+.hand{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-start;padding:12px 10px;border-radius:14px;
+  min-height:calc(clamp(62px,17vw,88px) * 1.4 + 24px);
+  background:radial-gradient(120% 100% at 50% 0%, #1d4b3c, #14332a);
+  box-shadow:inset 0 2px 14px rgba(0,0,0,.5)}
 
-.rags{display:flex;gap:6px;margin-top:10px;font-size:1.15rem}
+/* a card: white face, corner indices, one big centre pip */
+.pcard{position:relative;flex:none;width:clamp(62px,17vw,88px);aspect-ratio:5/7;border-radius:10px;
+  background:linear-gradient(158deg,#fffdfb 0%,#f6ecec 62%,#efe0e4 100%);
+  color:#241128;border:1px solid rgba(0,0,0,.16);
+  box-shadow:0 4px 12px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.9);
+  animation:deal .3s cubic-bezier(.2,.8,.3,1) both}
+.pcard.hot{color:var(--rose-2)}
+.pcard .corner{position:absolute;display:flex;flex-direction:column;align-items:center;line-height:.95}
+.pcard .corner b{font-family:"Suez One",Georgia,serif;font-size:clamp(.85rem,3.4vw,1.1rem)}
+.pcard .corner i{font-style:normal;font-size:clamp(.6rem,2.3vw,.78rem)}
+.pcard .corner.tl{inset-block-start:6px;inset-inline-start:7px}
+.pcard .corner.br{inset-block-end:6px;inset-inline-end:7px;transform:rotate(180deg)}
+.pcard .pip{position:absolute;inset:0;display:grid;place-items:center;
+  font-size:clamp(1.5rem,6.4vw,2.1rem);filter:drop-shadow(0 1px 1px rgba(0,0,0,.18))}
+.pcard.back{background:
+    repeating-linear-gradient(45deg,#6b2f5f 0 7px,#54244d 7px 14px);
+  border-color:rgba(255,255,255,.18)}
+.pcard.back .mono{position:absolute;inset:0;display:grid;place-items:center;
+  font-size:clamp(1.2rem,5vw,1.7rem);opacity:.85}
+@keyframes deal{from{transform:translateY(-18px) rotate(-7deg);opacity:0}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){.pcard{animation:none}}
+
+/* clothing left */
+.rags{display:flex;gap:8px;margin-top:12px;font-size:clamp(1.1rem,4.4vw,1.35rem)}
 .rag{transition:opacity .3s,filter .3s}
-.rag.off{opacity:.22;filter:grayscale(1)}
+.rag.off{opacity:.2;filter:grayscale(1)}
+
+.scoreboard{display:flex;flex-wrap:wrap;align-items:center;gap:10px;justify-content:center;
+  padding:11px 12px;border-radius:14px;border:1px solid var(--gold);
+  background:linear-gradient(180deg,rgba(217,164,65,.14),rgba(217,164,65,.04))}
+.sb-title{font-size:.68rem;letter-spacing:.24em;color:var(--gold)}
+.sb{font-size:.86rem;color:var(--cream);font-variant-numeric:tabular-nums}
+.sb b{font-weight:700}
+.sb i{font-style:normal;color:var(--muted);margin:0 2px}
+
+/* desktop: cards get more room, hands sit side by side */
+@media (min-width:760px){
+  .bj{gap:16px}
+  .hand{min-height:150px}
+}
 </style>
 
 <div class="wrap" id="app"></div>
@@ -184,7 +218,7 @@ input,select{-webkit-appearance:none;appearance:none;font-size:16px}  /* 16px st
  *
  * פורמט 1.MINOR.PATCH:  פיצ'ר חדש מעלה את MINOR, תיקון באג מעלה את PATCH.
  */
-const APP_VERSION = '1.3.0';
+const APP_VERSION = '1.4.0';
 
 </script>
 <script>
@@ -276,6 +310,7 @@ const BJ = (() => {
   // a fresh game: everyone dressed, nobody out
   const fresh = ids => ({
     clothes: Object.fromEntries(ids.map(id => [id, START_ITEMS])),
+    score: Object.fromEntries(ids.map(id => [id, 0])),
     round: 0, phase: 'deal', hands: {}, stood: {}, active: ids[0], starter: ids[0],
     shed: [], message: '', loser: null, deck: [],
   });
@@ -330,6 +365,12 @@ const BJ = (() => {
     }
     for (const id of shed) bj.clothes[id] = Math.max(0, (bj.clothes[id] || 0) - 1);
     bj.shed = shed;
+    // one point to whoever took the hand; nothing on a double bust or a tie
+    bj.score = bj.score || Object.fromEntries(ids.map(id => [id, 0]));
+    if (shed.length === 1) {
+      const winner = ids.find(id => id !== shed[0]);
+      if (winner) bj.score[winner] = (bj.score[winner] || 0) + 1;
+    }
     const out = ids.find(id => bj.clothes[id] === 0);
     bj.phase = out ? 'over' : 'reveal';
     bj.loser = out || null;
@@ -339,10 +380,16 @@ const BJ = (() => {
   // ---------- view ----------
   const esc = t => String(t).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
-  const cardHtml = (c, hidden) => hidden
-    ? `<div class="card back"><span>💞</span></div>`
-    : `<div class="card${SUITS[c.s].hot ? ' hot' : ''}">
-         <b>${RANKS[c.r]}</b><span>${SUITS[c.s].icon}</span></div>`;
+  const cardHtml = (c, hidden) => {
+    if (hidden) return `<div class="pcard back" aria-label="קלף סגור"><span class="mono">💞</span></div>`;
+    const su = SUITS[c.s], r = RANKS[c.r];
+    const corner = `<b>${r}</b><i>${su.icon}</i>`;
+    return `<div class="pcard${su.hot ? ' hot' : ''}" aria-label="${r} ${su.icon}">
+      <span class="corner tl">${corner}</span>
+      <span class="pip">${su.icon}</span>
+      <span class="corner br">${corner}</span>
+    </div>`;
+  };
 
   const wardrobe = n => ITEMS.map((it, i) =>
     `<i class="rag${i < n ? '' : ' off'}" title="${it.name}">${it.icon}</i>`).join('');
@@ -370,7 +417,8 @@ const BJ = (() => {
         <div class="seat${bj.active === p.id && bj.phase === 'play' ? ' turn' : ''}${
           bj.shed.includes(p.id) ? ' shed' : ''}">
           <div class="seat-head">
-            <span class="who">${esc(p.name)}${isMe ? ' (את/ה)' : ''}</span>
+            <span class="who">${esc(p.name)}${isMe ? ' (את/ה)' : ''}
+              <em class="wins">${(bj.score || {})[p.id] || 0} ניצחונות</em></span>
             <span class="tot">${isMe || reveal ? state : (bj.stood[p.id] ? 'עצר/ה' : '')}</span>
           </div>
           <div class="hand">${hand.map((c, i) =>
@@ -395,6 +443,12 @@ const BJ = (() => {
         <p class="callout">${banner}</p>
         ${seat(them)}
         ${seat(me)}
+        ${bj.phase !== 'play' ? `
+          <div class="scoreboard">
+            <span class="sb-title">ניקוד</span>
+            ${players.map(p => `<span class="sb"><b>${esc(p.name)}</b> ${
+              (bj.score || {})[p.id] || 0} <i>·</i> ${bj.clothes[p.id] || 0} פריטים</span>`).join('')}
+          </div>` : ''}
         <div class="actions">
           ${bj.phase === 'play' ? `
             <div class="btn two">
@@ -754,7 +808,6 @@ const Sound = (() => {
         <div class="actions">
           <button class="btn" id="scRefill">החזרת כל המשימות לגלגל</button>
           <button class="btn" id="scPass">העברת התור לצד השני</button>
-          <button class="btn" id="scSwitch">מעבר ל${game === 'bj' ? 'גלגל הזוגות' : 'משחק 21'}</button>
           <button class="btn" id="scLock">נעילת המשחק במכשיר הזה</button>
         </div>
         <p class="label" style="margin:14px 0 7px">משימה משלכם</p>
@@ -816,6 +869,7 @@ const Sound = (() => {
     app().innerHTML = `
       <div class="topbar">
         <button class="room" id="btnReset">משחק חדש</button>
+        <button class="room" id="btnGame" title="החלפת משחק">🎡</button>
         <button class="room" id="btnSound" title="קול">${Sound.on ? '🔊' : '🔇'}</button>
       </div>
       ${BJ.view(bj, seats(), holder)}
@@ -823,6 +877,13 @@ const Sound = (() => {
       ${secret ? secretPanel() : ''}`;
 
     const on = (id, fn) => { const el = document.getElementById(id); if (el) el.onclick = fn; };
+    const swap = () => {
+      game = game === 'bj' ? 'wheel' : 'bj';
+      if (game === 'bj') { const ids = seats().map(p => p.id); if (!bj) bj = BJ.fresh(ids); BJ.newHand(bj, ids); }
+      else if (!board.length) board = deal();
+      render(); save();
+    };
+    on('btnGame', swap);
     on('bjHit', () => { BJ.hit(bj, bj.active, ids); render(); save(); });
     on('bjStand', () => { BJ.stand(bj, bj.active, ids); render(); save(); });
     on('bjNext', () => { BJ.newHand(bj, ids); render(); save(); });
@@ -888,6 +949,7 @@ const Sound = (() => {
       <div class="topbar">
         <button class="room" id="btnReset">משחק חדש</button>
         <button class="room" id="btnSound" title="קול">${Sound.on ? '🔊' : '🔇'}</button>
+        <button class="room" id="btnGame" title="החלפת משחק">🃏</button>
         <div class="score">${names.map((n, i) =>
           `<span class="pill${i === turn ? ' turn' : ''}">${esc(n)} <b>${score[i]}</b></span>`).join('')}</div>
       </div>
@@ -945,6 +1007,12 @@ const Sound = (() => {
     on('btnSkip', () => finish(false));
     on('btnAgain', restart);
     on('btnReset', () => { restart(); phase = 'setup'; render(); save(); });
+    on('btnGame', () => {
+      game = 'bj';
+      const ids = seats().map(p => p.id);
+      bj = BJ.fresh(ids); BJ.newHand(bj, ids);
+      render(); save();
+    });
     on('btnSound', () => { Sound.toggle(); render(); });
 
     const ver = document.getElementById('ver');
@@ -980,11 +1048,6 @@ const Sound = (() => {
       });
       on('scClose', () => { secret = false; pickId = ''; render(); });
       on('scLock', () => { Gate.lock(); secret = false; pickId = ''; render(); });
-      on('scSwitch', () => {
-        game = game === 'bj' ? 'wheel' : 'bj';
-        if (game === 'bj') { const ids = seats().map(p => p.id); bj = BJ.fresh(ids); BJ.newHand(bj, ids); }
-        secret = false; render(); save();
-      });
     }
   }
 

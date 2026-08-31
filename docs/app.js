@@ -172,6 +172,9 @@
         const ids = state.players.map(q => q.id);
         state.bj = BJ.fresh(ids);
         if (ids.length >= 2) BJ.newHand(state.bj, ids);
+      } else if (!state.board || !state.board.length) {
+        state.board = deal(state.used || [], state.custom || []);
+        state.phase = 'idle';
       }
     } else if (a.t === 'refill') {
       state.used = []; state.board = deal([], state.custom || []); state.phase = 'idle'; state.task = null;
@@ -357,7 +360,6 @@
         <div class="actions">
           <button class="btn" id="scRefill">החזרת כל המשימות לגלגל</button>
           <button class="btn" id="scPass">העברת התור לצד השני</button>
-          <button class="btn" id="scSwitch">מעבר ל${state.game === 'bj' ? 'גלגל הזוגות' : 'משחק 21'}</button>
           <button class="btn" id="scLock">נעילת המשחק במכשיר הזה</button>
         </div>
         <p class="label" style="margin:14px 0 7px">משימה משלכם</p>
@@ -471,7 +473,8 @@
   }
 
   function bjBody() {
-    if (state.players.length < 2) return '';
+    if (state.players.length < 2)
+      return '<p class="callout">21 מתחיל ברגע שהמכשיר השני מצטרף.</p>';
     if (!state.bj) return '<p class="callout">מחלקים…</p>';
     return BJ.view(state.bj, state.players, meId);
   }
@@ -507,6 +510,7 @@
     app().innerHTML = `
       <div class="topbar">
         <button class="room" id="btnShare">שולחן <b>${esc(code)}</b> · שיתוף</button>
+        <button class="room" id="btnGame" title="החלפת משחק">${state.game === 'bj' ? '🎡' : '🃏'}</button>
         <button class="room" id="btnSound" title="קול">${Sound.on ? '🔊' : '🔇'}</button>
         <button class="room" id="btnLeave" title="יציאה">יציאה</button>
         <div class="score">${state.players.map(p =>
@@ -602,6 +606,7 @@
     on('btnSpin', () => act({ t: 'spin' }));
     on('btnAgain', () => act({ t: 'again' }));
     on('btnSound', () => { Sound.toggle(); render(); });
+    on('btnGame', () => act({ t: 'switch', game: state.game === 'bj' ? 'wheel' : 'bj' }));
 
     const ver = document.getElementById('ver');
     if (ver) ver.onclick = tapped;
@@ -630,7 +635,6 @@
       });
       on('scClose', () => { pickId = ''; closeSecret(); });
       on('scLock', () => { Gate.lock(); pickId = ''; closeSecret(); });
-      on('scSwitch', () => { act({ t: 'switch', game: state.game === 'bj' ? 'wheel' : 'bj' }); closeSecret(); });
     }
     on('btnLeave', () => {
       forget();

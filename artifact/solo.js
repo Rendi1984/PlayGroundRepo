@@ -5,6 +5,7 @@
   let turn = 0, round = 1, phase = 'setup', rotation = 0, task = null;
   let score = [0, 0], log = [], used = [], board = [], custom = [];
   let secret = false, taps = 0, tapAt = 0, draft = '', pickId = '';
+  let gateCode = '', gateErr = '';
 
   const KEY = 'wheel.solo';
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(
@@ -130,6 +131,7 @@
         <div class="actions">
           <button class="btn" id="scRefill">החזרת כל המשימות לגלגל</button>
           <button class="btn" id="scPass">העברת התור לצד השני</button>
+          <button class="btn" id="scLock">נעילת המשחק במכשיר הזה</button>
         </div>
         <p class="label" style="margin:14px 0 7px">משימה משלכם</p>
         <input id="scText" maxlength="160" placeholder="כתבו משימה ולחצו הוספה" value="${esc(draft)}">
@@ -155,7 +157,35 @@
     <button class="level" data-who="${i}" data-g="f" aria-pressed="${genders[i] === 'f'}">לשון נקבה</button>
   </div>`;
 
+  function renderGate() {
+    app().innerHTML = `
+      <div class="stage">
+        <div class="wheelbox"><div class="pointer"></div><canvas id="wheel"></canvas><div class="cap">🔒</div></div>
+      </div>
+      <div class="panel">
+        <p class="eyebrow">כניסה</p>
+        <h1>גלגל הזוגות</h1>
+        <p class="muted" style="margin:10px 0 16px">המשחק נעול. הזינו את הקוד כדי להיכנס.</p>
+        <input id="gate" inputmode="numeric" autocomplete="off" maxlength="12"
+               placeholder="קוד כניסה" value="${esc(gateCode)}">
+        <div class="actions" style="margin-top:12px"><button class="btn rose" id="gateGo">כניסה</button></div>
+        <p class="note">${esc(gateErr)}</p>
+      </div>
+      <p class="version">גרסה ${APP_VERSION}</p>`;
+    drawWheel();
+    const el = document.getElementById('gate');
+    el.addEventListener('input', () => { gateCode = el.value; });
+    const submit = () => {
+      if (Gate.unlock(gateCode)) { gateCode = ''; gateErr = ''; }
+      else gateErr = 'קוד שגוי';
+      render();
+    };
+    el.addEventListener('keydown', e => { if (e.key === 'Enter') submit(); });
+    document.getElementById('gateGo').onclick = submit;
+  }
+
   function render() {
+    if (!Gate.open) return renderGate();
     if (phase === 'setup') {
       app().innerHTML = `
         <div class="stage">${wheelBox('💞')}</div>
@@ -279,6 +309,7 @@
         phase = 'task'; secret = false; pickId = ''; render(); save();
       });
       on('scClose', () => { secret = false; pickId = ''; render(); });
+      on('scLock', () => { Gate.lock(); secret = false; pickId = ''; render(); });
     }
     on('btnReset', () => { restart(); phase = 'setup'; render(); });
   }

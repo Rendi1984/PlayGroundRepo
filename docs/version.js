@@ -7,4 +7,4 @@
  *
  * פורמט 1.MINOR.PATCH:  פיצ'ר חדש מעלה את MINOR, תיקון באג מעלה את PATCH.
  */
-const APP_VERSION = '1.1.1';
+const APP_VERSION = '1.2.0';

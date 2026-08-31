@@ -422,6 +422,7 @@
       <p class="link"><i class="dot ${dotClass}"></i>${connText} · ${
         alone ? 'רק אתם בשולחן' : dropped ? `${esc(other.name)} מנותק/ת` : `${esc(other.name)} מחובר/ת`
       }${stale ? ' · השולחן לא משדר' : ''}</p>
+      <p class="version">גרסה ${APP_VERSION}</p>
       <p class="note" id="note">${esc(err)}</p>`;
 
     drawWheel();

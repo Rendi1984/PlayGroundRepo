@@ -6,6 +6,7 @@ from pathlib import Path
 root = Path(__file__).resolve().parent.parent
 css = (root / 'docs/styles.css').read_text()
 tasks = (root / 'docs/tasks.js').read_text()
+version = (root / 'docs/version.js').read_text()
 sound = (root / 'docs/sound.js').read_text()
 solo = (root / 'artifact/solo.js').read_text()
 
@@ -18,6 +19,9 @@ page = f"""<title>גלגל הזוגות</title>
 
 <div class="wrap" id="app"></div>
 
+<script>
+{version}
+</script>
 <script>
 {tasks}
 </script>

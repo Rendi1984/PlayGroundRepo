@@ -7,6 +7,6 @@
 | **טלפון אחד** | `artifact/index.html` | יושבים אחד ליד השני ומעבירים את הטלפון. קובץ אחד, בלי שרת ובלי חיבור. |
 | **שני טלפונים** | `docs/` (GitHub Pages) | כל אחד עם הטלפון שלו. שולחן עם קוד, סנכרון בזמן אמת. ראו `docs/README.md`. |
 
-התוכן — קטגוריות הגלגל והמשימות — יושב ב-`docs/tasks.js` ומשותף לשתי הגרסאות. אחרי עריכה של `docs/tasks.js`, `docs/styles.css` או `artifact/solo.js`, הריצו `python3 tools/build-artifact.py` כדי לבנות מחדש את `artifact/index.html`.
+התוכן — קטגוריות הגלגל והמשימות — יושב ב-`docs/tasks.js`, ומספר הגרסה ב-`docs/version.js`; שניהם משותפים לשתי הגרסאות. מעדכנים את `APP_VERSION` בכל שינוי שנדחף. אחרי עריכה של `docs/tasks.js`, `docs/styles.css` או `artifact/solo.js`, הריצו `python3 tools/build-artifact.py` כדי לבנות מחדש את `artifact/index.html`.
 
 `roulette/` היא גרסה מוקדמת של רולטת קזינו, מכיוון קודם של הבקשה; היא עדיין רצה (`cd roulette && npm start`) אבל אינה חלק מהמשחק הזה.

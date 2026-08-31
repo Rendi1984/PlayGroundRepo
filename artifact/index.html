@@ -106,10 +106,23 @@ button{cursor:pointer;font-family:inherit}
 .heat{text-align:center;border-color:var(--rose-2);padding:12px;
   background:linear-gradient(180deg,rgba(224,87,127,.12),rgba(224,87,127,.03))}
 .heat .eyebrow{letter-spacing:.3em}
+
+.version{margin:0;text-align:center;font-size:.72rem;letter-spacing:.14em;color:var(--muted);opacity:.7;
+  font-variant-numeric:tabular-nums}
 </style>
 
 <div class="wrap" id="app"></div>
 
+<script>
+'use strict';
+/*
+ * גרסת המשחק. מוצגת בתחתית המסך, מתחת לשורת החיבור.
+ * מעדכנים כאן בכל שינוי שנדחף — גם בגרסת שני הטלפונים וגם בגרסת טלפון אחד,
+ * שנבנית מאותו קובץ דרך tools/build-artifact.py.
+ */
+const APP_VERSION = '1.0.0';
+
+</script>
 <script>
 'use strict';
 /*
@@ -506,7 +519,8 @@ const Sound = (() => {
       </div>
 
       ${log.length ? `<div class="log">${log.map(l =>
-        `<div><span>${l.icon}</span><b>${esc(l.name)}</b><span>${esc(l.text)}</span></div>`).join('')}</div>` : ''}`;
+        `<div><span>${l.icon}</span><b>${esc(l.name)}</b><span>${esc(l.text)}</span></div>`).join('')}</div>` : ''}
+      <p class="version">גרסה ${APP_VERSION}</p>`;
 
     drawWheel();
     const cv = document.getElementById('wheel');

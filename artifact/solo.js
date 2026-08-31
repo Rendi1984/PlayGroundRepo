@@ -194,7 +194,8 @@
       </div>
 
       ${log.length ? `<div class="log">${log.map(l =>
-        `<div><span>${l.icon}</span><b>${esc(l.name)}</b><span>${esc(l.text)}</span></div>`).join('')}</div>` : ''}`;
+        `<div><span>${l.icon}</span><b>${esc(l.name)}</b><span>${esc(l.text)}</span></div>`).join('')}</div>` : ''}
+      <p class="version">גרסה ${APP_VERSION}</p>`;
 
     drawWheel();
     const cv = document.getElementById('wheel');

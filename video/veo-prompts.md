@@ -1,4 +1,4 @@
-# LOVEU מבית חוויה בקופסא – פרומפטים ליצירה מחדש ב-9:16
+# LOVU מבית חוויה בקופסא – פרומפטים ליצירה מחדש ב-9:16
 
 **מטרה:** 4 קליפים אנכיים (9:16) שמתחברים לסרטון של 14–15 שניות.
 הקונספט: ספר סיפורים בצבעי מים שנפתח, והסיפור של הזוג עובר מהדף לחיים האמיתיים וחוזר לדף.
@@ -55,7 +55,7 @@ Vertical 9:16 photorealistic close-up. Two pairs of hands, a woman's and a man's
 ```
 Vertical 9:16. The storybook on the oak table, camera slowly pulling back. A page turns by itself to the final spread: the top half shows a watercolor illustration of the same couple on the sofa clinking red wine glasses, laughing, heads close together, soft hearts drifting up in watercolor style. The bottom half of the spread is a clean, empty cream paper area with soft pink watercolor wash at the edges – completely blank. Golden dust particles float gently. Warm romantic lighting, calm ending, premium commercial look. No text, no logo.
 ```
-**הערה:** השטח הריק בחלק התחתון של הדף מיועד ללוגו LOVEU, לשורה "מבית חוויה בקופסא" ולקריאה לפעולה.
+**הערה:** השטח הריק בחלק התחתון של הדף מיועד ללוגו LOVU, לשורה "מבית חוויה בקופסא" ולקריאה לפעולה.
 
 ---
 
@@ -63,7 +63,7 @@ Vertical 9:16. The storybook on the oak table, camera slowly pulling back. A pag
 
 1. **4 הקליפים** מהכלי (MP4, 9:16). אם יש כמה גרסאות לקליפ, אפשר לשלוח את כולן ואני אבחר.
 2. **3 צילומי מסך אמיתיים** מהאפליקציה: שאלה, חשיפת תשובות של שניהם, מסך "התאמה".
-3. **לוגו LOVEU** (PNG שקוף או SVG).
+3. **לוגו LOVU** (PNG שקוף או SVG).
 4. **מוזיקה** (אופציונלי): טרק עם רישיון. אם לא יהיה, אשתמש בפס קול זמני.
 
 ## תוכנית העריכה (מה אני אוסיף)
@@ -73,6 +73,6 @@ Vertical 9:16. The storybook on the oak table, camera slowly pulling back. A pag
 | 0–3.5 | "הערב הזה יכול להיות קצת אחר…" | – |
 | 3.5–7 | "כל אחד עונה לבד." | – |
 | 7–10.5 | "התשובות נחשפות ביחד." | החלפת מסכים ירוקים + באדג' "התאמה!" |
-| 10.5–15 | LOVEU · מבית חוויה בקופסא · "נסו עכשיו · הקישור בביו" | לוגו על הדף הריק, כפתור CTA |
+| 10.5–15 | LOVU · מבית חוויה בקופסא · "נסו עכשיו · הקישור בביו" | לוגו על הדף הריק, כפתור CTA |
 
 כל הטקסט יהיה באזור הבטוח (לא ב-15% העליונים ולא ב-20% התחתונים).

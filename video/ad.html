@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;600;800;900&family=Secular+One&display=block" rel="stylesheet">
+<style>
+  :root{
+    --cream:#fbf1e4; --gold:#e9b86a; --gold2:#f6d59a; --wood:#6b3f24; --deep:#1e120c; --rose:#e0707c;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{width:540px;height:960px;overflow:hidden;background:var(--deep);font-family:'Heebo',sans-serif;color:var(--cream)}
+  #stage{position:absolute;inset:0;overflow:hidden}
+  .layer{position:absolute;inset:0}
+  #bg{background:
+      radial-gradient(120% 70% at 75% 20%, rgba(233,160,80,.45), transparent 60%),
+      radial-gradient(90% 60% at 10% 90%, rgba(150,70,40,.55), transparent 65%),
+      linear-gradient(180deg,#2b1911 0%,#1e120c 100%);}
+  .bokeh{position:absolute;border-radius:50%;filter:blur(6px)}
+  .cap{position:absolute;left:30px;right:30px;text-align:center;font-weight:800;line-height:1.15;
+       text-shadow:0 4px 24px rgba(0,0,0,.55)}
+  .cap .g{color:var(--gold2)}
+  .sub{font-weight:400;font-size:22px;color:#f3dcc0}
+
+  /* phone */
+  .phone{position:absolute;border-radius:38px;background:#120b08;padding:10px;
+         box-shadow:0 30px 60px rgba(0,0,0,.55), 0 0 0 2px #3a2a20 inset, 0 0 80px rgba(233,184,106,.18)}
+  .screen{position:relative;width:100%;height:100%;border-radius:30px;overflow:hidden;
+          background:linear-gradient(180deg,#fff7ec 0%,#f4e2cb 100%);color:#3b2416;direction:rtl}
+  .notch{position:absolute;top:8px;left:50%;transform:translateX(-50%);width:34%;height:18px;border-radius:12px;background:#120b08;z-index:3}
+  .appbar{padding:36px 16px 10px;display:flex;justify-content:space-between;align-items:center;font-size:12px;color:#8a5a3a;font-weight:600}
+  .brand-mini{font-family:'Secular One';color:#6b3f24;font-size:14px}
+  .qcard{margin:6px 14px;border-radius:20px;padding:16px 14px;background:linear-gradient(160deg,#6b3f24,#8e5530);color:#fff3e2;
+         box-shadow:0 10px 24px rgba(107,63,36,.35)}
+  .qnum{font-size:11px;opacity:.8;font-weight:600;letter-spacing:.5px}
+  .qtext{font-size:19px;font-weight:800;line-height:1.25;margin-top:6px}
+  .ans{margin:14px 14px 0;border-radius:16px;background:#fff;border:1.5px solid #ecd3b3;padding:12px;font-size:15px;min-height:46px;font-weight:600;color:#3b2416}
+  .lock{margin:10px 14px 0;border-radius:16px;background:#f0dcc2;padding:10px 12px;font-size:12px;color:#8a5a3a;font-weight:600;display:flex;gap:6px;align-items:center}
+  .caret{display:inline-block;width:2px;height:16px;background:#6b3f24;vertical-align:middle;margin-right:1px}
+  .who{position:absolute;bottom:-40px;left:0;right:0;text-align:center;font-weight:600;font-size:18px;color:var(--gold2)}
+  .reveal{margin:10px 14px 0;border-radius:16px;padding:10px 12px;background:linear-gradient(160deg,#e0707c,#c9505e);color:#fff;font-weight:800;font-size:15px}
+  .reveal small{display:block;font-size:10px;font-weight:600;opacity:.85}
+
+  .pill{position:absolute;left:50%;transform:translateX(-50%);padding:12px 26px;border-radius:999px;font-weight:800;white-space:nowrap}
+  #match{background:linear-gradient(90deg,#e0707c,#e9b86a);color:#fff;font-size:24px;box-shadow:0 10px 40px rgba(224,112,124,.55)}
+  #cta{background:linear-gradient(90deg,#f6d59a,#e9b86a);color:#3b2416;font-size:24px;box-shadow:0 10px 40px rgba(233,184,106,.45)}
+  .heart{position:absolute}
+  #logo{position:absolute;left:0;right:0;text-align:center}
+  #logo .name{font-family:'Secular One';font-size:58px;color:var(--gold2);text-shadow:0 6px 30px rgba(233,184,106,.35)}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="bg" class="layer"></div>
+  <div id="bokehs" class="layer"></div>
+
+  <!-- ===== Scene 1: hook – close on a single phone with a question ===== -->
+  <div id="s1" class="layer">
+    <div class="phone" id="p1" style="width:300px;height:600px;left:120px;top:250px">
+      <div class="screen">
+        <div class="notch"></div>
+        <div class="appbar"><span class="brand-mini">חוויה בקופסא</span><span>דייט #1 · שאלה 3/10</span></div>
+        <div class="qcard"><div class="qnum">שאלה 3 מתוך 10</div>
+          <div class="qtext">מה הדבר הראשון ששמת לב אליו אצלי?</div></div>
+        <div class="ans" id="type1"></div>
+        <div class="lock">התשובה של עומר נחשפת רק כששניכם עונים</div>
+        <div id="send" style="margin:18px 14px 0;border-radius:14px;padding:12px;text-align:center;font-weight:800;color:#fff;background:linear-gradient(90deg,#e0707c,#c9505e)">שליחה</div>
+        <div style="position:absolute;bottom:26px;left:0;right:0;display:flex;justify-content:center;gap:7px">
+          <i style="width:8px;height:8px;border-radius:50%;background:#6b3f24"></i><i style="width:8px;height:8px;border-radius:50%;background:#6b3f24"></i><i style="width:22px;height:8px;border-radius:5px;background:#e0707c"></i>
+          <i style="width:8px;height:8px;border-radius:50%;background:#e2c9a8"></i><i style="width:8px;height:8px;border-radius:50%;background:#e2c9a8"></i><i style="width:8px;height:8px;border-radius:50%;background:#e2c9a8"></i></div>
+        <div style="position:absolute;bottom:50px;left:14px;right:14px;text-align:center;font-size:12px;color:#8a5a3a;font-weight:600">סבב 1 · שאלות היכרות מחדש</div>
+      </div>
+    </div>
+    <div class="cap" id="c1" style="top:120px;font-size:40px">הערב הזה<br>יכול להיות <span class="g">קצת אחר…</span></div>
+  </div>
+
+  <!-- ===== Scene 2: two phones, answers revealed together ===== -->
+  <div id="s2" class="layer">
+    <div class="phone" id="pa" style="width:215px;height:430px;left:36px;top:300px">
+      <div class="screen">
+        <div class="notch"></div>
+        <div class="appbar"><span class="brand-mini">חוויה בקופסא</span><span>3/10</span></div>
+        <div class="qcard" style="padding:12px"><div class="qtext" style="font-size:15px">מה הדבר הראשון ששמת לב אליו אצלי?</div></div>
+        <div class="ans" id="ansA" style="font-size:13px"></div>
+        <div class="lock" id="lockA" style="font-size:10px">מחכים לדנה…</div>
+        <div class="reveal" id="revA"><small>דנה ענתה:</small>הצחוק שלך</div>
+      </div>
+      <div class="who">עומר</div>
+    </div>
+    <div class="phone" id="pb" style="width:215px;height:430px;left:289px;top:300px">
+      <div class="screen">
+        <div class="notch"></div>
+        <div class="appbar"><span class="brand-mini">חוויה בקופסא</span><span>3/10</span></div>
+        <div class="qcard" style="padding:12px"><div class="qtext" style="font-size:15px">מה הדבר הראשון ששמת לב אליו אצלי?</div></div>
+        <div class="ans" id="ansB" style="font-size:13px"></div>
+        <div class="lock" id="lockB" style="font-size:10px">מחכים לעומר…</div>
+        <div class="reveal" id="revB"><small>עומר ענה:</small>איך שצחקת</div>
+      </div>
+      <div class="who">דנה</div>
+    </div>
+    <div class="cap" id="c2a" style="top:130px;font-size:38px">כל אחד עונה <span class="g">לבד.</span></div>
+    <div class="cap" id="c2b" style="top:130px;font-size:38px">התשובות נחשפות <span class="g">ביחד.</span></div>
+    <div class="pill" id="match" style="top:800px">התאמה! 92%</div>
+  </div>
+
+  <!-- ===== Scene 3: couple cheers (illustration) ===== -->
+  <div id="s3" class="layer">
+    <svg id="couple" viewBox="0 0 540 960" width="540" height="960" style="position:absolute;inset:0">
+      <defs>
+        <radialGradient id="lamp" cx="82%" cy="34%" r="45%">
+          <stop offset="0" stop-color="#ffd79a" stop-opacity=".75"/><stop offset="1" stop-color="#ffd79a" stop-opacity="0"/>
+        </radialGradient>
+        <linearGradient id="sofa" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8e5530"/><stop offset="1" stop-color="#5a3219"/></linearGradient>
+        <linearGradient id="skinA" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e2b089"/><stop offset="1" stop-color="#c48c64"/></linearGradient>
+        <linearGradient id="skinB" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#d7a077"/><stop offset="1" stop-color="#b27a52"/></linearGradient>
+        <linearGradient id="wine" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b3263e"/><stop offset="1" stop-color="#6d1224"/></linearGradient>
+      </defs>
+      <rect width="540" height="960" fill="url(#lamp)"/>
+      <!-- lamp -->
+      <g opacity=".9"><rect x="438" y="300" width="6" height="230" fill="#3a2418"/><path d="M400 300 L482 300 L466 250 L416 250 Z" fill="#f6d59a"/></g>
+      <!-- sofa -->
+      <rect x="20" y="520" width="500" height="200" rx="40" fill="url(#sofa)"/>
+      <rect x="0" y="640" width="540" height="190" rx="40" fill="#7a4526"/>
+      <rect x="0" y="600" width="70" height="230" rx="30" fill="#6b3a1f"/>
+      <rect x="470" y="600" width="70" height="230" rx="30" fill="#6b3a1f"/>
+      <!-- person A (right, Omer) -->
+      <g id="pA">
+        <path d="M300 760 C300 640 330 575 380 575 C430 575 460 640 460 760 Z" fill="#2f4a5c"/>
+        <rect x="366" y="530" width="28" height="50" fill="url(#skinA)"/>
+        <ellipse cx="380" cy="490" rx="50" ry="58" fill="url(#skinA)"/>
+        <path d="M330 480 C330 425 430 415 432 478 C425 450 360 448 330 480 Z" fill="#2a1a12"/>
+        <path d="M360 505 Q372 518 386 506" stroke="#6d3b26" stroke-width="3" fill="none" stroke-linecap="round" id="smileA"/>
+        <circle cx="358" cy="486" r="4" fill="#2a1a12"/><circle cx="394" cy="486" r="4" fill="#2a1a12"/>
+        <g id="armA"><path d="M340 610 C310 620 300 640 296 660" stroke="#2f4a5c" stroke-width="30" stroke-linecap="round" fill="none"/></g>
+      </g>
+      <!-- person B (left, Dana) -->
+      <g id="pB">
+        <path d="M80 760 C80 645 110 585 160 585 C210 585 240 645 240 760 Z" fill="#b8574f"/>
+        <rect x="148" y="545" width="24" height="46" fill="url(#skinB)"/>
+        <path d="M100 520 C92 430 140 420 160 420 C200 420 232 440 222 540 C220 580 210 600 200 610 L120 610 C108 590 102 560 100 520 Z" fill="#3b2012"/>
+        <ellipse cx="160" cy="505" rx="44" ry="54" fill="url(#skinB)"/>
+        <path d="M118 488 C130 440 200 430 206 492 C190 462 150 458 118 488 Z" fill="#3b2012"/>
+        <path d="M144 522 Q158 536 172 522" stroke="#6d3b26" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <circle cx="146" cy="502" r="4" fill="#2a1a12"/><circle cx="178" cy="502" r="4" fill="#2a1a12"/>
+      </g>
+      <!-- glasses (moved by JS) -->
+      <g id="glassB"><path d="M-16 -40 L16 -40 L12 -8 Q0 4 -12 -8 Z" fill="rgba(255,240,220,.35)" stroke="#f6e3c6" stroke-width="2"/>
+        <path d="M-13 -24 L13 -24 L11 -9 Q0 1 -11 -9 Z" fill="url(#wine)"/><rect x="-1.5" y="-4" width="3" height="30" fill="#f6e3c6"/><rect x="-11" y="25" width="22" height="3" rx="1.5" fill="#f6e3c6"/></g>
+      <g id="glassA"><path d="M-16 -40 L16 -40 L12 -8 Q0 4 -12 -8 Z" fill="rgba(255,240,220,.35)" stroke="#f6e3c6" stroke-width="2"/>
+        <path d="M-13 -24 L13 -24 L11 -9 Q0 1 -11 -9 Z" fill="url(#wine)"/><rect x="-1.5" y="-4" width="3" height="30" fill="#f6e3c6"/><rect x="-11" y="25" width="22" height="3" rx="1.5" fill="#f6e3c6"/></g>
+      <!-- arms holding glasses -->
+      <path id="armBpath" stroke="#b8574f" stroke-width="26" stroke-linecap="round" fill="none"/>
+      <path id="armApath" stroke="#2f4a5c" stroke-width="28" stroke-linecap="round" fill="none"/>
+      <!-- phones resting on coffee table -->
+      <rect x="120" y="860" width="300" height="30" rx="8" fill="#3a2418"/>
+      <rect x="170" y="846" width="70" height="16" rx="5" fill="#120b08"/><rect x="176" y="849" width="58" height="10" rx="3" fill="#f6d59a" opacity=".85"/>
+      <rect x="300" y="846" width="70" height="16" rx="5" fill="#120b08"/><rect x="306" y="849" width="58" height="10" rx="3" fill="#f6d59a" opacity=".85"/>
+      <g id="spark"></g>
+    </svg>
+    <div class="cap" id="c3" style="top:120px;font-size:40px">משחק זוגי חדש<br><span class="sub" style="font-size:26px">מבית <b style="color:var(--gold2)">חוויה בקופסא</b></span></div>
+  </div>
+
+  <!-- ===== Scene 4: end card ===== -->
+  <div id="s4" class="layer">
+    <div id="logo" style="top:300px">
+      <svg id="logomark" width="120" height="120" viewBox="0 0 120 120">
+        <rect x="14" y="40" width="92" height="66" rx="10" fill="#6b3f24" stroke="#f6d59a" stroke-width="3"/>
+        <path d="M8 40 L60 22 L112 40 L60 56 Z" fill="#8e5530" stroke="#f6d59a" stroke-width="3" stroke-linejoin="round" id="lid"/>
+        <path d="M60 92 C40 78 34 66 44 58 C51 53 58 56 60 62 C62 56 69 53 76 58 C86 66 80 78 60 92 Z" fill="#e0707c"/>
+      </svg>
+      <div class="name">חוויה בקופסא</div>
+      <div style="font-size:30px;font-weight:800;margin-top:6px">המשחק הזוגי החדש</div>
+      <div class="sub" style="font-size:24px;margin-top:6px">דייט אחר. מהנייד שלכם.</div>
+    </div>
+    <div class="pill" id="cta" style="top:700px">נסו עכשיו · הקישור בביו</div>
+  </div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const clamp = (v,a=0,b=1)=>Math.min(b,Math.max(a,v));
+const lerp = (a,b,t)=>a+(b-a)*t;
+const ease = t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
+const easeOut = t=>1-Math.pow(1-t,3);
+const back = t=>{const c1=1.70158,c3=c1+1;return 1+c3*Math.pow(t-1,3)+c1*Math.pow(t-1,2)};
+const prog = (t,a,b)=>clamp((t-a)/(b-a));
+// visibility window with fades
+const win = (t,a,b,f=.35)=>Math.min(prog(t,a,a+f), 1-prog(t,b-f,b));
+
+// deterministic bokeh
+const B=[]; let seed=7; const rnd=()=>{seed=(seed*16807)%2147483647;return seed/2147483647};
+for(let i=0;i<22;i++){const d=document.createElement('div');d.className='bokeh';const s=20+rnd()*90;
+  d.style.width=d.style.height=s+'px';const hue=rnd()<.7?'246,213,154':'224,112,124';
+  d.style.background=`radial-gradient(circle, rgba(${hue},.55), rgba(${hue},0) 70%)`;
+  $('bokehs').appendChild(d);B.push({d,x:rnd()*540,y:rnd()*960,v:6+rnd()*14,ph:rnd()*6.28,s});}
+
+function typeInto(el, text, t, a, b, caret=true){
+  const n = Math.round(clamp((t-a)/(b-a))*text.length);
+  const on = caret && (Math.floor(t*2.5)%2===0 || (t>a && t<b));
+  el.innerHTML = text.slice(0,n) + (caret && t<b+0.6 && on ? '<span class="caret"></span>' : '');
+}
+
+const HEARTS=[]; for(let i=0;i<14;i++){HEARTS.push({x:200+rnd()*140,vx:(rnd()-.5)*180,vy:120+rnd()*160,s:10+rnd()*16,r:(rnd()-.5)*40});}
+const heartPath = s=>`<path transform="scale(${s/20})" d="M0 6 C-8 -2 -10 -8 -5 -11 C-2 -13 0 -11 0 -8 C0 -11 2 -13 5 -11 C10 -8 8 -2 0 6 Z" fill="#e0707c"/>`;
+
+window.render = function(t){
+  // background drift
+  B.forEach(b=>{b.d.style.transform=`translate(${b.x+Math.sin(t*.6+b.ph)*18}px,${(b.y - t*b.v + 1200)%1100 - 100}px)`;
+                b.d.style.opacity = .35+.35*Math.sin(t*1.3+b.ph)**2;});
+
+  // --- Scene 1: 0 - 2.8
+  const o1 = win(t,-1,2.8,.35);
+  $('s1').style.opacity=o1;
+  const z = lerp(1.18,1.0,easeOut(prog(t,0,2.8)));
+  $('p1').style.transform=`scale(${z}) translateY(${lerp(30,0,easeOut(prog(t,0,1.2)))}px)`;
+  $('c1').style.opacity=prog(t,.15,.6); $('c1').style.transform=`translateY(${lerp(20,0,easeOut(prog(t,.15,.7)))}px)`;
+  typeInto($('type1'),'הצחוק שלך. ישר.',t,1.0,2.3);
+  $('send').style.transform=`scale(${t>2.35&&t<2.55?0.93:1})`;
+
+  // --- Scene 2: 2.6 - 6.8
+  const o2 = win(t,2.75,6.75,.35);
+  $('s2').style.opacity=o2;
+  const inn = easeOut(prog(t,2.6,3.3));
+  $('pa').style.transform=`translateX(${lerp(-80,0,inn)}px) rotate(${lerp(-10,-4,inn)}deg)`;
+  $('pb').style.transform=`translateX(${lerp(80,0,inn)}px) rotate(${lerp(10,4,inn)}deg)`;
+  typeInto($('ansA'),'איך שצחקת',t,3.1,3.9);
+  typeInto($('ansB'),'הצחוק שלך',t,3.3,4.1);
+  const rv = prog(t,4.5,4.9);
+  ['A','B'].forEach(k=>{
+    $('lock'+k).style.display = rv>0?'none':'flex';
+    const r=$('rev'+k); r.style.display = rv>0?'block':'none';
+    r.style.transform=`scale(${lerp(.6,1,back(rv))})`; r.style.opacity=rv;
+  });
+  const lockTxt = t<4.1 ? null : '✓ שניכם עניתם';
+  if(lockTxt){$('lockA').textContent=lockTxt;$('lockB').textContent=lockTxt;}
+  else {$('lockA').textContent='מחכים לדנה…';$('lockB').textContent='מחכים לעומר…';}
+  $('c2a').style.opacity = win(t,2.8,4.6,.3);
+  $('c2b').style.opacity = win(t,4.5,6.75,.3);
+  const mp = prog(t,4.8,5.2);
+  $('match').style.opacity=mp; $('match').style.transform=`translateX(-50%) scale(${lerp(.4,1,back(mp))})`;
+
+  // --- Scene 3: 6.5 - 10.2
+  const o3 = win(t,6.7,10.1,.4);
+  $('s3').style.opacity=o3;
+  const cam = lerp(1.0,1.08,prog(t,6.7,10.1));
+  $('couple').style.transform=`scale(${cam})`;
+  $('c3').style.opacity=prog(t,6.95,7.4); $('c3').style.transform=`translateY(${lerp(20,0,easeOut(prog(t,6.9,7.5)))}px)`;
+  // cheers: glasses rise from laps and clink at 8.0
+  const up = ease(prog(t,6.8,7.9));
+  const bounce = t>7.9 ? Math.sin(prog(t,7.9,8.3)*Math.PI)*8 : 0;
+  const gBx = lerp(190,258,up) - bounce, gBy = lerp(700,560,up);
+  const gAx = lerp(350,282,up) + bounce, gAy = lerp(700,560,up);
+  $('glassB').setAttribute('transform',`translate(${gBx},${gBy}) rotate(${lerp(0,12,up)})`);
+  $('glassA').setAttribute('transform',`translate(${gAx},${gAy}) rotate(${lerp(0,-12,up)})`);
+  $('armBpath').setAttribute('d',`M200 640 Q${lerp(200,230,up)} ${lerp(700,640,up)} ${gBx-2} ${gBy+20}`);
+  $('armApath').setAttribute('d',`M340 640 Q${lerp(340,310,up)} ${lerp(700,640,up)} ${gAx+2} ${gAy+20}`);
+  $('armA').style.display='none';
+  // sparkle + hearts
+  let sp='';
+  const cl = prog(t,7.95,8.6);
+  if(cl>0 && cl<1){ for(let i=0;i<8;i++){const a=i/8*6.283, r=10+cl*40;
+     sp+=`<line x1="${270+Math.cos(a)*r*.5}" y1="${522+Math.sin(a)*r*.5}" x2="${270+Math.cos(a)*r}" y2="${522+Math.sin(a)*r}" stroke="#f6d59a" stroke-width="3" stroke-linecap="round" opacity="${1-cl}"/>`;}}
+  const hp = prog(t,8.0,10.2);
+  if(hp>0){ HEARTS.forEach(h=>{const tt=hp*2.2;
+     const x=h.x+h.vx*tt*.5, y=500-h.vy*tt;
+     sp+=`<g transform="translate(${x},${y}) rotate(${h.r})" opacity="${clamp(1-hp*1.1)}">${heartPath(h.s)}</g>`;});}
+  $('spark').innerHTML=sp;
+
+  // --- Scene 4: 9.9 - end
+  const o4 = prog(t,10.05,10.45);
+  $('s4').style.opacity=o4;
+  const lp = prog(t,10.1,10.9);
+  $('logo').style.transform=`translateY(${lerp(30,0,easeOut(lp))}px) scale(${lerp(.9,1,easeOut(lp))})`;
+  $('lid').setAttribute('transform',`rotate(${lerp(-18,0,easeOut(prog(t,10.2,10.9)))} 8 40)`);
+  const cp = prog(t,10.9,11.3);
+  const pulse = t>11.3 ? 1+Math.sin((t-11.3)*5)*.035 : 1;
+  $('cta').style.opacity=cp; $('cta').style.transform=`translateX(-50%) scale(${lerp(.5,1,back(cp))*pulse})`;
+};
+window.render(0);
+</script>
+</body>
+</html>

@@ -44,7 +44,7 @@ Vertical 9:16. Extreme close-up on the open storybook page. The watercolor illus
 ```
 Vertical 9:16 photorealistic close-up. Two pairs of hands, a woman's and a man's, holding two modern smartphones side by side over a chunky knit brown blanket. Both phone screens are solid flat bright green, evenly lit, no reflections, no interface, no text. In the soft-focus background: two glasses of red wine and a lit candle, warm fairy-light bokeh. The phones lean slightly toward each other. The woman's thumb taps her screen, then both hands pause for a moment. Warm golden cinematic lighting, shallow depth of field, stable camera with a very slow push-in. Premium lifestyle commercial.
 ```
-**הערה:** המסכים הירוקים מיועדים להחלפה. בעריכה ימוקמו עליהם צילומי מסך **אמיתיים** מהאפליקציה (שאלה + חשיפת תשובות + "התאמה").
+**הערה:** המסכים הירוקים מיועדים להחלפה. בעריכה ימוקמו עליהם הקלטות מסך **אמיתיות** מהמשחק: גלגל "חובה או חובה" בטלפון אחד וכרטיס הגירוד בשני. כל אחד משחק בטלפון שלו, כך ששני טלפונים משקפים את המוצר.
 
 **מעבר מקליפ 2 לקליפ 3:** בעריכה, דחיפה של המצלמה פנימה לתוך נייר הדף עם cross-dissolve לקליפ המצולם. כך המעבר בין איור לצילום נראה מכוון ולא מקרי.
 
@@ -62,8 +62,8 @@ Vertical 9:16. The storybook on the oak table, camera slowly pulling back. A pag
 ## מה צריך להעביר לי כדי להרכיב את הסרטון
 
 1. **4 הקליפים** מהכלי (MP4, 9:16). אם יש כמה גרסאות לקליפ, אפשר לשלוח את כולן ואני אבחר.
-2. **3 צילומי מסך אמיתיים** מהאפליקציה: שאלה, חשיפת תשובות של שניהם, מסך "התאמה".
-3. **לוגו LOVU** (PNG שקוף או SVG).
+2. **הקלטות מסך / צילומי מסך ברזולוציה מלאה** (בלי מסגרת מכשיר): גלגל "חובה או חובה" מסתובב, כרטיס הגירוד מתגרד. בנוסף, אופציונלי: "מי יותר" עם "קלעת!".
+3. **לוגו LOVU – קובץ מקור** (SVG, או PNG שקוף ברוחב 1500px ומעלה).
 4. **מוזיקה** (אופציונלי): טרק עם רישיון. אם לא יהיה, אשתמש בפס קול זמני.
 
 ## תוכנית העריכה (מה אני אוסיף)
@@ -71,8 +71,8 @@ Vertical 9:16. The storybook on the oak table, camera slowly pulling back. A pag
 | זמן | טקסט על המסך | שכבות בעריכה |
 |---|---|---|
 | 0–3.5 | "הערב הזה יכול להיות קצת אחר…" | – |
-| 3.5–7 | "כל אחד עונה לבד." | – |
-| 7–10.5 | "התשובות נחשפות ביחד." | החלפת מסכים ירוקים + באדג' "התאמה!" |
+| 3.5–7 | "כל אחד בטלפון שלו." | – |
+| 7–10.5 | "משחק אחד. ביחד." ← "5 משחקים זוגיים. ערב אחד." | החלפת מסכים ירוקים: טלפון שמאל – גלגל "חובה או חובה", טלפון ימין – כרטיס גירוד |
 | 10.5–15 | LOVU · מבית חוויה בקופסא · "3 גרסאות: רומנטית · שובבה · נועזת" · "לרכישה · הקישור בביו" | לוגו על הדף הריק, כפתור CTA |
 
 כל הטקסט יהיה באזור הבטוח (לא ב-15% העליונים ולא ב-20% התחתונים).

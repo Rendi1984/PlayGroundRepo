@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@700;800&family=Rubik:wght@400;500;700;800;900&display=block" rel="stylesheet">
+<style>
+:root{--bur:#7a1830;--bur2:#9c2440;--blush:#fbeef0;--pink:#f3c6d0;--rose:#e8849c;--gold:#f0a043;--ink:#4a1020}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:540px;height:960px;overflow:hidden;background:transparent;font-family:'Rubik',sans-serif}
+.L{position:absolute;inset:0}
+#bgDark{background:radial-gradient(90% 55% at 70% 18%,rgba(214,90,120,.35),transparent 60%),radial-gradient(80% 50% at 15% 85%,rgba(150,30,60,.45),transparent 65%),linear-gradient(180deg,#2b0a14,#16050a)}
+#bgLight{background:radial-gradient(80% 50% at 50% 35%,#fff7f8,transparent 70%),linear-gradient(180deg,#fbeef0,#f6dfe4)}
+.bk{position:absolute;border-radius:50%}
+.cap{position:absolute;left:24px;right:24px;top:150px;text-align:center;color:#fff3f5;font-weight:800;font-size:36px;line-height:1.2;text-shadow:0 4px 26px rgba(0,0,0,.5)}
+.cap em{font-style:normal;color:#ffb9c9}
+.phone{position:absolute;border-radius:40px;background:linear-gradient(145deg,#3a3a3f,#0e0e10);padding:9px;box-shadow:0 34px 70px rgba(0,0,0,.6),0 0 0 1.5px #55555c inset,0 0 90px rgba(232,132,156,.22)}
+.scr{position:relative;width:100%;height:100%;border-radius:32px;overflow:hidden;background:var(--blush);direction:rtl;color:var(--ink)}
+.isl{position:absolute;top:9px;left:50%;transform:translateX(-50%);width:32%;height:20px;border-radius:12px;background:#0b0b0c;z-index:9}
+.pg{position:absolute;inset:0;padding:40px 14px 14px}
+.hdr{position:absolute;top:38px;left:12px;right:12px;height:22px}
+.hdr i{position:absolute;top:0;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 1px 4px rgba(122,24,48,.18);font-style:normal;font-size:11px;color:var(--bur);display:flex;align-items:center;justify-content:center;font-weight:700}
+.ttl{margin-top:30px;text-align:center;color:var(--bur);font-weight:900;font-size:22px;line-height:1.1}
+.dv{display:flex;align-items:center;justify-content:center;gap:6px;margin:6px 0 8px}
+.dv b{display:block;width:48px;height:1.5px;background:linear-gradient(90deg,transparent,#e8a0b0)}
+.dv b:last-child{transform:scaleX(-1)}
+.sub{text-align:center;font-size:12.5px;font-weight:500;color:#5a2030;line-height:1.35}
+.btn{margin:0 auto;display:table;padding:8px 20px;border-radius:10px;background:linear-gradient(180deg,#e23a6e,#c42459);color:#fff;font-weight:800;font-size:13px;box-shadow:0 6px 16px rgba(196,36,89,.35)}
+.lbl{position:absolute;left:0;right:0;bottom:-38px;text-align:center;color:#ffd3dd;font-weight:700;font-size:18px}
+.pill{display:inline-flex;align-items:center;gap:4px;padding:4px 12px;border-radius:999px;border:1.5px solid #e8a0b0;background:#fff;color:var(--bur);font-weight:700;font-size:12px}
+#cta{position:absolute;left:50%;top:588px;transform:translateX(-50%);padding:15px 34px;border-radius:16px;background:linear-gradient(180deg,#9c2440,#7a1830);color:#fff;font-weight:800;font-size:25px;white-space:nowrap;box-shadow:0 14px 36px rgba(122,24,48,.4)}
+.tap{position:absolute;width:40px;height:40px;margin:-20px 0 0 -20px;border-radius:50%;border:3px solid rgba(255,255,255,.95);background:rgba(255,255,255,.35);box-shadow:0 0 18px rgba(255,255,255,.6);pointer-events:none;z-index:50}
+.vcap{position:absolute;left:10px;right:10px;padding:14px 0;background:radial-gradient(closest-side,rgba(10,4,6,.55),rgba(10,4,6,0));text-align:center;color:#fff;font-family:Heebo,Rubik;font-weight:800;font-size:28px;line-height:1.3;text-shadow:0 2px 10px rgba(0,0,0,.75),0 0 2px rgba(0,0,0,.6)}
+</style>
+</head>
+<body>
+<div id="bgLight" class="L" style="display:none"></div><div id="bgDark" class="L" style="display:none"></div><div id="bokeh" class="L" style="display:none"></div>
+<!-- live-action overlays -->
+<div id="capA" class="vcap" style="top:612px">היא יושבת לידי…<br>ושולחת לי וואטסאפ?</div>
+<div id="capD" class="vcap" style="top:630px">כשהילדים סוף סוף נרדמו…</div>
+<div id="capC" class="vcap" style="top:612px">זמן לדייט ספונטני.<br>בלי להזמין מקום.</div>
+<div id="capL" class="vcap" style="top:612px">לשבור את השגרה.<br>לגלות אחד את השנייה מחדש.</div>
+<div id="wa" style="position:absolute;top:176px;left:26px;right:26px;border-radius:22px;padding:13px 13px 14px;background:rgba(246,240,242,.94);display:flex;gap:11px;align-items:flex-start;box-shadow:0 14px 40px rgba(0,0,0,.45);direction:rtl;font-family:Rubik">
+  <div style="flex:none;position:relative;width:46px;height:46px">
+    <div style="width:46px;height:46px;border-radius:50%;background:linear-gradient(145deg,#f7a9bf,#d9577c);color:#fff;font-weight:800;font-size:22px;display:flex;align-items:center;justify-content:center">ד</div>
+    <div style="position:absolute;left:-3px;bottom:-3px;width:20px;height:20px;border-radius:6px;background:#25d366;border:2px solid #f6f0f2;display:flex;align-items:center;justify-content:center"><svg width="12" height="12" viewBox="0 0 24 24"><path d="M12 3a9 9 0 0 0-7.8 13.5L3 21l4.6-1.2A9 9 0 1 0 12 3z" fill="none" stroke="#fff" stroke-width="2.6" stroke-linejoin="round"/></svg></div>
+  </div>
+  <div style="flex:1;color:#1c1c1e;min-width:0">
+    <div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font-size:16px;font-weight:700">דנה</span><span style="font-size:12px;opacity:.55">עכשיו</span></div>
+    <div style="font-size:15px;line-height:1.3;margin-top:2px">יש משחק חדש לזוגות בשם LOVU, בא לך לנסות ?</div>
+  </div>
+</div>
+<div id="vig" class="L" style="background:radial-gradient(120% 80% at 50% 50%,rgba(20,6,10,.25),rgba(20,6,10,.7))"></div>
+<div id="topg" class="L" style="background:linear-gradient(180deg,rgba(8,5,4,.6) 0,rgba(8,5,4,.35) 150px,rgba(8,5,4,0) 280px)"></div>
+<div id="bar" style="position:absolute;left:14px;right:14px;top:736px;height:100px;border-radius:18px;background:#1b0a0f;box-shadow:0 8px 30px rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;color:#fff;font-family:Heebo,Rubik;font-weight:800;font-size:27px">דייט זוגי. מהנייד.&nbsp;<span style="color:#ff5a7a">&#9829;</span></div>
+
+<!-- ================= Scene 1: WhatsApp message from Dana ================= -->
+<div id="s1" class="L" style="display:none">
+  <div class="phone" id="p1" style="width:280px;height:576px;left:130px;top:285px">
+    <div class="scr" style="background:radial-gradient(120% 70% at 30% 20%,#7a2a44,#2a0b16 70%)">
+      <div class="isl"></div>
+      <div style="position:absolute;top:70px;left:0;right:0;text-align:center;color:#fff">
+        <div style="font-size:14px;font-weight:500;opacity:.85">יום חמישי, 2 באוקטובר</div>
+        <div style="font-size:74px;font-weight:500;letter-spacing:1px;direction:ltr;margin-top:2px">21:04</div>
+      </div>
+      <div style="position:absolute;bottom:34px;left:34px;width:46px;height:46px;border-radius:50%;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center"><svg width="18" height="22" viewBox="0 0 18 22"><path d="M5 1h8l-2 7h-4z M6 9h6v12H6z" fill="#fff"/></svg></div>
+      <div style="position:absolute;bottom:34px;right:34px;width:46px;height:46px;border-radius:50%;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center"><svg width="22" height="18" viewBox="0 0 22 18"><rect x="1" y="4" width="20" height="13" rx="3" fill="none" stroke="#fff" stroke-width="2"/><circle cx="11" cy="10.5" r="3.5" fill="none" stroke="#fff" stroke-width="2"/><rect x="7" y="1" width="8" height="4" rx="1" fill="#fff"/></svg></div>
+      <div style="position:absolute;bottom:12px;left:50%;transform:translateX(-50%);width:110px;height:4px;border-radius:3px;background:rgba(255,255,255,.8)"></div>
+      <div id="notif" style="position:absolute;top:226px;left:10px;right:10px;border-radius:22px;padding:12px 12px 13px;background:rgba(245,238,240,.9);backdrop-filter:blur(10px);display:flex;gap:10px;align-items:flex-start;box-shadow:0 10px 30px rgba(0,0,0,.35)">
+        <div style="flex:none;position:relative;width:42px;height:42px">
+          <div style="width:42px;height:42px;border-radius:50%;background:linear-gradient(145deg,#f7a9bf,#d9577c);color:#fff;font-weight:800;font-size:20px;display:flex;align-items:center;justify-content:center">ד</div>
+          <div style="position:absolute;left:-3px;bottom:-3px;width:19px;height:19px;border-radius:6px;background:#25d366;border:2px solid #f5eef0;display:flex;align-items:center;justify-content:center">
+            <svg width="11" height="11" viewBox="0 0 24 24"><path d="M12 3a9 9 0 0 0-7.8 13.5L3 21l4.6-1.2A9 9 0 1 0 12 3z" fill="none" stroke="#fff" stroke-width="2.6" stroke-linejoin="round"/></svg>
+          </div>
+        </div>
+        <div style="flex:1;color:#1c1c1e;min-width:0">
+          <div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font-size:14.5px;font-weight:700">דנה</span><span style="font-size:11px;opacity:.55">עכשיו</span></div>
+          <div style="font-size:13.5px;line-height:1.3;margin-top:1px">יש משחק חדש לזוגות בשם LOVU, בא לך לנסות ?</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="cap" id="c1">הערב הזה יכול להיות<br><em>קצת אחר…</em></div>
+</div>
+
+<!-- ================= Scenes 2-3: two phones ================= -->
+<div id="s2" class="L">
+  <div class="phone" id="pR" style="width:232px;height:476px;left:274px;top:268px">
+    <div class="scr"><div class="isl"></div>
+      <!-- welcome -->
+      <div class="pg" id="R_w">
+        <div class="hdr"><i style="left:0">✕</i><i style="right:0">?</i></div>
+        <div style="text-align:center;margin-top:14px"><img src="lovu_logo.svg" style="width:118px"></div>
+        <div style="text-align:center;color:#8a3a50;font-size:11.5px;font-weight:700;margin-top:4px">מבית חוויה בקופסא</div>
+        <div class="ttl" style="font-size:24px;margin-top:14px">ברוכים הבאים</div>
+        <div class="dv"><b></b><span style="color:#e23a6e">&#9829;</span><b></b></div>
+        <div style="display:flex;justify-content:center;gap:8px;margin-bottom:12px"><span class="pill">רון</span><span style="color:#e23a6e;font-size:18px">&#9829;</span><span class="pill">דנה</span></div>
+        <div style="background:#fff;border-radius:16px;padding:14px 10px;box-shadow:0 6px 18px rgba(122,24,48,.1)">
+          <div style="text-align:center;font-weight:900;font-size:18px;color:var(--ink)">שלום רון!</div>
+          <div class="sub" style="font-size:11px;margin:6px 0 12px">איזה כיף שבחרתם בחוויה בקופסא – הדייט הדיגיטלי. מחכה לכם ערב שובב, מצחיק ומרגש.</div>
+          <div class="btn" id="R_start">התחלת משחק &#9829;</div>
+        </div>
+      </div>
+      <!-- wheel -->
+      <div class="pg" id="R_wh">
+        <div class="hdr"><i style="left:0">✕</i><i style="right:0">→</i></div>
+        <div class="ttl">חובה או חובה!</div>
+        <div class="sub" style="margin-top:6px">כל אחד מסובב בתורו את הגלגל</div>
+        <div style="position:relative;width:190px;height:190px;margin:14px auto 0">
+          <svg id="wheel" width="190" height="190" viewBox="-100 -100 200 200" style="position:absolute;inset:0"></svg>
+          <svg width="190" height="190" viewBox="-100 -100 200 200" style="position:absolute;inset:0">
+            <path d="M-11 -99 L11 -99 L0 -78 Z" fill="#7a1830" stroke="#fff" stroke-width="2"/>
+            <circle r="17" fill="#fff" stroke="#f0c9d3" stroke-width="3"/>
+            <path d="M0 8 C-9 2 -11 -4 -7 -7 C-4 -9 -1 -7 0 -4 C1 -7 4 -9 7 -7 C11 -4 9 2 0 8Z" fill="#e23a6e"/>
+          </svg>
+        </div>
+        <div id="wres" style="text-align:center;margin-top:14px"><span class="pill" style="font-size:14px;border-color:#e23a6e">יצא לך: מחמאה &#9829;</span></div>
+        <div class="sub" id="whint" style="margin-top:12px;color:#b0506a;font-size:11px">עכשיו תורו של בן/בת הזוג…</div>
+      </div>
+      <!-- mi yoter -->
+      <div class="pg" id="R_m"></div>
+    </div>
+    <div class="lbl">רון</div>
+  </div>
+
+  <div class="phone" id="pD" style="width:232px;height:476px;left:34px;top:268px">
+    <div class="scr"><div class="isl"></div>
+      <div class="pg" id="D_w"></div>
+      <!-- scratch -->
+      <div class="pg" id="D_sc">
+        <div class="hdr"><i style="left:0">✕</i><i style="right:0">→</i></div>
+        <div class="ttl">כרטיס גירוד –<br>רומנטי <span style="color:#e23a6e">&#9829;</span></div>
+        <div class="sub" style="margin-top:6px">תגרד/י את הלב עם האצבע<br>ותגלה/י מה יצא</div>
+        <div style="position:relative;width:196px;height:196px;margin:14px auto 0;border-radius:18px;background:linear-gradient(160deg,#fde3ea,#f7c9d6);box-shadow:0 8px 20px rgba(196,36,89,.18)">
+          <svg id="scratch" width="196" height="196" viewBox="0 0 196 196" style="position:absolute;inset:0">
+            <defs>
+              <clipPath id="hc"><path d="M98 170 C40 128 18 96 30 66 C40 40 76 34 98 62 C120 34 156 40 166 66 C178 96 156 128 98 170Z"/></clipPath>
+              <linearGradient id="foil" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f7a9bf"/><stop offset=".5" stop-color="#fbd0dc"/><stop offset="1" stop-color="#ef8fab"/></linearGradient>
+              <pattern id="gl" width="14" height="14" patternUnits="userSpaceOnUse"><circle cx="3" cy="4" r="1.2" fill="#fff" opacity=".8"/><circle cx="10" cy="11" r=".9" fill="#fff" opacity=".6"/><path d="M0 14 Q7 7 14 14" stroke="#fff" stroke-width=".8" fill="none" opacity=".35"/></pattern>
+              <linearGradient id="shineG" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".95"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
+              <mask id="sm"><rect width="196" height="196" fill="#fff"/><path id="spath" fill="none" stroke="#000" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/></mask>
+            </defs>
+            <g clip-path="url(#hc)">
+              <rect width="196" height="196" fill="#fff"/>
+              <foreignObject x="36" y="62" width="124" height="80"><div xmlns="http://www.w3.org/1999/xhtml" style="font-family:Rubik;direction:rtl;text-align:center;color:#7a1830;font-weight:800;font-size:14px;line-height:1.25"></div></foreignObject>
+              <g mask="url(#sm)"><rect width="196" height="196" fill="url(#foil)"/><rect width="196" height="196" fill="url(#gl)"/></g>
+              <rect id="shine" x="0" y="-20" width="64" height="240" fill="url(#shineG)"/>
+            </g>
+            <path d="M98 170 C40 128 18 96 30 66 C40 40 76 34 98 62 C120 34 156 40 166 66 C178 96 156 128 98 170Z" fill="none" stroke="#fff" stroke-width="3"/>
+          </svg>
+        </div>
+      </div>
+      <div class="pg" id="D_m"></div>
+    </div>
+    <div class="lbl">דנה</div>
+  </div>
+
+  <div class="cap" id="c2" style="display:none"></div>
+  <div class="cap" id="c3a" style="top:138px"><span style="display:inline-block;background:rgba(251,238,240,.95);border-radius:14px;padding:6px 14px 2px;box-shadow:0 6px 20px rgba(0,0,0,.3)"><img src="lovu_logo.svg" style="height:34px"></span><br>משחק אחד. <em>ביחד.</em></div>
+  <div class="cap" id="c3b">גלגל, גירוד,<br><em>שאלות מהלב.</em></div>
+  <svg id="fx" class="L" viewBox="0 0 540 960" width="540" height="960" style="z-index:40"></svg>
+  <div class="tap" id="tap1"></div><div class="tap" id="tap2"></div>
+</div>
+
+<!-- ================= Scene 4: end card ================= -->
+<div id="s4" class="L">
+  <div id="endDim" class="L" style="background:rgba(20,6,10,.35)"></div>
+  <div id="card" style="position:absolute;left:44px;right:44px;top:236px;height:470px;border-radius:30px;background:rgba(251,238,240,.94);box-shadow:0 30px 80px rgba(0,0,0,.45)"></div>
+  <div id="flash" class="L" style="display:none" style="background:radial-gradient(circle at 50% 45%,#fff 0,#ffe6ec 30%,rgba(255,230,236,0) 70%)"></div>
+  <div id="logoWrap" style="position:absolute;left:0;right:0;top:282px;text-align:center">
+    <img src="lovu_logo.svg" style="width:310px">
+    <div style="color:#8a3a50;font-weight:700;font-size:24px;margin-top:10px">מבית חוויה בקופסא</div>
+  </div>
+  <div id="tag" style="position:absolute;left:0;right:0;top:480px;text-align:center;color:var(--bur);font-weight:900;font-size:32px;line-height:1.3">דייט זוגי. <span style="color:#d42a5a">מהנייד.</span></div>
+  <div id="cta">לרכישה · הקישור בביו</div>
+  <svg id="fx4" class="L" viewBox="0 0 540 960" width="540" height="960"></svg>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const clamp=(v,a=0,b=1)=>Math.min(b,Math.max(a,v)), lerp=(a,b,t)=>a+(b-a)*t;
+const eo=t=>1-Math.pow(1-t,3), eio=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2, eo4=t=>1-Math.pow(1-t,4);
+const back=t=>{const c=1.70158;return 1+(c+1)*Math.pow(t-1,3)+c*Math.pow(t-1,2)};
+const P=(t,a,b)=>clamp((t-a)/(b-a));
+const W=(t,a,b,f=.3)=>Math.min(P(t,a,a+f),1-P(t,b-f,b));
+let sd=11;const rnd=()=>(sd=sd*16807%2147483647)/2147483647;
+
+// bokeh
+const BK=[];for(let i=0;i<26;i++){const d=document.createElement('div');d.className='bk';const s=16+rnd()*80;
+ d.style.width=d.style.height=s+'px';const c=rnd()<.6?'255,170,195':'240,160,67';
+ d.style.background=`radial-gradient(circle,rgba(${c},.5),rgba(${c},0) 70%)`;$('bokeh').appendChild(d);
+ BK.push({d,x:rnd()*540,y:rnd()*960,v:5+rnd()*12,ph:rnd()*6.3});}
+
+// "mi yoter" page (same for both phones)
+function miYoter(){return `<div class="hdr"><i style="left:0">✕</i><i style="right:0">→</i></div>
+ <div class="ttl">מי יותר</div><div class="dv"><b></b><span style="color:#e23a6e">&#9829;</span><b></b></div>
+ <div class="sub" style="font-size:14px;font-weight:700;color:#4a1020">מי אמר ראשון<br>״אני אוהב/ת אותך״?</div>
+ <div style="display:flex;justify-content:center;gap:12px;margin-top:18px">
+   <div class="mc" data-k="d" style="width:78px;height:92px;border-radius:14px;background:#fff;border:2px solid #f0c9d3;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px">
+     <svg width="38" height="34" viewBox="-20 -18 40 36"><path d="M0 16 C-16 4 -20 -6 -13 -12 C-8 -16 -2 -13 0 -8 C2 -13 8 -16 13 -12 C20 -6 16 4 0 16Z" fill="#c43cd6"/></svg><b style="color:#7a1830;font-size:13px">דנה</b></div>
+   <div class="mc" data-k="r" style="width:78px;height:92px;border-radius:14px;background:#fff;border:2px solid #f0c9d3;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px">
+     <svg width="38" height="34" viewBox="-20 -18 40 36"><path d="M0 16 C-16 4 -20 -6 -13 -12 C-8 -16 -2 -13 0 -8 C2 -13 8 -16 13 -12 C20 -6 16 4 0 16Z" fill="#f7b6c8"/></svg><b style="color:#7a1830;font-size:13px">רון</b></div>
+ </div>
+ <div class="ok" style="text-align:center;margin-top:18px"><span class="pill" style="border-color:#3cb371;color:#1f7a45;font-size:14px">&#10004; קלעת!</span></div>
+ <div style="text-align:center;margin-top:16px"><span class="btn">המשך &#9829;</span></div>`;}
+$('R_m').innerHTML=miYoter();$('D_m').innerHTML=miYoter();
+// Dana's welcome = copy of Ron's with her name
+$('D_w').innerHTML=$('R_w').innerHTML.replace('שלום רון!','שלום דנה!').replace('id="R_start"','id="D_start"');
+
+// wheel
+const segs=[['נשיקה','#9b7fd4'],['מחמאה','#f06ea9'],['ריקוד','#f59b5b'],['סוד','#f7cf55'],['חיבוק','#8fd18f'],['זיכרון','#5cc6c9'],['שיר','#6fa8e6'],['עיסוי','#c79be3']];
+let wh='';segs.forEach(([n,c],i)=>{const a0=(i*45-90-22.5)*Math.PI/180,a1=((i+1)*45-90-22.5)*Math.PI/180,R=92;
+ wh+=`<path d="M0 0 L${R*Math.cos(a0)} ${R*Math.sin(a0)} A${R} ${R} 0 0 1 ${R*Math.cos(a1)} ${R*Math.sin(a1)} Z" fill="${c}" stroke="#fff" stroke-width="2.5"/>`;
+ wh+=`<text transform="rotate(${i*45}) translate(0 -58) rotate(0)" text-anchor="middle" dominant-baseline="middle" font-family="Rubik" font-weight="800" font-size="12" fill="#fff" style="direction:rtl">${n}</text>`;});
+wh+='<circle r="93" fill="none" stroke="#fff" stroke-width="5"/><circle r="97" fill="none" stroke="#f0c9d3" stroke-width="3"/>';
+$('wheel').innerHTML=wh;
+// wheel spin timing (shared with audio script)
+const WS=6.75, WE=8.35, WROT=360*4-45; // lands on segment 1 (מחמאה)
+
+// scratch path (zig-zag over heart)
+const SP=[[40,70],[150,64],[46,94],[160,92],[52,118],[150,120],[70,140],[128,144],[98,160]];
+let sd2='M'+SP.map(p=>p.join(' ')).join(' L');$('spath').setAttribute('d',sd2);
+const segL=[];let TL=0;for(let i=1;i<SP.length;i++){const l=Math.hypot(SP[i][0]-SP[i-1][0],SP[i][1]-SP[i-1][1]);segL.push(l);TL+=l;}
+$('spath').setAttribute('stroke-dasharray',TL);
+function ptAt(f){let d=f*TL;for(let i=0;i<segL.length;i++){if(d<=segL[i]){const k=d/segL[i];return[lerp(SP[i][0],SP[i+1][0],k),lerp(SP[i][1],SP[i+1][1],k)]}d-=segL[i];}return SP[SP.length-1];}
+const SS=6.9, SE=8.4;
+
+const HE=[];for(let i=0;i<18;i++)HE.push({a:rnd()*6.28,v:90+rnd()*160,s:8+rnd()*14,r:(rnd()-.5)*50,c:rnd()<.5?'#ff7aa0':'#ffb3c7'});
+const heart=(s,c)=>`<path transform="scale(${s/20})" d="M0 8 C-12 0 -14 -8 -8 -12 C-4 -15 -1 -12 0 -9 C1 -12 4 -15 8 -12 C14 -8 12 0 0 8Z" fill="${c}"/>`;
+
+function tapAt(el,x,y,t,t0){const p=P(t,t0-.15,t0+.35);if(p<=0||p>=1){el.style.opacity=0;return}
+ el.style.left=x+'px';el.style.top=y+'px';const press=t<t0?P(t,t0-.15,t0):1;
+ el.style.opacity=t<t0?press:1-P(t,t0,t0+.35);el.style.transform=`scale(${t<t0?lerp(1.3,.8,press):lerp(.8,1.6,P(t,t0,t0+.35))})`;}
+
+function show(id,o){$(id).style.opacity=o;$(id).style.display=o>0?'block':'none';}
+// page slide: k=0 before, 1 after; 'out' page slides right, 'in' page enters from left
+function slide(outId,inId,k){const e=eio(k);const a=$(outId),b=$(inId);
+ a.style.display=k<1?'block':'none';a.style.opacity=1;a.style.transform=`translateX(${e*105}%)`;
+ b.style.display=k>0?'block':'none';b.style.opacity=1;b.style.transform=`translateX(${(e-1)*105}%)`;}
+
+window.render=function(t){
+ const U0=6.133,U1=9.533,E0=13.167,D=-0.734;
+ const vc=(id,a,b)=>{const o=W(t,a,b,.22);$(id).style.opacity=o;$(id).style.transform=`translateY(${lerp(12,0,eo(P(t,a,a+.35)))}px)`;};
+ vc('capA',.3,1.86);vc('capD',1.95,4.08);vc('capC',4.18,6.12);vc('capL',9.58,10.95);
+ const wp0=P(t,.08,.38);$('wa').style.opacity=wp0*(1-P(t,1.62,1.86));$('wa').style.transform=`translateY(${lerp(-70,0,back(wp0))}px) scale(${lerp(.92,1,eo(wp0))})`;
+ $('topg').style.opacity=0;$('bar').style.opacity=0;
+ const ou=W(t,U0,U1,.22);$('s2').style.opacity=ou;$('s2').style.display=ou>0?'block':'none';$('vig').style.opacity=ou;
+ const inn=eo(P(t,U0,U0+.5));
+ const tilt=t<9.95+D?0:Math.sin(P(t,9.95+D,10.4+D)*Math.PI);
+ $('pD').style.transform=`translate(${lerp(-130,0,inn)+tilt*14}px,0) rotate(${lerp(-12,-3,inn)+tilt*8}deg)`;
+ $('pR').style.transform=`translate(${lerp(130,0,inn)-tilt*14}px,0) rotate(${lerp(12,3,inn)-tilt*8}deg)`;
+ $('R_w').style.display='none';$('D_w').style.display='none';
+ slide('R_wh','R_m',P(t,9.0+D,9.3+D));slide('D_sc','D_m',P(t,9.08+D,9.38+D));
+ const WS2=7.3+D,WE2=8.8+D;
+ const wp=P(t,WS2,WE2);$('wheel').style.transform=`rotate(${WROT*eo4(wp)}deg)`;
+ const wr=P(t,WE2,WE2+.25);$('wres').style.opacity=wr;$('wres').style.transform=`scale(${lerp(.5,1,back(wr))})`;$('whint').style.opacity=0;
+ $('spath').setAttribute('stroke-dashoffset',TL);
+ const sh=((t-(7.1+D))%1.1)/1.1;$('shine').setAttribute('transform',`translate(${lerp(-70,220,eio(clamp(sh*1.25)))} 0) rotate(20 23 100)`);$('shine').style.opacity=t>7.1+D?1:0;
+ document.querySelectorAll('.mc').forEach(e=>{const on=e.dataset.k==='d'&&t>9.65+D;e.style.borderColor=on?'#c43cd6':'#f0c9d3';e.style.boxShadow=on?'0 0 0 3px rgba(196,60,214,.2)':'none';e.style.transform=`scale(${on?lerp(1.12,1.05,P(t,9.65+D,9.9+D)):1})`;});
+ const ok=P(t,9.78+D,10.05+D);document.querySelectorAll('.ok').forEach(e=>{e.style.opacity=ok;e.style.transform=`scale(${lerp(.4,1,back(ok))})`;});
+ const pr=$('pR').getBoundingClientRect(),pd=$('pD').getBoundingClientRect();
+ if(t<9.2+D){tapAt($('tap1'),pr.left+pr.width/2,pr.top+pr.height*.47,t,WS2);$('tap2').style.opacity=0;}
+ else{tapAt($('tap1'),pr.left+pr.width*.36,pr.top+pr.height*.5,t,9.65+D);tapAt($('tap2'),pd.left+pd.width*.36,pd.top+pd.height*.5,t,9.65+D);}
+ const cap=(id,a,b)=>{const o=W(t,a,b,.22);$(id).style.opacity=o;$(id).style.transform=`translateY(${lerp(14,0,eo(P(t,a,a+.4)))}px)`;};
+ cap('c3a',U0+.1,8.7+D);cap('c3b',8.7+D,U1-.05);
+ let fx='';const h0=9.95+D,hp=P(t,h0,h0+1.05);
+ if(hp>0&&hp<1&&t<U1){const cx=270,cy=330;
+   for(let i=0;i<10;i++){const a=i/10*6.283,r=10+eo(P(t,h0,h0+.35))*48;fx+=`<line x1="${cx+Math.cos(a)*r*.55}" y1="${cy+Math.sin(a)*r*.55}" x2="${cx+Math.cos(a)*r}" y2="${cy+Math.sin(a)*r}" stroke="#ffd27a" stroke-width="3" stroke-linecap="round" opacity="${1-P(t,h0,h0+.45)}"/>`;}
+   HE.forEach(h=>{const d=h.v*eo(hp);fx+=`<g transform="translate(${cx+Math.cos(h.a)*d},${cy+Math.sin(h.a)*d*.8-hp*60}) rotate(${h.r})" opacity="${1-hp}">${heart(h.s,h.c)}</g>`;});}
+ $('fx').innerHTML=fx;
+ const o4=P(t,E0,E0+.35);$('s4').style.opacity=o4;$('s4').style.display=o4>0?'block':'none';
+ const cd=P(t,E0,E0+.5);$('card').style.transform=`translateY(${lerp(30,0,eo(cd))}px) scale(${lerp(.94,1,eo(cd))})`;
+ const lp=P(t,E0+.2,E0+.9);$('logoWrap').style.opacity=lp;$('logoWrap').style.transform=`translateY(${lerp(20,0,eo(lp))}px)`;
+ const tg=P(t,E0+.7,E0+1.1);$('tag').style.opacity=tg;$('tag').style.transform=`translateY(${lerp(14,0,eo(tg))}px)`;
+ const cp=P(t,E0+1.1,E0+1.45),pulse=t>E0+1.55?1+Math.sin((t-E0-1.55)*4.5)*.03:1;$('cta').style.opacity=cp;$('cta').style.transform=`translateX(-50%) scale(${lerp(.6,1,back(cp))*pulse})`;
+ let f4='';const tw=P(t,E0+.8,E0+1.4);if(tw>0&&tw<1){const x=402,y=296,s2=Math.sin(tw*Math.PI)*16;
+   f4=`<path d="M${x} ${y-s2} Q${x+2} ${y-2} ${x+s2} ${y} Q${x+2} ${y+2} ${x} ${y+s2} Q${x-2} ${y+2} ${x-s2} ${y} Q${x-2} ${y-2} ${x} ${y-s2}Z" fill="#ffcf85" opacity=".9"/>`;}
+ $('fx4').innerHTML=f4;
+};
+render(0);
+</script>
+</body>
+</html>

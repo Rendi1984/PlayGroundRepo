@@ -119,17 +119,18 @@ html,body{width:540px;height:960px;overflow:hidden;background:#1d070d;font-famil
               <clipPath id="hc"><path d="M98 170 C40 128 18 96 30 66 C40 40 76 34 98 62 C120 34 156 40 166 66 C178 96 156 128 98 170Z"/></clipPath>
               <linearGradient id="foil" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f7a9bf"/><stop offset=".5" stop-color="#fbd0dc"/><stop offset="1" stop-color="#ef8fab"/></linearGradient>
               <pattern id="gl" width="14" height="14" patternUnits="userSpaceOnUse"><circle cx="3" cy="4" r="1.2" fill="#fff" opacity=".8"/><circle cx="10" cy="11" r=".9" fill="#fff" opacity=".6"/><path d="M0 14 Q7 7 14 14" stroke="#fff" stroke-width=".8" fill="none" opacity=".35"/></pattern>
+              <linearGradient id="shineG" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".95"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
               <mask id="sm"><rect width="196" height="196" fill="#fff"/><path id="spath" fill="none" stroke="#000" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/></mask>
             </defs>
             <g clip-path="url(#hc)">
               <rect width="196" height="196" fill="#fff"/>
-              <foreignObject x="36" y="62" width="124" height="80"><div xmlns="http://www.w3.org/1999/xhtml" style="font-family:Rubik;direction:rtl;text-align:center;color:#7a1830;font-weight:800;font-size:14px;line-height:1.25">ספר/י על הרגע שבו ידעת שזה אני</div></foreignObject>
+              <foreignObject x="36" y="62" width="124" height="80"><div xmlns="http://www.w3.org/1999/xhtml" style="font-family:Rubik;direction:rtl;text-align:center;color:#7a1830;font-weight:800;font-size:14px;line-height:1.25"></div></foreignObject>
               <g mask="url(#sm)"><rect width="196" height="196" fill="url(#foil)"/><rect width="196" height="196" fill="url(#gl)"/></g>
+              <rect id="shine" x="0" y="-20" width="64" height="240" fill="url(#shineG)"/>
             </g>
             <path d="M98 170 C40 128 18 96 30 66 C40 40 76 34 98 62 C120 34 156 40 166 66 C178 96 156 128 98 170Z" fill="none" stroke="#fff" stroke-width="3"/>
           </svg>
         </div>
-        <div id="snext" style="text-align:center;margin-top:16px"><span class="btn">לשאלה הבאה &#9829;</span></div>
       </div>
       <div class="pg" id="D_m"></div>
     </div>
@@ -247,8 +248,10 @@ window.render=function(t){
  const wp=P(t,WS,WE);$('wheel').style.transform=`rotate(${WROT*eo4(wp)}deg)`;
  const wr=P(t,WE,WE+.3);$('wres').style.opacity=wr;$('wres').style.transform=`scale(${lerp(.5,1,back(wr))})`;$('whint').style.opacity=P(t,WE+.3,WE+.6);
  // scratch
- const sp=P(t,SS,SE);$('spath').setAttribute('stroke-dashoffset',TL*(1-sp));
- const sn=P(t,SE+.1,SE+.4);$('snext').style.opacity=sn;$('snext').style.transform=`scale(${lerp(.6,1,back(sn))})`;
+ const sp=0;$('spath').setAttribute('stroke-dashoffset',TL);
+ // shine sweeps across the unscratched heart (twice)
+ const sh=((t-6.7)%1.2)/1.2;$('shine').setAttribute('transform',`translate(${lerp(-70,220,eio(clamp(sh*1.25)))} 0) rotate(20 23 100)`);
+ $('shine').style.opacity=t>6.7?1:0;
  // mi yoter selection
  document.querySelectorAll('.mc').forEach(e=>{const on=e.dataset.k==='d'&&t>9.3;e.style.borderColor=on?'#c43cd6':'#f0c9d3';e.style.boxShadow=on?'0 0 0 3px rgba(196,60,214,.2)':'none';e.style.transform=`scale(${on?lerp(1.12,1.05,P(t,9.3,9.6)):1})`;});
  const ok=P(t,9.45,9.75);document.querySelectorAll('.ok').forEach(e=>{e.style.opacity=ok;e.style.transform=`scale(${lerp(.4,1,back(ok))})`;});
@@ -258,8 +261,7 @@ window.render=function(t){
  if(t<6.2){tapAt($('tap1'),pr.left+pr.width/2,pr.top+pr.height*.83,t,5.55);tapAt($('tap2'),pd.left+pd.width/2,pd.top+pd.height*.83,t,5.85);tapDone=true;}
  else if(t<8.6){tapAt($('tap1'),pr.left+pr.width/2,pr.top+pr.height*.47,t,6.75);
    // finger following scratch on Dana's phone
-   const e=$('tap2');if(sp>0&&sp<1||P(t,SS-.2,SS)>0&&t<SE+.2){const [x,y]=ptAt(sp);const card=$('scratch').getBoundingClientRect();
-     e.style.left=(card.left+x*card.width/196)+'px';e.style.top=(card.top+y*card.height/196)+'px';e.style.opacity=Math.min(P(t,SS-.2,SS),1-P(t,SE,SE+.2));e.style.transform='scale(.9)';}else e.style.opacity=0;}
+   $('tap2').style.opacity=0;}
  else {tapAt($('tap1'),pr.left+pr.width*.36,pr.top+pr.height*.5,t,9.3);tapAt($('tap2'),pd.left+pd.width*.36,pd.top+pd.height*.5,t,9.3);}
  // captions
  const cap=(id,a,b)=>{const o=W(t,a,b,.3);$(id).style.opacity=o;$(id).style.transform=`translateY(${lerp(14,0,eo(P(t,a,a+.4)))}px)`;};

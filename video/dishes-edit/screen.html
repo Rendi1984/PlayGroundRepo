@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="he" dir="rtl"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;700;800;900&display=block" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:240px;height:440px;overflow:hidden;background:#fbeef0;font-family:Rubik,sans-serif;color:#4a1020}
+.pg{position:absolute;inset:0;padding:30px 14px 0;text-align:center;display:none}
+.logo{height:22px;margin-bottom:6px}
+.ttl{color:#7a1830;font-weight:900;font-size:28px;line-height:1.05}
+.dv{color:#e23a6e;font-size:14px;margin:4px 0 8px}
+.q{font-weight:800;font-size:17px;line-height:1.25;color:#4a1020}
+.row{display:flex;justify-content:center;gap:12px;margin-top:18px}
+.mc{width:86px;height:104px;border-radius:16px;background:#fff;border:3px solid #f0c9d3;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;font-weight:800;color:#7a1830;font-size:17px}
+.mc.on{border-color:#c43cd6;box-shadow:0 0 0 4px rgba(196,60,214,.22);transform:scale(1.06)}
+.pill{display:inline-block;margin-top:14px;padding:6px 16px;border-radius:999px;border:2px solid #e23a6e;background:#fff;color:#7a1830;font-weight:800;font-size:16px}
+</style></head><body>
+<div class="pg" id="mi"></div>
+<div class="pg" id="wh">
+  <img class="logo" src="lovu_logo.svg">
+  <div class="ttl" style="font-size:25px">חובה או חובה!</div>
+  <div style="position:relative;width:200px;height:200px;margin:12px auto 0">
+    <svg id="wheel" width="200" height="200" viewBox="-100 -100 200 200" style="position:absolute;inset:0"></svg>
+    <svg width="200" height="200" viewBox="-100 -100 200 200" style="position:absolute;inset:0">
+      <path d="M-12 -100 L12 -100 L0 -76 Z" fill="#7a1830" stroke="#fff" stroke-width="2"/>
+      <circle r="17" fill="#fff" stroke="#f0c9d3" stroke-width="3"/>
+      <path d="M0 8 C-9 2 -11 -4 -7 -7 C-4 -9 -1 -7 0 -4 C1 -7 4 -9 7 -7 C11 -4 9 2 0 8Z" fill="#e23a6e"/>
+    </svg>
+  </div>
+  <div id="res" class="pill" style="font-size:19px">יצא: נשיקה &#9829;</div>
+</div>
+<script>
+const H='<svg width="34" height="30" viewBox="-20 -18 40 36"><path d="M0 16 C-16 4 -20 -6 -13 -12 C-8 -16 -2 -13 0 -8 C2 -13 8 -16 13 -12 C20 -6 16 4 0 16Z" fill="COL"/></svg>';
+function mi(sel){return `<img class="logo" src="lovu_logo.svg"><div class="ttl">מי יותר</div><div class="dv">&#9829;</div>
+ <div class="q">מי אמר ראשון<br>״אני אוהב/ת אותך״?</div>
+ <div class="row"><div class="mc ${sel==='d'?'on':''}">${H.replace('COL',sel==='d'?'#c43cd6':'#f7b6c8')}דנה</div>
+ <div class="mc ${sel==='r'?'on':''}">${H.replace('COL',sel==='r'?'#c43cd6':'#f7b6c8')}רון</div></div>`;}
+const segs=[['נשיקה','#9b7fd4'],['מחמאה','#f06ea9'],['ריקוד','#f59b5b'],['סוד','#f7cf55'],['חיבוק','#8fd18f'],['זיכרון','#5cc6c9'],['שיר','#6fa8e6'],['עיסוי','#c79be3']];
+let w='';segs.forEach(([n,c],i)=>{const a0=(i*45-90-22.5)*Math.PI/180,a1=((i+1)*45-90-22.5)*Math.PI/180,R=94;
+ w+=`<path d="M0 0 L${R*Math.cos(a0)} ${R*Math.sin(a0)} A${R} ${R} 0 0 1 ${R*Math.cos(a1)} ${R*Math.sin(a1)} Z" fill="${c}" stroke="#fff" stroke-width="2.5"/>`;
+ w+=`<text transform="rotate(${i*45}) translate(0 -60)" text-anchor="middle" dominant-baseline="middle" font-family="Rubik" font-weight="800" font-size="13" fill="#fff">${n}</text>`;});
+w+='<circle r="95" fill="none" stroke="#fff" stroke-width="5"/>';document.getElementById('wheel').innerHTML=w;
+const eo4=t=>1-Math.pow(1-t,4), clamp=v=>Math.min(1,Math.max(0,v));
+// mode: 'mi-d' | 'mi-r' | 'wheel' (t = seconds of spin progress timeline)
+window.show=function(mode,t){
+ document.getElementById('mi').style.display=mode.startsWith('mi')?'block':'none';
+ document.getElementById('wh').style.display=mode==='wheel'?'block':'none';
+ if(mode.startsWith('mi')) document.getElementById('mi').innerHTML=mi(mode==='mi-d'?'d':'r');
+ if(mode==='wheel'){const S=0.7,E=2.9,ROT=360*4; // lands on segment 0 (נשיקה)
+   const p=clamp((t-S)/(E-S));document.getElementById('wheel').style.transform=`rotate(${ROT*eo4(p)}deg)`;
+   const r=clamp((t-E)/0.25);const el=document.getElementById('res');el.style.opacity=r;el.style.transform=`scale(${0.6+0.4*r})`;}
+};
+</script></body></html>

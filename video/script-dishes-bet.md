@@ -37,6 +37,8 @@
 
 ## פרומפטים ל-Flow (5 קליפים)
 
+**הזוג:** בני 40 בערך. כל פרומפט מתאר את שניהם במלואם, כי כל קליפ ב-Flow נוצר בנפרד ולא "זוכר" את הקודם.
+
 **הגדרות לכל קליפ:** **9:16 – לבחור לפני היצירה!** · 1080p · 8 שניות · Ingredients: התמונות מ-`refs-livingroom/` (דנה, רון, הזוג על הספה).
 **להוסיף לסוף כל פרומפט:**
 `Avoid: text, captions, logos, readable phone screens, children visible. No dialogue.`
@@ -45,27 +47,27 @@
 
 ### קליפ 1 – ההוק (דנה לוחשת למצלמה)
 ```
-Vertical 9:16 cinematic close-up in a cozy candlelit living room at night. A woman in her late 30s with shoulder-length dark hair and a cream knit sweater leans very close to the camera with a confident, conspiratorial half-smile, as if whispering a secret bet to the viewer, one eyebrow raised. Behind her, softly out of focus, a man in a dark overshirt sitting on the sofa looks up at her suspiciously. Warm golden candlelight, shallow depth of field, playful and mischievous mood, premium commercial look.
+Vertical 9:16 cinematic close-up in a cozy candlelit living room at night. An Israeli woman around 40 with shoulder-length dark wavy hair, natural makeup and a cream knit sweater leans very close to the camera with a confident, conspiratorial half-smile, as if whispering a secret bet to the viewer, one eyebrow raised. Behind her, softly out of focus, an Israeli man around 40 with short dark hair greying slightly at the temples, light stubble and a dark green overshirt over a grey t-shirt, sitting on the sofa, looks up at her suspiciously. Warm golden candlelight, shallow depth of field, playful and mischievous mood, premium commercial look.
 ```
 
 ### קליפ 2 – רון חושב, דנה בטוחה בעצמה
 ```
-Vertical 9:16 medium shot, the same couple sitting side by side on a beige sofa in a candlelit living room, each holding their own smartphone with the screen facing away from the camera. The man stares up at the ceiling, rubbing his chin, thinking very hard with exaggerated, comedic concentration. The woman glances at him sideways with a smug, knowing smile and sips red wine. Warm golden light, shallow depth of field, light comedic tone.
+Vertical 9:16 medium shot, a married couple around 40 sitting side by side on a beige sofa: an Israeli woman around 40 with shoulder-length dark wavy hair, natural makeup and a cream knit sweater, and an Israeli man around 40 with short dark hair greying slightly at the temples, light stubble and a dark green overshirt over a grey t-shirt in a candlelit living room, each holding their own smartphone with the screen facing away from the camera. The man stares up at the ceiling, rubbing his chin, thinking very hard with exaggerated, comedic concentration. The woman glances at him sideways with a smug, knowing smile and sips red wine. Warm golden light, shallow depth of field, light comedic tone.
 ```
 
 ### קליפ 3 – פלאשבק מצויר (ייכנס לתוך בועת המחשבה)
 ```
-Vertical 9:16 hand-drawn pencil sketch animation on warm cream paper, loose charming line art with soft watercolor touches of pink and burgundy. A young couple sits at a small café table on their first date; the woman leans forward and says something, the man freezes, wide-eyed and blushing, and a small doodled heart pops up between them. Gentle boiling-line animation style, simple, cute, nostalgic.
+Vertical 9:16 hand-drawn pencil sketch animation on warm cream paper, loose charming line art with soft watercolor touches of pink and burgundy. A couple in their late 20s sits at a small café table on their first date; the woman leans forward and says something, the man freezes, wide-eyed and blushing, and a small doodled heart pops up between them. Gentle boiling-line animation style, simple, cute, nostalgic.
 ```
 
 ### קליפ 4 – החשיפה
 ```
-Vertical 9:16 medium shot, the same couple on the sofa in a candlelit living room. On a count, both simultaneously turn their phones to face each other; both screens are flat bright green, no interface, no text. The woman throws her arms up in triumph, laughing, then points playfully toward the kitchen. The man covers his face with his hand in mock despair, then protests with an open palm, laughing. Energetic, comedic, warm golden light.
+Vertical 9:16 medium shot of a married couple around 40 on a beige sofa in a candlelit living room: an Israeli woman around 40 with shoulder-length dark wavy hair, natural makeup and a cream knit sweater, and an Israeli man around 40 with short dark hair greying slightly at the temples, light stubble and a dark green overshirt over a grey t-shirt. On a count, both simultaneously turn their phones to face each other; both screens are flat bright green, no interface, no text. The woman throws her arms up in triumph, laughing, then points playfully toward the kitchen. The man covers his face with his hand in mock despair, then protests with an open palm, laughing. Energetic, comedic, warm golden light.
 ```
 
 ### קליפ 5 – סיבוב נוסף ונשיקה
 ```
-Vertical 9:16 medium close-up, the same couple on the sofa in a candlelit living room. The man holds up his phone toward the woman with a determined grin, as if challenging her to another round; the phone screen is flat bright green, no interface. They both look down at the phone, waiting. Then she rolls her eyes with a smile, leans in and kisses him on the cheek; he grins happily. Warm golden candlelight, tender and funny, premium commercial look.
+Vertical 9:16 medium close-up of a married couple around 40 on a beige sofa in a candlelit living room: an Israeli woman around 40 with shoulder-length dark wavy hair, natural makeup and a cream knit sweater, and an Israeli man around 40 with short dark hair greying slightly at the temples, light stubble and a dark green overshirt over a grey t-shirt. The man holds up his phone toward the woman with a determined grin, as if challenging her to another round; the phone screen is flat bright green, no interface. They both look down at the phone, waiting. Then she rolls her eyes with a smile, leans in and kisses him on the cheek; he grins happily. Warm golden candlelight, tender and funny, premium commercial look.
 ```
 
 ---

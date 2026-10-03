@@ -92,7 +92,7 @@ window.render=function(t){
  fadeUp('h1',t,.12,2.5);fadeUp('h2',t,1.0,2.5);
  {const e=$('sponge');const i=P(t,1.15,1.55);e.style.opacity=t>1.15&&t<2.5?1:0;
   e.style.transform=`translate(${lerp(-160,0,eo(i))}px,${-Math.abs(Math.sin(i*Math.PI*2))*30*(1-i)}px) rotate(${lerp(-40,-8,eo(i))+Math.sin(t*6)*4}deg)`;}
- pop('mah',t,1.75,3.0);
+ pop('mah',t,2.9,3.43);
  // ---- QUESTION 3.43-8.97
  {const e=$('qcard');const i=P(t,3.45,3.8),o=P(t,4.95,5.2);e.style.opacity=t>3.45&&t<5.2?1-o:0;
   e.style.transform=`rotate(${lerp(-14,0,back(i))}deg) scale(${lerp(.2,1,back(i))*(1-o*.4)}) translateY(${o*260}px)`;}
@@ -106,16 +106,16 @@ window.render=function(t){
   if(R>0)s+=`<circle cx="270" cy="480" r="${R}" fill="none" stroke="#fff" stroke-width="10"/><circle cx="270" cy="480" r="${R}" fill="none" stroke="#2a0a12" stroke-width="4" stroke-dasharray="18 10"/>`;
   $('thought').innerHTML=s;$('thought').style.opacity=1;}
  fadeUp('past',t,5.8,7.7);
- pop('ani',t,8.2,8.97);
+ pop('ani',t,7.8,9.3);
  // ---- REVEAL 8.97-14.5
- pop('n3',t,9.0,9.36);pop('n2',t,9.38,9.74);pop('n1',t,9.76,10.14);
+ pop('n3',t,9.22,9.58);pop('n2',t,9.6,9.96);pop('n1',t,9.98,10.3);
  pop('chD',t,10.35,12.0);pop('chR',t,10.5,12.0);
  pop('yada',t,11.0,12.3);
  {const e=$('score');const i=P(t,11.45,11.75);e.style.opacity=t>11.45&&t<14.45?1-P(t,14.25,14.45):0;e.style.transform=`translateX(-50%) scale(${lerp(2.2,1,eo(i))}) rotate(${lerp(-8,0,eo(i))}deg)`;}
  {const e=$('sp2');const i=P(t,12.35,12.75);const out=P(t,13.5,13.9);e.style.opacity=t>12.35&&t<13.9?1:0;
   const y=lerp(-120,214,eo(i))+(i>=1?-Math.abs(Math.sin((t-12.75)*9))*14*Math.max(0,1-(t-12.75)*2):0)+out*500;
   e.style.left='372px';e.style.top=y+'px';e.style.transform=`rotate(${lerp(-30,8,eo(i))+out*60}deg)`;}
- pop('notc',t,13.55,14.48);
+ pop('notc',t,13.1,14.5);
  // ---- ROUND 2 14.5-19.93
  pop('again',t,14.58,15.7);
  pop('kiss',t,17.25,18.3,'translateX(-50%)');

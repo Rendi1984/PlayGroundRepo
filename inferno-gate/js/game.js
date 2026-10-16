@@ -4,12 +4,12 @@
 // ---------- definitions ----------
 const AMMO_MAX = { bul: 200, shl: 50, rkt: 50, cel: 300 };
 const WEAPONS = {
-  fist: { slot: 1, ammo: null, cool: 0.5 },
-  pistol: { slot: 2, ammo: 'bul', cool: 0.36 },
-  shotgun: { slot: 3, ammo: 'shl', cool: 1.0 },
-  chaingun: { slot: 4, ammo: 'bul', cool: 0.11 },
-  launcher: { slot: 5, ammo: 'rkt', cool: 0.75 },
-  plasma: { slot: 6, ammo: 'cel', cool: 0.085 },
+  fist: { slot: 1, ammo: null, cool: 0.45, tap: 0.3, kick: 0 },
+  pistol: { slot: 2, ammo: 'bul', cool: 0.34, tap: 0.17, kick: 0.014 },
+  shotgun: { slot: 3, ammo: 'shl', cool: 0.9, kick: 0.05 },
+  chaingun: { slot: 4, ammo: 'bul', cool: 0.11, kick: 0.007 },
+  launcher: { slot: 5, ammo: 'rkt', cool: 0.6, kick: 0.035 },
+  plasma: { slot: 6, ammo: 'cel', cool: 0.085, kick: 0.005 },
 };
 const WORDER = ['fist', 'pistol', 'shotgun', 'chaingun', 'launcher', 'plasma'];
 const WPICK = ['shotgun', 'chaingun', 'launcher', 'plasma'];
@@ -192,6 +192,45 @@ function addDecal(kind, x, y, z, n, size) {
 }
 function clearDecals() { for (const m of decals) m.material.dispose(); decals = []; }
 
+// ---------- gibs: chunks of a monster blown apart by a big hit ----------
+let gibs = [], GIB_GEO = null, GIB_MAT = null;
+function initGibs() {
+  GIB_GEO = [['#8a1a12', '#c05a50'], ['#6a0e0a', '#a03a30'], ['#b04040', '#e8d8c8']].map(([a, b]) => new Kit().ball(a, 0, 0, 0, 0.06, 0.045, 0.05).ball(b, 0.03, 0.02, 0, 0.03, 0.025, 0.03).build());
+  GIB_MAT = modelMat({});
+}
+function gib(t) {
+  sfx('gib', t.x, t.y);
+  bloodBurst(t.x, t.y, t.z + t.h * 0.5, 40);
+  addDecal('blood', t.x, t.y, t.floorZ, [0, 0, 1], 1.4 + t.r);
+  const n = 9 + Math.round(t.r * 10);
+  for (let i = 0; i < n; i++) {
+    const m = new THREE.Mesh(GIB_GEO[i % 3], GIB_MAT), s = rr(0.7, 1.6) * (0.6 + t.r);
+    m.scale.setScalar(s); worldGroup.add(m);
+    const a = rr(0, TAU), sp = rr(1.5, 4.5);
+    gibs.push({ m, x: t.x, y: t.y, z: t.z + rr(0.2, t.h), vx: Math.cos(a) * sp + (t.kvx || 0), vy: Math.sin(a) * sp + (t.kvy || 0), vz: rr(2, 5.5), rx: rr(-9, 9), ry: rr(-9, 9), life: rr(3, 5), splat: false });
+  }
+  if (gibs.length > 120) for (const g of gibs.splice(0, gibs.length - 120)) worldGroup && worldGroup.remove(g.m);
+}
+function updateGibs(dt) {
+  for (const g of gibs) {
+    g.life -= dt; g.vz -= 14 * dt;
+    const nx = g.x + g.vx * dt, ny = g.y + g.vy * dt;
+    if (!cell(nx, g.y).solid) g.x = nx; else g.vx *= -0.4;
+    if (!cell(g.x, ny).solid) g.y = ny; else g.vy *= -0.4;
+    g.z += g.vz * dt;
+    const f = cell(g.x, g.y).f;
+    if (g.z < f + 0.03) {
+      g.z = f + 0.03;
+      if (!g.splat && g.vz < -2) { g.splat = true; addDecal('blood', g.x, g.y, f, [0, 0, 1], rr(0.2, 0.4)); }
+      g.vz *= -0.3; g.vx *= 0.6; g.vy *= 0.6; g.rx *= 0.6; g.ry *= 0.6;
+    }
+    g.m.position.set(g.x, g.z, g.y); g.m.rotation.x += g.rx * dt; g.m.rotation.y += g.ry * dt;
+    if (g.life < 0.5) g.m.scale.multiplyScalar(Math.max(0.01, 1 - dt * 4));
+    if (g.life <= 0) worldGroup.remove(g.m);
+  }
+  gibs = gibs.filter(g => g.life > 0);
+}
+
 // ---------- state ----------
 let LV = null, levelIndex = 0, worldGroup = null, sky = null, things = [], projs = [], tlights = [], halos = [];
 let state = 'title', stateT = 0, showMap = false, fireHeld = false, levelTime = 0, totalKills = 0, totalItems = 0, gtime = 0;
@@ -256,7 +295,7 @@ function disposeWorld() {
   scene.remove(worldGroup); worldGroup = null;
 }
 function loadLevel(i, loadout) {
-  clearDecals();
+  clearDecals(); gibs = [];
   disposeWorld();
   if (sky) { scene.remove(sky); sky.traverse(o => { if (o.material) { if (o.material.map) o.material.map.dispose(); o.material.dispose(); } }); sky = null; }
   LV = LEVELS[i]; levelIndex = i;
@@ -284,7 +323,7 @@ function loadLevel(i, loadout) {
     x: LV.start[0] + 0.5, y: LV.start[1] + 0.5, z: c.f, floorZ: c.f, ceilZ: c.c, vz: 0, vx: 0, vy: 0, a: LV.start[2], pitch: 0, keys: {}, dead: false,
     kills: 0, items: 0, hurt: 0, bonus: 0, msg: '', msgT: 0, wcool: 0, refire: false, stepLag: 0, bob: 0, moveAmt: 0, turnV: 0,
     ouchT: 0, grinT: 0, lookDir: 0, lookT: 0, liqT: 1, shake: 0, deathT: 0, pendingW: null, seenT: 0, ch: 0, crouchT: 0, ads: 0, h: PH,
-    wst: { drop: 1, fire: 0, flash: 0, pump: 0, pumpT: -1, spin: 0, spinV: 0, alt: false, loaded: true, t: 0 },
+    hitT: 0, killT: 0, hitSndT: 0, kick: 0, sinceShot: 9, fireBuf: 0, wst: { drop: 1, fire: 0, flash: 0, pump: 0, pumpT: -1, spin: 0, spinV: 0, alt: false, loaded: true, t: 0 },
   });
   if (!P.has[P.w]) P.w = 'pistol';
   levelTime = 0; showMap = false;
@@ -456,23 +495,34 @@ function aimSlope(ang, range) {
   }
   return best ? clamp((best.z + best.h * 0.5 - (P.z + Math.min(0.5, P.h * 0.62))) / bd, -1.5, 1.5) : free;
 }
-function damage(t, amt, src) {
+function damage(t, amt, src, ox, oy) {
   amt = Math.round(amt);
+  // knockback away from the shooter or blast center
+  if (ox === undefined && src) { ox = src.x; oy = src.y; }
+  if (ox !== undefined && amt > 0) {
+    const dx = t.x - ox, dy = t.y - oy, l = Math.hypot(dx, dy) || 1;
+    const mass = t === P ? 100 : Math.max(50, t.d.hp || 100), k = Math.min(3.5, amt * 5 / mass);
+    t.kvx = (t.kvx || 0) + dx / l * k; t.kvy = (t.kvy || 0) + dy / l * k;
+    const sp = Math.hypot(t.kvx, t.kvy); if (sp > 5) { t.kvx *= 5 / sp; t.kvy *= 5 / sp; }
+    if (t === P) { P.vx += t.kvx * 1.2; P.vy += t.kvy * 1.2; t.kvx = t.kvy = 0; }
+  }
   if (t === P) { hurtPlayer(amt, src); return; }
   if (t.d.shoot) { t.hp -= amt; if (t.hp <= 0 && t.boom === undefined) { t.boom = rr(0.1, 0.2); t.boomSrc = src; } return; }
   if (!t.d.mon || t.dead) return;
-  t.hp -= amt; t.hitFlash = 0.1;
-  if (t.hp <= 0) { kill(t); return; }
+  t.hp -= amt; t.hitFlash = 0.1; t.jolt = Math.min(0.6, (t.jolt || 0) + amt / 45);
+  if (src === P) { P.hitT = 0.16; if (P.hitSndT <= 0) { sfx('hit'); P.hitSndT = 0.07; } }
+  if (t.hp <= 0) { if (src === P) { P.killT = 0.35; sfx('kill'); } kill(t, amt); return; }
   if (src && src !== P && src.d && src.d.mon && !src.dead && src.type !== t.type) t.target = src;
   if (t.state === 'idle') wake(t, true);
   if (Math.random() < t.d.pain && t.state !== 'charge') { t.state = 'pain'; t.timer = 0.22; sfx('epain', t.x, t.y); }
 }
-function kill(t) {
+function kill(t, amt = 0) {
   t.dead = true; t.state = 'die'; t.timer = 0; t.hitFlash = 0; t.fly = false; t.deathK = 0;
   if (t.counted) P.kills++;
   sfx(t.d.death || 'edeath', t.x, t.y);
   bloodBurst(t.x, t.y, t.z + t.h * 0.6, 14);
   if (t.type !== 'lostsoul') addDecal('blood', t.x, t.y, t.floorZ, [0, 0, 1], 0.7 + t.r * 1.2);
+  if (t.type !== 'lostsoul' && -t.hp >= Math.max(30, t.d.hp * 0.5)) { gib(t); removeThing(t); return; }
   if (t.type === 'lostsoul') { fireBurst(t.x, t.y, t.z + 0.3, [1, 0.6, 0.2], 30, 3, 0.25); addLight(t.x, t.y, t.z + 0.3, [1.6, 0.8, 0.3], 4, 0.4); removeThing(t); return; }
   if (t.d.drop) {
     const type = t.d.drop === 'shotgun' && P.has.shotgun ? 'shells' : t.d.drop;
@@ -498,7 +548,7 @@ function radiusDamage(x, y, z, R, maxD, src) {
   for (const t of list) {
     const dd = Math.max(Math.max(0, Math.hypot(t.x - x, t.y - y) - t.r), Math.max(0, Math.abs(t.z + t.h / 2 - z) - t.h / 2));
     if (dd >= R || !sightLine(x, y, z, t.x, t.y, t.z + t.h * 0.5)) continue;
-    damage(t, maxD * (1 - dd / R), src);
+    damage(t, maxD * (1 - dd / R), src, x, y);
   }
 }
 function explosion(x, y, z, big) {
@@ -546,7 +596,7 @@ function updateProj(p, dt) {
       if (t === p.src || !isShootable(t)) continue;
       if (Math.hypot(t.x - p.x, t.y - p.y) > t.r + p.r || p.z < t.z || p.z > t.z + t.h) continue;
       if (t.d.mon && p.src.d && p.src.d.mon && t.type === p.src.type) continue;
-      damage(t, roll(p.pd), p.src); burstProj(p); return;
+      damage(t, roll(p.pd), p.src, p.x - p.vx * 0.05, p.y - p.vy * 0.05); burstProj(p); return;
     }
     if (p.src !== P && !P.dead && Math.hypot(P.x - p.x, P.y - p.y) < P.r + p.r && p.z >= P.z && p.z <= P.z + P.h) { damage(P, roll(p.pd), p.src); burstProj(p); return; }
   }
@@ -602,6 +652,11 @@ function doAttack(t, tg) {
 }
 function updateMonster(t, dt) {
   const d = t.d; t.anim += dt; t.moved = false;
+  if (t.kvx || t.kvy) {
+    tryMove(t, t.x + t.kvx * dt, t.y) || (t.kvx = 0); tryMove(t, t.x, t.y + t.kvy * dt) || (t.kvy = 0);
+    const f = Math.exp(-7 * dt); t.kvx *= f; t.kvy *= f; if (Math.abs(t.kvx) + Math.abs(t.kvy) < 0.03) t.kvx = t.kvy = 0;
+  }
+  if (t.jolt) t.jolt = Math.max(0, t.jolt - dt * 3);
   if (t.flashT > 0) t.flashT -= dt; if (t.hitFlash > 0) t.hitFlash -= dt;
   gravity(t, dt);
   if (t.dead) { t.deathK = Math.min(1, t.deathK + dt * 2.2); if (t.state === 'die') { t.timer += dt; if (t.timer > 0.5) t.state = 'dead'; } return; }
@@ -704,7 +759,7 @@ function fireWeapon() {
   const w = WEAPONS[P.w], st = P.wst;
   if (w.ammo && P.ammo[w.ammo] < 1) { sfx('empty'); const b = bestWeapon(); if (b !== P.w) selectWeapon(b); P.wcool = 0.35; return; }
   if (w.ammo) P.ammo[w.ammo]--;
-  P.wcool = w.cool; st.fire = 1;
+  P.wcool = w.cool; st.fire = 1; P.sinceShot = 0; P.fireBuf = 0; P.kick += w.kick || 0;
   const ca = Math.cos(P.a), sa = Math.sin(P.a), oz = P.z + Math.min(0.5, P.h * 0.62), slope = aimSlope(P.a, 26);
   const acc = (1 - P.ads * 0.9) * (1 - P.ch * 0.4), spread = P.refire ? 0.055 * acc : 0;
   switch (P.w) {
@@ -759,14 +814,19 @@ function updatePlayer(dt) {
   if (c.liquid && P.z <= c.f + 0.02) { P.liqT -= dt; if (P.liqT <= 0) { P.liqT = 1; hurtPlayer(c.liquid === 'lava' ? 10 : 5, null); sfx('sizzle'); } }
   else P.liqT = Math.min(P.liqT, 0.3);
   // weapon state
-  if (P.pendingW) { st.drop += dt * 6; if (st.drop >= 1) { P.w = P.pendingW; P.pendingW = null; } }
-  else st.drop = Math.max(0, st.drop - dt * 6);
+  if (P.pendingW) { st.drop += dt * 12; if (st.drop >= 1) { P.w = P.pendingW; P.pendingW = null; } }
+  else st.drop = Math.max(0, st.drop - dt * 12);
   P.wcool -= dt; st.flash -= dt;
   st.fire = Math.max(0, st.fire - dt * (P.w === 'fist' ? 3 : 6));
   if (st.pumpT >= 0) { st.pumpT += dt; const ph = (st.pumpT - 0.25) / 0.5; st.pump = ph > 0 && ph < 1 ? Math.sin(ph * Math.PI) : 0; if (st.pumpT > 0.3 && st.pumpT - dt <= 0.3) sfx('pump'); if (st.pumpT > 0.8) st.pumpT = -1; }
   st.spinV = P.w === 'chaingun' && fireHeld ? 26 : st.spinV * Math.max(0, 1 - dt * 3); st.spin += st.spinV * dt;
   st.loaded = P.wcool < 0.25 && P.ammo.rkt > 0;
-  if (fireHeld && P.wcool <= 0 && st.drop < 0.15 && !P.pendingW) fireWeapon();
+  // hold = normal fire rate; a fresh click on a tap weapon (pistol, fist) may fire sooner;
+  // a click made slightly early is remembered for a moment instead of being lost
+  P.sinceShot += dt; P.fireBuf -= dt;
+  const wantFire = fireHeld || P.fireBuf > 0, wd = WEAPONS[P.w];
+  const ready = P.wcool <= 0 || (!P.refire && wd.tap && P.sinceShot >= wd.tap);
+  if (wantFire && ready && st.drop < 0.15 && !P.pendingW) fireWeapon();
   if (!fireHeld) P.refire = false;
   for (const t of things) {
     if (!t.d.item || t.remove) continue;
@@ -801,7 +861,7 @@ function animMonster(t, dt) {
   const a = t.aim, pain = t.state === 'pain' ? 1 : 0, rig = d.rig;
   const set = (j, x, y = 0, z = 0) => { if (J[j]) J[j].rotation.set(x, y, z); };
   if (J.legL) { set('legL', t.dead ? 0.3 : s * 0.6); set('legR', t.dead ? -0.2 : -s * 0.6); }
-  if (J.body) { J.body.rotation.x = -0.35 * pain + (rig === 'biter' ? 0.15 * a : 0); J.body.position.y = J.body.userData.base.y + Math.abs(s) * 0.012; }
+  if (J.body) { J.body.rotation.x = -0.35 * pain - (t.jolt || 0) * 0.7 + (rig === 'biter' ? 0.15 * a : 0); J.body.position.y = J.body.userData.base.y + Math.abs(s) * 0.012; }
   if (rig === 'soldier') { set('arms', lerp(0.55, -0.05, a) + Math.sin(t.walkPh * 0.5) * 0.04); }
   if (rig === 'thrower') {
     const melee = t.akind === 'melee';
@@ -879,6 +939,7 @@ function updateVisuals(dt) {
     t.mat.uniforms.flash.value = t.hitFlash > 0 ? 0.25 : 0;
     if (t.shadow) { t.shadow.position.set(t.x, t.floorZ + 0.012, t.y); t.shadow.visible = !(t.d.mon && t.dead); }
   }
+  if (GIB_MAT && gibs.length) { sampleLight(P.x, P.y, _L); GIB_MAT.uniforms.tint.value.set(Math.min(_L[0], 1.1), Math.min(_L[1], 1.1), Math.min(_L[2], 1.1)); }
   for (const h of halos) {
     if (h.t.remove) { h.m.visible = false; continue; }
     if (h.t.d.flicker) { const f = 0.85 + Math.sin(gtime * 17 + h.t.x) * 0.08 + Math.sin(gtime * 31 + h.t.y) * 0.07; h.m.scale.set(h.base * f, h.base * f, 1); }
@@ -900,7 +961,7 @@ function updateVisuals(dt) {
   const eye = P.dead ? P.z + lerp(EYE, 0.14, P.deathT) : P.z + lerp(EYE, 0.36, P.ch) + P.stepLag + bobZ * (1 - P.ads * 0.8);
   setFov(lerp(1, 0.5, P.ads));
   camera.position.set(P.x + rr(-sh, sh), eye + rr(-sh, sh), P.y + rr(-sh, sh));
-  camera.rotation.set(P.dead ? P.pitch * (1 - P.deathT) : P.pitch, -P.a - Math.PI / 2, P.dead ? P.deathT * 0.5 : 0);
+  camera.rotation.set(P.dead ? P.pitch * (1 - P.deathT) : P.pitch + P.kick, -P.a - Math.PI / 2, P.dead ? P.deathT * 0.5 : 0);
   if (sky) sky.position.set(camera.position.x, eye + 40, camera.position.z);
   listenerX = P.x; listenerY = P.y;
   updateViewModel(dt);
@@ -928,7 +989,9 @@ function update(dt) {
   tlights = tlights.filter(l => l.life > 0);
   PFX.update(dt); PDK.update(dt);
   P.hurt = Math.max(0, P.hurt - dt * 0.9); P.bonus = Math.max(0, P.bonus - dt);
-  P.msgT -= dt; P.ouchT -= dt; P.grinT -= dt; P.lookT -= dt;
+  P.msgT -= dt; P.ouchT -= dt; P.grinT -= dt; P.lookT -= dt; P.hitT -= dt; P.killT -= dt; P.hitSndT -= dt;
+  P.kick *= Math.exp(-11 * dt);
+  updateGibs(dt);
   if (P.lookT <= 0) { P.lookT = rr(0.8, 2); P.lookDir = ri(-1, 1); }
   if (state === 'dying') { stateT -= dt; if (stateT <= 0) { state = 'dead'; showOv('ovDead'); } }
   if (state === 'exiting') { stateT -= dt; if (stateT <= 0) showIntermission(); }
@@ -947,6 +1010,11 @@ function drawOverlay() {
   if (state !== 'title' && !P.dead && !showMap && P.ads < 0.6) {
     O.strokeStyle = 'rgba(255,240,220,0.7)'; O.lineWidth = 1.5;
     O.beginPath(); for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { O.moveTo(OW / 2 + dx * 4, VIEWH / 2 + dy * 4); O.lineTo(OW / 2 + dx * 9, VIEWH / 2 + dy * 9); } O.stroke();
+  }
+  if (P.hitT > 0 && !P.dead && state === 'play') {
+    const kill = P.killT > 0, a = Math.min(1, (kill ? P.killT / 0.35 : P.hitT / 0.16)), r0 = kill ? 8 : 6, r1 = kill ? 17 : 12;
+    O.strokeStyle = kill ? `rgba(255,60,40,${a})` : `rgba(255,255,255,${a})`; O.lineWidth = kill ? 2.5 : 2;
+    O.beginPath(); for (const [sx, sy] of [[1, 1], [1, -1], [-1, 1], [-1, -1]]) { O.moveTo(OW / 2 + sx * r0, VIEWH / 2 + sy * r0); O.lineTo(OW / 2 + sx * r1, VIEWH / 2 + sy * r1); } O.stroke();
   }
   if (P.hurt > 0) { O.fillStyle = `rgba(200,0,0,${P.hurt * 0.5})`; O.fillRect(0, 0, OW, VIEWH); }
   if (P.bonus > 0) { O.fillStyle = `rgba(255,215,90,${P.bonus * 0.3})`; O.fillRect(0, 0, OW, VIEWH); }
@@ -1056,7 +1124,7 @@ addEventListener('keydown', e => {
   if (c === 'KeyP') pauseGame();
   if (c === 'KeyM') { musicOn = !musicOn; if (musicOn) startMusic(); else stopMusic(); say(musicOn ? 'מוזיקה: פועלת' : 'מוזיקה: כבויה'); }
   if (c === 'Space') jump();
-  if (c === 'KeyF') fireHeld = true;
+  if (c === 'KeyF') { fireHeld = true; P.fireBuf = 0.18; }
   if (c === 'KeyE') useAction();
   if (c === 'Tab') showMap = !showMap;
   if (c.startsWith('Digit')) { const w = WORDER[+c.slice(5) - 1]; if (w) selectWeapon(w); }
@@ -1070,7 +1138,7 @@ function cycleWeapon(dir) {
 frameEl.addEventListener('mousedown', e => {
   if (state !== 'play' || isTouch) return;
   if (document.pointerLockElement !== glc) { lockPointer(); return; }
-  if (e.button === 0) fireHeld = true;
+  if (e.button === 0) { fireHeld = true; P.fireBuf = 0.18; }
   if (e.button === 2) aimHeld = true;
 });
 addEventListener('mouseup', e => { if (isTouch) return; if (e.button === 0) fireHeld = false; if (e.button === 2) aimHeld = false; });
@@ -1144,7 +1212,7 @@ function loop(now) {
 }
 function boot(data) {
   initTextures(Math.min(8, renderer.capabilities.getMaxAnisotropy()));
-  initSprites(); initModels(); initDecals(); initPost(renderer); buildHudBg(); buildVignette();
+  initSprites(); initModels(); initDecals(); initGibs(); initPost(renderer); buildHudBg(); buildVignette();
   SHADOW_MAT = new THREE.MeshBasicMaterial({ map: SPR.shadow, transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 });
   CORE_MAT = new THREE.SpriteMaterial({ map: SPR.glow, color: 0xffffff, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, fog: false });
   buildViewModels();

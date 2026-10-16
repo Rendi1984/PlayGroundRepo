@@ -47,9 +47,20 @@ function makeNoise2(nx, ny) {
   };
 }
 
+function makeDetail() {
+  const D = 128, F = makeFbm(4), G = makeFbm(16), a = new Uint8Array(D * D * 4);
+  for (let y = 0; y < D; y++) for (let x = 0; x < D; x++) {
+    const i = (y * D + x) * 4;
+    a[i] = clamp(F(x, y, D, 4) * 255, 0, 255); a[i + 1] = clamp((G(x, y, D, 3) * 0.7 + rnd() * 0.3) * 255, 0, 255); a[i + 2] = 128; a[i + 3] = 255;
+  }
+  const t = new THREE.DataTexture(a, D, D, THREE.RGBAFormat);
+  t.wrapS = t.wrapT = THREE.RepeatWrapping; t.magFilter = THREE.LinearFilter; t.minFilter = THREE.LinearMipmapLinearFilter; t.generateMipmaps = true; t.needsUpdate = true;
+  return t;
+}
 function initTextures(aniso) {
   TEX_ANISO = aniso;
   srand(7);
+  SU.detail.value = makeDetail();
   const F4 = makeFbm(4), F8 = makeFbm(8), F16 = makeFbm(16), F32 = makeFbm(32);
   const Wc = makeWorley(7, TS), Wf = makeWorley(14, TS), Wg = makeWorley(28, TS);
   const S1 = makeNoise2(48, 3), S2 = makeNoise2(96, 5);

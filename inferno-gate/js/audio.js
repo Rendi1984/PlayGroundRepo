@@ -62,6 +62,8 @@ function sfx(name, x, y) {
     case 'doorstop': N(0.12, 400, 0.6); break;
     case 'locked': Tn('square', 200, 200, 0.12, 0.2); Tn('square', 150, 150, 0.15, 0.2, 0.14); break;
     case 'oof': Tn('sawtooth', 160, 90, 0.15, 0.22); break;
+    case 'hit': aTone(t, 'square', 1800, 1200, 0.035, 0.07, null, 0); aNoise(t, 0.04, 2500, 0.12, true, null, 0); break;
+    case 'kill': aTone(t, 'sine', 900, 300, 0.12, 0.16, null, 0); aNoise(t, 0.18, 900, 0.3, false, null, 0); break;
     case 'land': N(0.12, 300, 0.5); break;
     case 'jump': N(0.08, 500, 0.25); Tn('sine', 180, 260, 0.08, 0.12); break;
     case 'hurt': Tn('sawtooth', 320, 110, 0.22, 0.3); N(0.1, 900, 0.2); break;

@@ -49,6 +49,7 @@ const SU = {
   fogDen: { value: 0.004 },
   gain: { value: 1 },
   time: { value: 0 },
+  detail: { value: null },
 };
 const GLSL_COMMON = `
 uniform vec3 dlPos[8]; uniform vec3 dlCol[8]; uniform float dlRad[8]; uniform int dlN;
@@ -60,11 +61,16 @@ attribute vec4 tang; attribute vec3 blight;
 varying vec2 vUv; varying vec3 vL; varying vec3 vW; varying vec3 vN; varying vec4 vT;
 void main(){ vUv=uv; vL=blight; vec4 w=modelMatrix*vec4(position,1.0); vW=w.xyz; vN=normal; vT=tang; gl_Position=projectionMatrix*viewMatrix*w; }`;
 const WORLD_FS = GLSL_COMMON + `
-uniform sampler2D map; uniform sampler2D nmap; uniform vec2 scroll; uniform float emis;
+uniform sampler2D map; uniform sampler2D nmap; uniform vec2 scroll; uniform float emis; uniform sampler2D detail;
 varying vec2 vUv; varying vec3 vL; varying vec3 vW; varying vec3 vN; varying vec4 vT;
 void main(){
   vec2 uv=vUv+scroll;
   vec4 tc=texture2D(map,uv);
+  // break up visible tiling: slow world-space variation plus fine grain that only shows up close
+  float macro=texture2D(detail,vW.xz*0.043+vec2(vW.y*0.031,vW.y*0.017)).r;
+  float micro=texture2D(detail,uv*4.0).g;
+  float near=clamp(1.0-length(vW-cameraPosition)/6.0,0.0,1.0);
+  tc.rgb*=mix(0.78,1.16,macro)*mix(1.0,0.86+micro*0.28,near*(1.0-tc.a));
   vec4 nm=texture2D(nmap,uv); vec3 nt=nm.xyz*2.0-1.0; float gloss=nm.a;
   vec3 N=normalize(vN), T=normalize(vT.xyz), B=cross(N,T)*vT.w;
   vec3 n=normalize(T*nt.x+B*nt.y+N*nt.z);

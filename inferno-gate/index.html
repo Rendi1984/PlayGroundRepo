@@ -88,6 +88,9 @@ kbd{font-family:var(--f-mono);font-size:1.15em;background:#1b1512;border:1px sol
 #bJump{right:22%;bottom:38%;width:10%;max-width:58px;aspect-ratio:1}
 #bWpn{right:4%;bottom:52%;width:10%;max-width:58px;aspect-ratio:1}
 #bMap{right:16%;bottom:58%;width:9%;max-width:52px;aspect-ratio:1}
+.tb.on{background:rgba(192,23,14,.55);border-color:var(--ember)}
+#bCrouch{left:31%;bottom:20%;width:10%;max-width:58px;aspect-ratio:1}
+#bAim{right:38%;bottom:20%;width:10%;max-width:58px;aspect-ratio:1}
 #bMenu{left:3%;top:4%;width:9%;max-width:50px;aspect-ratio:1;border-radius:4px;font-size:18px}
 @media (max-width:560px){.row{grid-template-columns:minmax(0,1fr) 3rem}.row label{grid-column:1/-1}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
@@ -104,6 +107,8 @@ kbd{font-family:var(--f-mono);font-size:1.15em;background:#1b1512;border:1px sol
     <div class="tb" id="bFire">ירי</div>
     <div class="tb" id="bUse">פתח</div>
     <div class="tb" id="bJump">קפוץ</div>
+    <div class="tb" id="bCrouch">כריעה</div>
+    <div class="tb" id="bAim">כוונת</div>
     <div class="tb" id="bWpn">נשק</div>
     <div class="tb" id="bMap">מפה</div>
     <div class="tb" id="bMenu" aria-label="תפריט">☰</div>
@@ -161,6 +166,8 @@ kbd{font-family:var(--f-mono);font-size:1.15em;background:#1b1512;border:1px sol
           <div class="chks">
             <label class="chk"><input type="checkbox" id="oBob">נדנוד מצלמה בהליכה</label>
             <label class="chk"><input type="checkbox" id="oFps">הצגת FPS</label>
+            <label class="chk"><input type="checkbox" id="oBloom">זוהר ותאורה קולנועית</label>
+            <label class="chk"><input type="checkbox" id="oDecals">סימני כדורים ודם על הקירות</label>
           </div>
           <h4>שמע</h4>
           <div class="row"><label for="oSfx">אפקטים</label><input type="range" id="oSfx" min="0" max="100" step="5"><output id="oSfxV"></output></div>
@@ -191,7 +198,9 @@ kbd{font-family:var(--f-mono);font-size:1.15em;background:#1b1512;border:1px sol
           <h4>טיפים</h4>
           <ul>
             <li>מפלצות שפוגעות זו בזו בטעות מתחילות להילחם ביניהן. תן להן.</li>
-            <li>אפשר לקפוץ על מדרגות ומדפים נמוכים.</li>
+            <li>ארגזים ומחסומי בטון עוצרים כדורים וכדורי אש. כרע (<kbd>C</kbd>) מאחורי ארגז נמוך והמפלצות מפסיקות לראות אותך. ערימת ארגזים גבוהה מסתירה גם בעמידה.</li>
+            <li>לחץ ימני מכניס לכוונת: זום, ירי מדויק ורובה ציד מרוכז יותר. התנועה איטית יותר בזמן הכיוון.</li>
+            <li>אפשר לקפוץ על מדרגות, מדפים נמוכים וארגזים.</li>
             <li>כשנגמרת התחמושת המשחק עובר לבד לנשק הבא שיש לו כדורים.</li>
             <li>בגלל הכיוון האוטומטי לא צריך לכוון בדיוק לגובה, מספיק לכוון לכיוון.</li>
             <li>המפה (<kbd>Tab</kbd>) מראה רק את מה שכבר ראית.</li>
@@ -214,6 +223,8 @@ kbd{font-family:var(--f-mono);font-size:1.15em;background:#1b1512;border:1px sol
           <div>עכבר</div><span>הסתכלות לכל הכיוונים (לחץ על המסך כדי לנעול את העכבר)</span>
           <div><kbd>←</kbd> <kbd>→</kbd></div><span>סיבוב בלי עכבר</span>
           <div>קליק שמאלי / <kbd>F</kbd></div><span>ירי (החזק לירי רצוף)</span>
+          <div>קליק ימני</div><span>כוונת וזום (החזק). ירי מדויק בלי פיזור</span>
+          <div><kbd>C</kbd></div><span>כריעה (החזק). מסתתרים מאחורי ארגזים ומחסומים</span>
           <div><kbd>Space</kbd></div><span>קפיצה</span>
           <div><kbd>Shift</kbd></div><span>ריצה</span>
           <div><kbd>E</kbd></div><span>פתיחת דלת והפעלת מתג</span>
@@ -222,7 +233,7 @@ kbd{font-family:var(--f-mono);font-size:1.15em;background:#1b1512;border:1px sol
           <div><kbd>M</kbd></div><span>הפעלה וכיבוי של המוזיקה</span>
           <div><kbd>Esc</kbd> / <kbd>P</kbd></div><span>עצירה ותפריט</span>
         </div>
-        <p class="note">בטלפון: ג'ויסטיק בצד שמאל, גרירה בצד ימין להסתכלות, כפתור ☰ לתפריט.</p>
+        <p class="note">בטלפון: ג'ויסטיק בצד שמאל, גרירה בצד ימין להסתכלות, כפתורי כריעה וכוונת נדלקים ונכבים בלחיצה, כפתור ☰ לתפריט.</p>
       </div>
     </div>
   </div>
@@ -248,6 +259,7 @@ kbd{font-family:var(--f-mono);font-size:1.15em;background:#1b1512;border:1px sol
 <script src="js/levels.js"></script>
 <script src="js/world.js"></script>
 <script src="js/models.js"></script>
+<script src="js/post.js"></script>
 <script src="js/audio.js"></script>
 <script src="js/hud.js"></script>
 <script src="js/game.js"></script>

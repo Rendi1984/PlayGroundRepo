@@ -13,6 +13,8 @@ The previous version (a single-file raycaster) is kept in `classic.html`.
 | Move | W A S D |
 | Look in every direction | Mouse (click the screen for pointer lock) or the arrow keys |
 | Fire | Left click / F |
+| Aim down sights (zoom, no spread) | Hold right click |
+| Crouch (hide behind cover) | Hold C |
 | Jump | Space |
 | Run | Shift |
 | Open door / flip switch | E |
@@ -21,7 +23,7 @@ The previous version (a single-file raycaster) is kept in `classic.html`.
 | Pause and menu | Esc / P |
 | Music | M |
 
-On a phone, a joystick and on-screen buttons appear, including ☰ for the menu.
+On a phone, a joystick and on-screen buttons appear, including crouch and aim toggles and ☰ for the menu.
 
 ## Menus
 - **Main menu:** new game with a difficulty level (easy / normal / hard), options, how to play, controls
@@ -30,8 +32,10 @@ On a phone, a joystick and on-screen buttons appear, including ☰ for the menu.
 
 ## What's in it
 - **Engine:** areas with floor and ceiling heights (stairs, platforms, unreachable ledges), open sky, Doom-style rising doors
+- **Cover:** wooden crates, concrete barriers and tall crate stacks. They stop bullets, projectiles and line of sight, so crouching behind a low one hides you from monsters
+- **Post-processing:** bloom around bright light sources, a soft tone curve, colour grading and fine film grain. Bullet holes, scorch marks and blood stay on walls and floors
 - **Lighting:** baked static light with shadows, plus up to 8 dynamic lights (muzzle flashes, projectiles, explosions)
-- **Textures:** generated textures with relief (normal maps) and emissive parts (lights, signs, nukage and lava)
+- **Textures:** generated 256px textures with relief (normal maps), gloss maps for highlights, edge wear, grime streaks and emissive parts. Corner shading (ambient occlusion) is baked into the walls
 - **Levels:** 3 levels, red and blue keys, liquids that damage you, an exit switch, and a stats screen
 - **3D models:** monsters with walk, attack and death animation (a falling body, a mouth that opens), spinning items, and a first-person weapon with hands whose fingers wrap the grips
 - **Monsters (8):** soldier, shotgun sergeant, imp, demon, spectre (semi-invisible), lost soul (charging skull), cacodemon, baron.
@@ -41,4 +45,4 @@ On a phone, a joystick and on-screen buttons appear, including ☰ for the menu.
 
 ## Code layout
 `js/core.js` math, noise and drawing helpers · `js/textures.js` textures and sky · `js/sprites.js` monster and item art ·
-`js/levels.js` maps · `js/world.js` geometry, lighting and shaders · `js/models.js` 3D models and hands · `js/audio.js` sound · `js/hud.js` weapon and status bar · `js/game.js` logic and AI
+`js/levels.js` maps · `js/world.js` geometry, lighting and shaders · `js/models.js` 3D models and hands · `js/post.js` bloom and colour · `js/audio.js` sound · `js/hud.js` weapon and status bar · `js/game.js` logic and AI

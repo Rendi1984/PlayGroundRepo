@@ -7,10 +7,18 @@ const STEP = 0.46, EYE = 0.66, PH = 0.875, PR = 0.25;
 const OOB = { solid: true, wt: 'rock', f: 0, c: 0 };
 let WD = null;
 
+// Cover pieces replace the floor of a cell with a raised block (crate top / barrier top),
+// keeping that cell's ceiling, sky and lighting. Low ones hide a crouching player.
+const COVER = {
+  crate: { f: 0.62, top: 'cratetop', side: 'crate' },
+  barrier: { f: 0.56, top: 'concrete', side: 'concrete' },
+  stack: { f: 1.2, top: 'cratetop', side: 'crate' },
+};
 function parseLevel(L) {
   const H = L.map.length, W = L.map[0].length, cells = new Array(W * H), doors = [];
   L.map.forEach((row, y) => { if (row.length !== W) console.error('map row width', L.name, y, row.length); });
   const pil = new Map((L.pillars || []).map(([c, x, y]) => [y * W + x, c]));
+  const cov = new Map((L.cover || []).map(([k, x, y]) => [y * W + x, k]));
   for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
     const ch = pil.get(y * W + x) || L.map[y][x] || '#';
     const w = L.walls[ch];
@@ -19,6 +27,8 @@ function parseLevel(L) {
     if (!s) { console.error('unknown map char', ch, x, y); cells[y * W + x] = { solid: true, wt: L.defWall, x, y }; continue; }
     const c = { solid: false, x, y, f: s.f, c: s.c, ft: s.ft, ct: s.ct, sky: !!s.sky, liquid: s.liquid || null, amb: s.l, side: s.side, up: s.up, lit: !!s.lit };
     if (s.door) { c.door = { x, y, f: s.f, top: s.c, cur: s.f, state: 0, timer: 0, key: s.key || null, tex: s.tex, ns: false, mesh: null }; doors.push(c.door); }
+    const cv = cov.get(y * W + x);
+    if (cv) { const k = COVER[cv]; Object.assign(c, { f: k.f, ft: k.top, side: k.side, liquid: null, cover: true }); }
     cells[y * W + x] = c;
   }
   WD = { W, H, cells, doors, lg: null, seen: new Uint8Array(W * H) };
@@ -55,18 +65,24 @@ varying vec2 vUv; varying vec3 vL; varying vec3 vW; varying vec3 vN; varying vec
 void main(){
   vec2 uv=vUv+scroll;
   vec4 tc=texture2D(map,uv);
-  vec3 nt=texture2D(nmap,uv).xyz*2.0-1.0;
+  vec4 nm=texture2D(nmap,uv); vec3 nt=nm.xyz*2.0-1.0; float gloss=nm.a;
   vec3 N=normalize(vN), T=normalize(vT.xyz), B=cross(N,T)*vT.w;
   vec3 n=normalize(T*nt.x+B*nt.y+N*nt.z);
+  vec3 V=normalize(cameraPosition-vW);
   float bump=clamp(dot(nt,vec3(-0.38,0.45,0.81)),0.0,1.25)/0.81;
-  vec3 light=vL*mix(1.0,bump,0.6);
+  vec3 light=vL*mix(1.0,bump,0.6), spec=vec3(0.0);
+  float sp=8.0+gloss*72.0;
   for(int i=0;i<8;i++){
     if(i>=dlN) break;
     vec3 Lv=dlPos[i]-vW; float d=length(Lv); float a=clamp(1.0-d/dlRad[i],0.0,1.0); a*=a;
-    light+=dlCol[i]*a*(0.15+0.85*max(dot(n,Lv/max(d,0.001)),0.0));
+    vec3 L=Lv/max(d,0.001);
+    light+=dlCol[i]*a*(0.15+0.85*max(dot(n,L),0.0));
+    spec+=dlCol[i]*a*pow(max(dot(n,normalize(L+V)),0.0),sp)*gloss*1.6;
   }
-  vec3 c=tc.rgb*light*gain + tc.rgb*tc.a*emis;
-  gl_FragColor=vec4(fogIt(min(c,vec3(1.0)),vW),1.0);
+  vec3 R=reflect(-V,n);
+  spec+=vL*pow(max(R.y,0.0),6.0)*gloss*0.28 + vL*pow(max(dot(R,normalize(vec3(0.4,0.7,0.3))),0.0),24.0)*gloss*0.35;
+  vec3 c=(tc.rgb*light+spec)*gain + tc.rgb*tc.a*emis;
+  gl_FragColor=vec4(fogIt(c,vW),1.0);
 }`;
 const SPRITE_VS = `
 varying vec2 vUv; varying vec3 vW;
@@ -118,6 +134,20 @@ function bakeClear(ax, ay, az, bx, by, bz) {
     if (c.solid || c.door || z < c.f - 0.01 || z > c.c + 0.01) return false;
   }
   return true;
+}
+// fraction of nearby probe points that are open air; darkens corners and the foot of walls
+const AO_DIRS = [];
+for (const r of [0.22, 0.45]) for (let i = 0; i < 8; i++) { const a = i / 8 * TAU; AO_DIRS.push([Math.cos(a) * r, Math.sin(a) * r, 0], [Math.cos(a) * r * 0.7, Math.sin(a) * r * 0.7, r * 0.7], [Math.cos(a) * r * 0.7, Math.sin(a) * r * 0.7, -r * 0.7]); }
+function bakeAO(px, py, pz, N) {
+  let occ = 0, tot = 0;
+  for (const d of AO_DIRS) {
+    const dot = d[0] * N[0] + d[1] * N[1] + d[2] * N[2];
+    if (dot < -0.02) continue;
+    const x = px + d[0] + N[0] * 0.03, y = py + d[1] + N[1] * 0.03, z = pz + d[2] + N[2] * 0.03, c = cell(x, y), w = 1 / (0.3 + Math.hypot(d[0], d[1], d[2]));
+    tot += w;
+    if (c.solid || c.door || z < c.f || (!c.sky && z > c.c)) occ += w;
+  }
+  return tot ? 1 - 0.62 * occ / tot : 1;
 }
 function lightAt(px, py, pz, nx, ny, nz, amb, sky, omni, out) {
   const L = BAKE_L;
@@ -178,7 +208,8 @@ function rect(g, o, U, V, N, T, Bv, uvf, su, sv, cl) {
     // sample light slightly off the surface and inside the owning cell
     const sx = clamp(x + N[0] * 0.04, cl.x0 + 0.03, cl.x0 + 0.97), sy = clamp(y + N[1] * 0.04, cl.y0 + 0.03, cl.y0 + 0.97);
     lightAt(sx, sy, z + N[2] * 0.04, N[0], N[1], N[2], cl.amb, cl.sky, false, _lc);
-    g.l.push(_lc[0], _lc[1], _lc[2]);
+    const ao = bakeAO(sx, sy, z + N[2] * 0.04, N);
+    g.l.push(_lc[0] * ao, _lc[1] * ao, _lc[2] * ao);
   }
   const U3 = [U[0], U[2], U[1]], V3 = [V[0], V[2], V[1]];
   const fr = (U3[1] * V3[2] - U3[2] * V3[1]) * N3[0] + (U3[2] * V3[0] - U3[0] * V3[2]) * N3[1] + (U3[0] * V3[1] - U3[1] * V3[0]) * N3[2] > 0;
@@ -231,7 +262,7 @@ function buildWorld(L, things) {
         continue;
       }
       const nbC = nb.door ? nb.door.top : nb.c;
-      if (nb.f > c.f) wallFace(grp(nb.side || 'step'), cx, cy, dx, dy, c.f, nb.f, cl, false);
+      if (nb.f > c.f) wallFace(grp(nb.side || 'step'), cx, cy, dx, dy, c.f, nb.f, cl, !!nb.cover);
       if (nbC < myC && !(c.sky && nb.sky)) wallFace(grp(c.up || L.defWall), cx, cy, dx, dy, nbC, myC, cl, false);
     }
   }

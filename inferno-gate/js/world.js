@@ -181,6 +181,7 @@ function collectLights(L, things) {
     if (c.solid) continue;
     if (c.lit && !c.door && c.x % 2 === 0 && c.y % 2 === 0) out.push({ x: c.x + 0.5, y: c.y + 0.5, z: c.c - 0.12, r: 4.6, c: [0.82, 0.8, 0.74] });
     if (c.liquid === 'nukage' && (c.x + c.y) % 2 === 0) out.push({ x: c.x + 0.5, y: c.y + 0.5, z: c.f + 0.18, r: 2.6, c: [0.18, 0.7, 0.12] });
+    if (c.liquid === 'acid' && (c.x + c.y) % 2 === 0) out.push({ x: c.x + 0.5, y: c.y + 0.5, z: c.f + 0.2, r: 3, c: [0.7, 0.18, 1.0] });
     if (c.liquid === 'lava' && (c.x + c.y) % 2 === 0) out.push({ x: c.x + 0.5, y: c.y + 0.5, z: c.f + 0.25, r: 3.4, c: [1.1, 0.38, 0.06] });
   }
   for (const c of WD.cells) {
@@ -191,7 +192,7 @@ function collectLights(L, things) {
     }
   }
   for (const t of things) {
-    const lt = { lamp: [1.0, 5.6, [1.05, 1.02, 0.95]], torch: [0.9, 5, [1.25, 0.5, 0.16]], soulsphere: [0.4, 2.6, [0.3, 0.42, 1.2]], redkey: [0.2, 1.6, [0.9, 0.1, 0.05]], bluekey: [0.2, 1.6, [0.1, 0.25, 1.0]], barrel: [0.6, 1.4, [0.15, 0.6, 0.1]] }[t.type];
+    const lt = { lamp: [1.0, 5.6, [1.05, 1.02, 0.95]], torch: [0.9, 5, [1.25, 0.5, 0.16]], soulsphere: [0.4, 2.6, [0.3, 0.42, 1.2]], redkey: [0.2, 1.6, [0.9, 0.1, 0.05]], bluekey: [0.2, 1.6, [0.1, 0.25, 1.0]], barrel: [0.6, 1.4, [0.15, 0.6, 0.1]], pod: [0.35, 5.6, [1.0, 0.4, 1.45]] }[t.type];
     if (lt) out.push({ x: t.x, y: t.y, z: t.z + lt[0], r: lt[1], c: lt[2] });
   }
   return out;

@@ -295,6 +295,30 @@ function initTextures(aniso) {
     if (hot < 0.3) { o[0] = 80 + n * 30; o[1] = 22 + n * 10; o[2] = 12; o[3] = 0.7; o[4] = 0.15; o[5] = 0.3; return; }
     o[0] = 255; o[1] = 70 + hot * 170 * n + hot * 40; o[2] = 10 + hot * 50; o[3] = 0.2; o[4] = 0.6 + hot * 0.4; o[5] = 0.8;
   }, 4, 1.15, false, 0);
+  // ---- alien hive ----
+  defTex('hive', (x, y, o) => {
+    const w = Wf(x, y), w2 = Wg(x, y), n = F8(x, y, TS, 5), rib = Math.sin(x / TS * TAU * 6 + n * 4) * 0.5 + 0.5;
+    const vein = clamp((w[1] - w[0]) * 4, 0, 1), bump = Math.pow(clamp(1 - w2[0], 0, 1), 1.4);
+    let r = 40 + rib * 30 + bump * 26, g = 26 + rib * 14 + bump * 12, b = 52 + rib * 34 + bump * 30, em = 0, gl = 0.55;
+    if (vein < 0.12) { r = 170; g = 80; b = 255; em = 0.75 * (1 - vein / 0.12); gl = 0.9; }
+    o[0] = r * (0.7 + n * 0.5); o[1] = g * (0.7 + n * 0.5); o[2] = b * (0.7 + n * 0.5); o[3] = rib * 0.45 + bump * 0.4 + (vein < 0.12 ? -0.15 : 0.1); o[4] = em; o[5] = gl;
+  }, 8);
+  defTex('hivefl', (x, y, o) => {
+    const w = Wc(x, y), w2 = Wg(x, y), n = F8(x, y, TS, 5), slime = F16(x + 77, y, TS, 4) > 0.6, crack = clamp((w[1] - w[0]) * 5, 0, 1);
+    let r = 52 * (0.6 + n * 0.6), g = 38 * (0.6 + n * 0.6), b = 64 * (0.6 + n * 0.6), em = 0, gl = 0.25;
+    if (crack < 0.15) { r = 150; g = 60; b = 230; em = 0.55; }
+    if (slime) { r = r * 0.6 + 40; g = g * 0.6 + 70; b = b * 0.6 + 40; gl = 0.9; }
+    o[0] = r; o[1] = g; o[2] = b; o[3] = n * 0.5 + (1 - w2[0]) * 0.3 + crack * 0.2; o[4] = em; o[5] = gl;
+  }, 7);
+  defTex('hivece', (x, y, o) => {
+    const w = Wf(x, y), n = F8(x, y, TS, 5), bump = clamp(1 - w[0], 0, 1);
+    o[0] = (30 + bump * 30) * (0.6 + n * 0.5); o[1] = (20 + bump * 14) * (0.6 + n * 0.5); o[2] = (40 + bump * 36) * (0.6 + n * 0.5); o[3] = bump; o[5] = 0.6;
+    if (w[0] < 0.08) { o[0] = 200; o[1] = 120; o[2] = 255; o[4] = 0.8; }
+  }, 8);
+  defTex('acid', (x, y, o) => {
+    const n = F8(x, y, TS, 6), s2 = Math.sin((y / TS * TAU * 2) + n * 7) * 0.5 + 0.5, f = F32(x, y, TS, 2);
+    o[0] = 140 + n * 60 + s2 * 40; o[1] = 30 + n * 40; o[2] = 160 + n * 70 + s2 * 25; o[3] = n * 0.8 + f * 0.2; o[4] = 0.55 + s2 * 0.4; o[5] = 0.95;
+  }, 3, 0.95, false, 0);
 }
 
 // Sky panorama for a level: glowing horizon, drifting clouds, jagged mountains.

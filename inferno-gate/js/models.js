@@ -66,7 +66,7 @@ const MODEL_VS = `
 attribute vec3 vcol; varying vec3 vC; varying vec3 vN; varying vec3 vW;
 void main(){ vC=vcol; vN=normalize(mat3(modelMatrix)*normal); vec4 w=modelMatrix*vec4(position,1.0); vW=w.xyz; gl_Position=projectionMatrix*viewMatrix*w; }`;
 const MODEL_FS = GLSL_COMMON + `
-uniform vec3 tint; uniform float bright; uniform float fuzz; uniform float flash; uniform float noFog;
+uniform vec3 tint; uniform float bright; uniform float fuzz; uniform float flash; uniform float noFog; uniform float cloak;
 varying vec3 vC; varying vec3 vN; varying vec3 vW;
 void main(){
   vec3 n=normalize(vN);
@@ -81,6 +81,11 @@ void main(){
   float em=step(1.01,max(vC.r,max(vC.g,vC.b)));
   vec3 c=mix(min(vC*light*gain,vec3(1.0)), min(vC*0.62,vec3(1.0)), em)+vec3(flash);
   if(noFog<0.5) c=fogIt(c,vW);
+  if(cloak>0.01){
+    float nz=fract(sin(dot(floor(gl_FragCoord.xy/2.0)+vec2(time*9.0),vec2(12.9898,78.233)))*43758.5453);
+    vec3 sh=vec3(0.45,0.8,1.0)*(rim*1.4+0.05);
+    gl_FragColor=vec4(mix(c,sh,cloak),mix(1.0,0.03+rim*0.6+nz*0.06,cloak)); return;
+  }
   if(fuzz>0.5){
     float nz=fract(sin(dot(floor(gl_FragCoord.xy/3.0)+vec2(time*13.0,time*7.0),vec2(12.9898,78.233)))*43758.5453);
     gl_FragColor=vec4(c*0.1,0.22+0.45*nz); return;
@@ -89,9 +94,9 @@ void main(){
 }`;
 function modelMat(opts = {}) {
   return new THREE.ShaderMaterial({
-    uniforms: { ...SU, tint: { value: new THREE.Vector3(1, 1, 1) }, bright: { value: opts.bright ? 1 : 0 }, fuzz: { value: opts.fuzz ? 1 : 0 }, flash: { value: 0 }, noFog: { value: opts.noFog ? 1 : 0 } },
+    uniforms: { ...SU, tint: { value: new THREE.Vector3(1, 1, 1) }, bright: { value: opts.bright ? 1 : 0 }, fuzz: { value: opts.fuzz ? 1 : 0 }, cloak: { value: 0 }, flash: { value: 0 }, noFog: { value: opts.noFog ? 1 : 0 } },
     vertexShader: MODEL_VS, fragmentShader: MODEL_FS,
-    transparent: !!opts.fuzz, depthWrite: !opts.fuzz, side: opts.double ? THREE.DoubleSide : THREE.FrontSide,
+    transparent: !!(opts.fuzz || opts.cloak), depthWrite: !(opts.fuzz || opts.cloak), side: opts.double ? THREE.DoubleSide : THREE.FrontSide,
   });
 }
 
@@ -256,6 +261,90 @@ const ITEM_KITS = {
 const FLAME = () => new Kit([0, 0.86, 0]).cone('#ff4a10', [0, 0.85, 0], [0, 1.08, 0], 0.07, true).cone('#ffcc40', [0, 0.85, 0], [0, 1.0, 0], 0.04, true)
   .cone('#ff6a10', [0.03, 0.85, 0], [0.06, 1.0, 0.02], 0.035, true).cone('#ff6a10', [-0.03, 0.85, 0], [-0.05, 1.0, -0.02], 0.035, true);
 
+
+// ---------- aliens ----------
+function shardTpl() {
+  const sh = '#3a2a78', cr = '#7ad8ff', cr2 = '#b890ff', core = '#a8f4ff';
+  const body = new Kit([0, 0.23, 0]).ball(sh, 0, 0.22, -0.09, 0.09, 0.075, 0.13).ball(sh, 0, 0.25, 0.06, 0.07, 0.06, 0.07)
+    .ball(core, 0, 0.25, -0.12, 0.045, 0.04, 0.05, true);
+  for (const [a, b, r] of [[[0, 0.29, -0.04], [0, 0.44, -0.13], 0.03], [[0.05, 0.27, -0.02], [0.12, 0.39, -0.07], 0.022], [[-0.05, 0.27, -0.02], [-0.12, 0.39, -0.07], 0.022],
+    [[0, 0.27, -0.16], [0, 0.37, -0.29], 0.026], [[0.06, 0.24, -0.14], [0.14, 0.31, -0.25], 0.02], [[-0.06, 0.24, -0.14], [-0.14, 0.31, -0.25], 0.02], [[0, 0.3, 0.06], [0, 0.4, 0.02], 0.02]])
+    body.cone(r > 0.025 ? cr : cr2, a, b, r);
+  const head = new Kit([0, 0.26, 0.12]).ball(sh, 0, 0.27, 0.16, 0.05, 0.045, 0.06);
+  for (const [x, y] of [[0, 0.29], [0.018, 0.275], [-0.018, 0.275], [0, 0.262]]) head.ball(core, x, y, 0.21, 0.012, 0.012, 0.01, true);
+  head.cone(cr, [0.025, 0.25, 0.2], [0.04, 0.23, 0.27], 0.012).cone(cr, [-0.025, 0.25, 0.2], [-0.04, 0.23, 0.27], 0.012);
+  const list = [['body', null, [0, 0.23, 0], body], ['head', 'body', [0, 0.26, 0.12], head]];
+  for (let i = 0; i < 3; i++) for (const s of [1, -1]) {
+    const z = 0.08 - i * 0.09, pv = [0.06 * s, 0.23, z];
+    list.push([(s > 0 ? 'l' : 'r') + i, null, pv, new Kit(pv).chain(sh, [pv, [0.17 * s, 0.31, z + 0.02], [0.23 * s, 0.01, z + 0.05]], 0.014, 0.007).cone(cr, [0.17 * s, 0.31, z + 0.02], [0.2 * s, 0.38, z], 0.01)]);
+  }
+  return tpl(list);
+}
+function bruteTpl() {
+  const hide = '#4a5a48', bone = '#8c8a7a', stone = '#6a6a60', weak = '#ff8a30';
+  const leg = s => new Kit([0.19 * s, 0.62, 0]).limb(hide, [0.19 * s, 0.62, 0], [0.21 * s, 0.33, 0.07], 0.13, 0.11).limb(hide, [0.21 * s, 0.33, 0.07], [0.21 * s, 0.07, 0], 0.11, 0.1)
+    .box('#2e3a2c', 0.21 * s, 0.04, 0.05, 0.22, 0.08, 0.3).ball(bone, 0.21 * s, 0.36, 0.13, 0.08, 0.07, 0.05);
+  const body = new Kit([0, 0.62, 0]).ball(hide, 0, 0.7, 0, 0.27, 0.15, 0.21).ball(hide, 0, 1.0, 0, 0.38, 0.32, 0.28)
+    .ball(bone, 0, 1.02, 0.19, 0.3, 0.25, 0.11).ball(bone, 0, 0.82, 0.17, 0.2, 0.1, 0.09)
+    .ball(bone, 0, 1.12, -0.18, 0.4, 0.32, 0.16).ball(bone, 0, 0.86, -0.2, 0.3, 0.16, 0.12);
+  body.mirror((s, k) => k.ball(bone, 0.36 * s, 1.2, 0, 0.2, 0.14, 0.21).cone(bone, [0.4 * s, 1.3, 0], [0.48 * s, 1.45, -0.05], 0.06));
+  for (const [x, y] of [[0, 0.98], [0.06, 0.95], [-0.06, 0.95], [0.03, 1.02], [-0.03, 1.02], [0, 0.92]]) body.ball(weak, x, y, -0.33, 0.04, 0.04, 0.03, true);
+  for (let i = 0; i < 4; i++) body.cone(bone, [0, 1.36 - i * 0.12, -0.22], [0, 1.4 - i * 0.12, -0.36], 0.05);
+  const head = new Kit([0, 1.24, 0.12]).ball(hide, 0, 1.27, 0.22, 0.12, 0.1, 0.12).ball(bone, 0, 1.33, 0.25, 0.12, 0.04, 0.08);
+  head.mirror((s, k) => { k.ball('#ffb020', 0.04 * s, 1.29, 0.33, 0.014, 0.012, 0.008, true).ball('#ffb020', 0.075 * s, 1.27, 0.31, 0.012, 0.01, 0.008, true); k.cone('#e8e0c8', [0.06 * s, 1.21, 0.3], [0.09 * s, 1.31, 0.36], 0.02); });
+  const arm = s => new Kit([0.43 * s, 1.18, 0]).limb(hide, [0.43 * s, 1.18, 0], [0.5 * s, 0.86, 0.08], 0.11, 0.1).limb(hide, [0.5 * s, 0.86, 0.08], [0.5 * s, 0.46, 0.18], 0.12, 0.16)
+    .ball(stone, 0.5 * s, 0.38, 0.2, 0.15, 0.13, 0.15).ball(bone, 0.52 * s, 0.7, 0.14, 0.12, 0.09, 0.08);
+  return tpl([['legL', null, [0.19, 0.62, 0], leg(1)], ['legR', null, [-0.19, 0.62, 0], leg(-1)], ['body', null, [0, 0.62, 0], body], ['head', 'body', [0, 1.24, 0.12], head],
+    ['armL', 'body', [0.43, 1.18, 0], arm(1)], ['armR', 'body', [-0.43, 1.18, 0], arm(-1)]]);
+}
+function stalkerTpl() {
+  const sk = '#3a6a78', hi = '#5a9aa8', bl = '#e8f0f0';
+  const leg = s => new Kit([0.08 * s, 0.6, 0]).chain(sk, [[0.08 * s, 0.6, 0], [0.09 * s, 0.38, 0.1], [0.09 * s, 0.18, -0.07], [0.09 * s, 0.02, 0.05]], 0.045, 0.02);
+  const body = new Kit([0, 0.6, 0]).ball(sk, 0, 0.62, 0, 0.09, 0.06, 0.07).ball(sk, 0, 0.88, 0, 0.11, 0.22, 0.08);
+  for (let i = 0; i < 4; i++) body.ball(hi, 0, 0.8 + i * 0.06, 0.06, 0.08 - i * 0.008, 0.012, 0.03);
+  const head = new Kit([0, 1.1, 0.02]).ballR(sk, 0, 1.2, 0.06, 0.06, 0.13, 0.07, [0.5, 0, 0]).box('#120808', 0, 1.15, 0.12, 0.008, 0.07, 0.01).ball(hi, 0, 1.26, 0.06, 0.04, 0.05, 0.05);
+  const arm = s => new Kit([0.13 * s, 1.03, 0]).chain(sk, [[0.13 * s, 1.03, 0], [0.18 * s, 0.82, 0.04], [0.18 * s, 0.62, 0.12]], 0.03, 0.02)
+    .cone(bl, [0.18 * s, 0.6, 0.13], [0.19 * s, 0.42, 0.34], 0.022).cone(bl, [0.19 * s, 0.42, 0.34], [0.18 * s, 0.38, 0.5], 0.012);
+  return tpl([['legL', null, [0.08, 0.6, 0], leg(1)], ['legR', null, [-0.08, 0.6, 0], leg(-1)], ['body', null, [0, 0.6, 0], body], ['head', 'body', [0, 1.1, 0.02], head],
+    ['armL', 'body', [0.13, 1.03, 0], arm(1)], ['armR', 'body', [-0.13, 1.03, 0], arm(-1)]]);
+}
+function sporeTpl() {
+  const sac = '#5f7f52', dark = '#34442a', glow = '#80ff70';
+  const body = new Kit([0, 0.62, 0]).ball(sac, 0, 0.64, 0, 0.42, 0.34, 0.42).ball('#4a6a40', 0, 0.42, 0, 0.32, 0.12, 0.32);
+  srand(23);
+  for (let i = 0; i < 18; i++) { const a = rnd() * TAU, e = rnd() * 0.9 - 0.2; body.ball(glow, Math.cos(a) * Math.cos(e) * 0.41, 0.64 + Math.sin(e) * 0.33, Math.sin(a) * Math.cos(e) * 0.41, 0.025, 0.025, 0.025, true); }
+  for (const [x, z] of [[0, 0], [0.15, 0.1], [-0.15, 0.1], [0.12, -0.14], [-0.12, -0.14]]) body.cyl(dark, x, 0.97, z, 0.05, 0.08).ball(glow, x, 1.01, z, 0.03, 0.012, 0.03, true);
+  body.ball('#f0f0d8', 0, 0.6, 0.36, 0.13, 0.12, 0.08).ball('#d8c020', 0, 0.6, 0.43, 0.075, 0.075, 0.03).ball('#081006', 0, 0.6, 0.455, 0.02, 0.05, 0.008).ball(sac, 0, 0.7, 0.37, 0.14, 0.06, 0.09);
+  const list = [['body', null, [0, 0.62, 0], body]];
+  for (let i = 0; i < 8; i++) {
+    const a = i / 8 * TAU, x = Math.cos(a) * 0.24, z = Math.sin(a) * 0.24, pv = [x, 0.36, z];
+    list.push(['t' + i, 'body', pv, new Kit(pv).chain(dark, [pv, [x * 1.15, 0.2, z * 1.15], [x * 1.25, 0.04, z * 1.25]], 0.025, 0.008).ball(glow, x * 1.25, 0.03, z * 1.25, 0.012, 0.012, 0.012, true)]);
+  }
+  list.push(['flash', 'body', [0, 1.0, 0], new Kit([0, 1.0, 0]).ball('#b0ff90', 0, 1.06, 0, 0.16, 0.08, 0.16, true)]);
+  return tpl(list);
+}
+function gunnerTpl() {
+  const ch = '#2a2630', rib = '#4a4258', sk = '#6a5a70', acid = '#a0ff40';
+  const leg = s => new Kit([0.09 * s, 0.48, 0]).chain(ch, [[0.09 * s, 0.48, 0], [0.1 * s, 0.3, 0.08], [0.1 * s, 0.13, -0.05], [0.1 * s, 0.02, 0.04]], 0.05, 0.026)
+    .ball(rib, 0.1 * s, 0.3, 0.1, 0.045, 0.04, 0.03);
+  const body = new Kit([0, 0.48, 0]).ball(ch, 0, 0.5, 0, 0.12, 0.07, 0.09).ball(sk, 0, 0.68, 0, 0.14, 0.17, 0.1);
+  for (let i = 0; i < 5; i++) body.ball(rib, 0, 0.58 + i * 0.045, 0.06, 0.12 - Math.abs(i - 2) * 0.01, 0.014, 0.05);
+  body.mirror((s, k) => k.ball(ch, 0.15 * s, 0.8, 0, 0.07, 0.05, 0.07).cone(rib, [0.16 * s, 0.84, -0.02], [0.2 * s, 0.94, -0.06], 0.02));
+  body.box('#3a2a20', 0, 0.62, -0.1, 0.2, 0.18, 0.04);
+  const head = new Kit([0, 0.84, 0.01]).ballR(sk, 0, 0.94, 0.04, 0.06, 0.1, 0.07, [0.4, 0, 0]);
+  for (const y of [0.97, 0.94, 0.91]) head.ball('#ff2a10', 0, y, 0.105, 0.011, 0.009, 0.006, true);
+  head.cone(ch, [0.02, 0.87, 0.08], [0.035, 0.83, 0.13], 0.012).cone(ch, [-0.02, 0.87, 0.08], [-0.035, 0.83, 0.13], 0.012);
+  const arms = new Kit([0, 0.78, 0])
+    .limb(sk, [0.16, 0.78, 0], [0.15, 0.66, 0.09], 0.036, 0.03).limb(sk, [0.15, 0.66, 0.09], [0.03, 0.66, 0.2], 0.03, 0.025)
+    .limb(sk, [-0.16, 0.78, 0], [-0.15, 0.68, 0.08], 0.036, 0.03).limb(ch, [-0.15, 0.68, 0.08], [-0.05, 0.68, 0.36], 0.05, 0.035)
+    .ball(acid, -0.08, 0.7, 0.2, 0.035, 0.03, 0.06, true).ball(ch, -0.05, 0.68, 0.37, 0.03, 0.03, 0.02);
+  const flash = new Kit([-0.05, 0.68, 0.4]).ball('#c0ff60', -0.05, 0.68, 0.41, 0.06, 0.06, 0.08, true);
+  return tpl([['legL', null, [0.09, 0.48, 0], leg(1)], ['legR', null, [-0.09, 0.48, 0], leg(-1)], ['body', null, [0, 0.48, 0], body], ['head', 'body', [0, 0.84, 0.01], head],
+    ['arms', 'body', [0, 0.78, 0], arms], ['flash', 'arms', [-0.05, 0.68, 0.4], flash]]);
+}
+ITEM_KITS.pod = () => new Kit().ball('#3a2050', 0, 0.12, 0, 0.16, 0.14, 0.16).ball('#c060ff', 0, 0.3, 0, 0.13, 0.2, 0.13, true).ball('#2a1838', 0, 0.48, 0, 0.09, 0.03, 0.09)
+  .cone('#3a2050', [0.1, 0.18, 0.05], [0.18, 0.5, 0.1], 0.03).cone('#3a2050', [-0.1, 0.18, -0.05], [-0.17, 0.46, -0.1], 0.03);
+
 // ---------- first-person weapons ----------
 const VM = {}, SKIN = '#c48a66', SKIN_D = '#a8704e', SLEEVE = '#3e5a2c', GLOVE = '#4a3a2c';
 // Right hand gripping a cylinder of radius rg whose axis is local Y, centered at the origin.
@@ -293,6 +382,7 @@ function initModels() {
   MODELS.sergeant = soldierTpl({ skin: '#7a685c', armor: '#2e2f34', armorHi: '#45474e', pants: '#3b3c44', boot: '#18181c', belt: '#4a3a24', gun: '#2a2a30', stock: '#6b4423', hair: '#141010', eye: '#ffe020', shotgun: true });
   MODELS.imp = impTpl(); MODELS.demon = demonTpl(); MODELS.spectre = MODELS.demon;
   MODELS.caco = cacoTpl(); MODELS.lostsoul = soulTpl(); MODELS.baron = baronTpl();
+  MODELS.shard = shardTpl(); MODELS.brute = bruteTpl(); MODELS.stalker = stalkerTpl(); MODELS.spore = sporeTpl(); MODELS.gunner = gunnerTpl();
   for (const k in ITEM_KITS) MODELS[k] = tpl([['main', null, [0, 0, 0], ITEM_KITS[k]()]].concat(k === 'torch' ? [['fl', 'main', [0, 0.86, 0], FLAME()]] : []));
   // weapons (camera space)
   const metal = '#3c3c46', dark = '#22222a', wood = '#7a4a24';

@@ -36,10 +36,16 @@ On a phone, a joystick and on-screen buttons appear, including crouch and aim to
 - **Post-processing:** bloom around bright light sources, a soft tone curve, colour grading and fine film grain. Bullet holes, scorch marks and blood stay on walls and floors
 - **Lighting:** baked static light with shadows, plus up to 8 dynamic lights (muzzle flashes, projectiles, explosions)
 - **Textures:** generated 256px textures with relief (normal maps), gloss maps for highlights, edge wear, grime streaks and emissive parts. Corner shading (ambient occlusion) is baked into the walls
-- **Levels:** 3 levels, red and blue keys, liquids that damage you, an exit switch, and a stats screen
+- **Levels:** 4 levels (base, fortress, heart of hell, alien hive), red and blue keys, liquids that damage you (nukage, lava, acid), an exit switch, a stats screen, and "continue game" from the last level reached
 - **3D models:** monsters with walk, attack and death animation (a falling body, a mouth that opens), spinning items, and a first-person weapon with hands whose fingers wrap the grips
 - **Monsters (8):** soldier, shotgun sergeant, imp, demon, spectre (semi-invisible), lost soul (charging skull), cacodemon, baron.
   Monsters fight each other when they hit one another by accident
+- **Aliens (5), each with its own behavior:**
+  - Shardling: small crystal bugs in packs that leap at you and shatter
+  - Veil Stalker: nearly invisible while moving, flanks from the side, shows itself when it strikes or is hit
+  - Spore Mother: floating sac that lobs spore pods; each leaves a toxic gas cloud, and it bursts into a big one when it dies
+  - Xenon Gunner: moves to cover, crouches, pops up to fire a 3-shot acid burst, then hides again; dodges when you aim at it
+  - Gorvath (boss): armored front (x0.35 damage), glowing weak spot on the back (x2.5), slow to turn, ground-slam shockwave you jump over, thrown boulders, health bar
 - **Weapons (6):** fist, pistol, shotgun, chaingun, rocket launcher (splash damage), plasma rifle
 - **Effects:** blood, sparks and smoke particles, exploding barrels with chain reactions, and automatic resolution scaling for weak devices
 

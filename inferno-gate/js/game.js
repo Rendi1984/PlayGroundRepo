@@ -16,12 +16,19 @@ const WPICK = ['shotgun', 'chaingun', 'launcher', 'plasma'];
 const DEF = {
   zombie: { mon: 1, hp: 20, speed: 1.4, r: 0.3, h: 0.875, pain: 0.78, cool: [0.9, 1.6], ranged: { kind: 'bullet', n: 1, rate: 1.3 }, sight: 'zsight', drop: 'clip', rig: 'soldier' },
   sergeant: { mon: 1, hp: 30, speed: 1.4, r: 0.3, h: 0.875, pain: 0.67, cool: [1.2, 1.9], ranged: { kind: 'bullet', n: 3, rate: 1.1 }, sight: 'ssight', drop: 'shotgun', rig: 'soldier' },
-  imp: { mon: 1, hp: 60, speed: 1.5, r: 0.3, h: 0.875, pain: 0.78, cool: [1.1, 1.7], melee: { range: 0.95, mul: 3, max: 8, snd: 'claw' }, ranged: { kind: 'proj', proj: 'fireball', rate: 1.1 }, sight: 'isight', rig: 'thrower' },
+  imp: { mon: 1, dodge: 1, hp: 60, speed: 1.5, r: 0.3, h: 0.875, pain: 0.78, cool: [1.1, 1.7], melee: { range: 0.95, mul: 3, max: 8, snd: 'claw' }, ranged: { kind: 'proj', proj: 'fireball', rate: 1.1 }, sight: 'isight', rig: 'thrower' },
   demon: { mon: 1, hp: 150, speed: 2.8, r: 0.42, h: 0.875, pain: 0.7, cool: [0.5, 0.7], melee: { range: 0.95, mul: 4, max: 10, snd: 'bite' }, sight: 'dsight', rig: 'biter' },
   spectre: { mon: 1, hp: 150, speed: 2.8, r: 0.42, h: 0.875, pain: 0.7, cool: [0.5, 0.7], melee: { range: 0.95, mul: 4, max: 10, snd: 'bite' }, sight: 'dsight', fuzz: 1, rig: 'biter' },
   lostsoul: { mon: 1, hp: 100, speed: 1.7, r: 0.27, h: 0.55, fly: 1, pain: 1, cool: [1.3, 2.2], ranged: { kind: 'charge', rate: 1.2 }, sight: 'lsight', bright: 1, alt: 0.3, rig: 'soul' },
   caco: { mon: 1, hp: 400, speed: 1.3, r: 0.5, h: 0.875, fly: 1, pain: 0.5, cool: [1.4, 2.2], melee: { range: 1.0, mul: 10, max: 6, snd: 'bite' }, ranged: { kind: 'proj', proj: 'cacoball', rate: 0.9 }, sight: 'csight', alt: 0.15, rig: 'caco' },
   baron: { mon: 1, hp: 1000, speed: 1.4, r: 0.38, h: 1.0, pain: 0.2, cool: [1.2, 1.8], melee: { range: 1.0, mul: 10, max: 8, snd: 'claw' }, ranged: { kind: 'proj', proj: 'baronball', rate: 1.0 }, sight: 'bsight', death: 'bdeath', rig: 'thrower' },
+  // aliens
+  shard: { mon: 1, alien: 1, hp: 25, speed: 3.4, r: 0.2, h: 0.42, pain: 0.9, cool: [0.5, 0.9], melee: { range: 0.7, mul: 2, max: 6, snd: 'shardbite' }, leap: 1, sight: 'shsight', death: 'shatter', rig: 'shard' },
+  brute: { mon: 1, alien: 1, boss: 'גורבת׳', hp: 1400, speed: 1.15, r: 0.55, h: 1.45, pain: 0.06, turn: 1.7, cool: [1.4, 2.2], melee: { range: 1.3, mul: 10, max: 8, snd: 'slam' }, slam: 1, ranged: { kind: 'proj', proj: 'boulder', rate: 0.55 }, armor: 1, sight: 'brsight', death: 'bdeath', rig: 'brute' },
+  stalker: { mon: 1, alien: 1, hp: 120, speed: 3.3, r: 0.28, h: 1.2, pain: 0.5, cool: [0.6, 0.9], melee: { range: 1.0, mul: 5, max: 8, snd: 'slash' }, cloak: 1, flank: 1, sight: 'stsight', rig: 'stalker' },
+  spore: { mon: 1, alien: 1, hp: 320, speed: 0.9, r: 0.45, h: 0.95, fly: 1, pain: 0.4, cool: [2, 3], ranged: { kind: 'proj', proj: 'spore', rate: 0.8 }, alt: 0.55, sight: 'spsight', death: 'sporeburst', rig: 'spore' },
+  gunner: { mon: 1, alien: 1, hp: 70, speed: 1.9, r: 0.3, h: 0.95, pain: 0.6, cool: [1.1, 1.7], ranged: { kind: 'burst', proj: 'acid', n: 3, rate: 1.4 }, cover: 1, dodge: 1, sight: 'gnsight', rig: 'gunner', drop: 'cell' },
+  pod: { block: 1, r: 0.2, h: 0.55, halo: [0.75, 0.3, [0.8, 0.35, 1]] },
   barrel: { shoot: 1, block: 1, hp: 20, r: 0.24, h: 0.6 },
   lamp: { block: 1, r: 0.15, h: 1.2, halo: [0.55, 1.08, [1, 0.95, 0.8]] },
   torch: { block: 1, r: 0.15, h: 1.1, halo: [0.7, 0.98, [1, 0.45, 0.12]], flicker: 1 },
@@ -37,6 +44,9 @@ const PROJ = {
   baronball: { speed: 7.5, mul: 8, max: 8, col: [0.4, 1, 0.3], size: 0.6, light: [0.5, 1.4, 0.4], lrad: 3.6, hit: 'fbhit' },
   rocket: { speed: 15, mul: 20, max: 8, col: [1, 0.7, 0.3], size: 0.4, light: [1.5, 0.9, 0.4], lrad: 3.6, hit: 'boom', splash: 2.0, trail: 1 },
   plasma: { speed: 20, mul: 5, max: 8, col: [0.45, 0.7, 1], size: 0.4, light: [0.5, 0.8, 1.6], lrad: 3, hit: 'sizzle' },
+  acid: { speed: 11, mul: 3, max: 5, col: [0.65, 1, 0.25], size: 0.32, light: [0.6, 1.2, 0.3], lrad: 2.6, hit: 'acidhit' },
+  spore: { speed: 4.6, mul: 2, max: 4, col: [0.5, 1, 0.4], size: 0.5, light: [0.4, 1, 0.3], lrad: 2.6, hit: 'sporepop', grav: 3.2, gas: 1.5 },
+  boulder: { speed: 8, mul: 6, max: 8, col: [1, 0.55, 0.25], size: 0.55, light: [0.9, 0.5, 0.2], lrad: 2.4, hit: 'slam', grav: 6, splash: 1.3, splashD: 40 },
 };
 const DIFFS = {
   easy: { name: 'קל', dmg: 0.5, cool: 1.5, ammo: 2 },
@@ -192,6 +202,23 @@ function addDecal(kind, x, y, z, n, size) {
 }
 function clearDecals() { for (const m of decals) m.material.dispose(); decals = []; }
 
+// ---------- toxic gas clouds left by spore pods ----------
+let gases = [];
+function addGas(x, y, z, r, life) { gases.push({ x, y, z, r, life, tick: 0 }); }
+function updateGas(dt) {
+  for (const g of gases) {
+    g.life -= dt;
+    const n = Math.random() < dt * 30 * g.r ? 1 : 0;
+    for (let i = 0; i < n; i++) PDK.spawn(g.x + rr(-g.r, g.r) * 0.8, g.y + rr(-g.r, g.r) * 0.8, g.z + rr(-0.2, 0.6), rr(-0.15, 0.15), rr(-0.15, 0.15), rr(0.05, 0.25), 0.3, rr(0.55, 0.75), 0.22, rr(0.5, 0.9), rr(1, 1.6));
+    if (Math.random() < dt * 6) PFX.spawn(g.x + rr(-g.r, g.r) * 0.6, g.y + rr(-g.r, g.r) * 0.6, g.z + rr(0, 0.5), 0, 0, 0.1, 0.25, 0.6, 0.15, 0.6, 1);
+    if (!P.dead && Math.hypot(P.x - g.x, P.y - g.y) < g.r && P.z < g.z + 1.2) {
+      g.tick -= dt; P.gasT = 0.5;
+      if (g.tick <= 0) { g.tick = 0.5; hurtPlayer(4, null); }
+    }
+  }
+  gases = gases.filter(g => g.life > 0);
+}
+
 // ---------- gibs: chunks of a monster blown apart by a big hit ----------
 let gibs = [], GIB_GEO = null, GIB_MAT = null;
 function initGibs() {
@@ -256,7 +283,7 @@ function spawn(type, x, y, extra) {
 }
 function attachModel(t) {
   const d = t.d;
-  t.mat = modelMat({ bright: d.bright, fuzz: d.fuzz });
+  t.mat = modelMat({ bright: d.bright, fuzz: d.fuzz, cloak: d.cloak });
   if (d.weapon) {
     const J = instantiate(VM[t.type].T, t.mat);
     for (const h of ['handR', 'handL']) if (J[h]) J[h].visible = false;
@@ -295,7 +322,7 @@ function disposeWorld() {
   scene.remove(worldGroup); worldGroup = null;
 }
 function loadLevel(i, loadout) {
-  clearDecals(); gibs = [];
+  clearDecals(); gibs = []; gases = [];
   disposeWorld();
   if (sky) { scene.remove(sky); sky.traverse(o => { if (o.material) { if (o.material.map) o.material.map.dispose(); o.material.dispose(); } }); sky = null; }
   LV = LEVELS[i]; levelIndex = i;
@@ -509,6 +536,13 @@ function damage(t, amt, src, ox, oy) {
   if (t === P) { hurtPlayer(amt, src); return; }
   if (t.d.shoot) { t.hp -= amt; if (t.hp <= 0 && t.boom === undefined) { t.boom = rr(0.1, 0.2); t.boomSrc = src; } return; }
   if (!t.d.mon || t.dead) return;
+  if (t.d.armor && ox !== undefined) {
+    // heavy armor in front, glowing weak spot on the back
+    const rel = Math.abs(normA(Math.atan2(t.y - oy, t.x - ox) - t.yaw));
+    if (rel < 1.1) { amt *= 2.5; if (src === P && !(P.weakMsgT > 0)) { say('נקודת התורפה! פגיעה מאחור כפולה פי 2.5'); P.weakMsgT = 6; } sfx('weakhit', t.x, t.y); }
+    else if (rel > 2.0) { amt *= 0.35; fireBurst(t.x, t.y, t.z + t.h * 0.6, [1, 0.8, 0.4], 4, 2, 0.08); }
+  }
+  if (t.d.cloak) t.revealT = 1.2;
   t.hp -= amt; t.hitFlash = 0.1; t.jolt = Math.min(0.6, (t.jolt || 0) + amt / 45);
   if (src === P) { P.hitT = 0.16; if (P.hitSndT <= 0) { sfx('hit'); P.hitSndT = 0.07; } }
   if (t.hp <= 0) { if (src === P) { P.killT = 0.35; sfx('kill'); } kill(t, amt); return; }
@@ -519,9 +553,12 @@ function damage(t, amt, src, ox, oy) {
 function kill(t, amt = 0) {
   t.dead = true; t.state = 'die'; t.timer = 0; t.hitFlash = 0; t.fly = false; t.deathK = 0;
   if (t.counted) P.kills++;
+  if (t.d.boss) { say(t.d.boss + ' הובס!'); P.bonus = 0.6; }
   sfx(t.d.death || 'edeath', t.x, t.y);
   bloodBurst(t.x, t.y, t.z + t.h * 0.6, 14);
   if (t.type !== 'lostsoul') addDecal('blood', t.x, t.y, t.floorZ, [0, 0, 1], 0.7 + t.r * 1.2);
+  if (t.type === 'shard') { fireBurst(t.x, t.y, t.z + 0.25, [0.5, 0.9, 1], 34, 3, 0.18); addLight(t.x, t.y, t.z + 0.3, [0.5, 0.9, 1.5], 3, 0.3); removeThing(t); return; }
+  if (t.type === 'spore') { addGas(t.x, t.y, t.floorZ, 2.0, 7); fireBurst(t.x, t.y, t.z + 0.6, [0.5, 1, 0.4], 50, 2.5, 0.35); bloodBurst(t.x, t.y, t.z + 0.6, 10); removeThing(t); return; }
   if (t.type !== 'lostsoul' && -t.hp >= Math.max(30, t.d.hp * 0.5)) { gib(t); removeThing(t); return; }
   if (t.type === 'lostsoul') { fireBurst(t.x, t.y, t.z + 0.3, [1, 0.6, 0.2], 30, 3, 0.25); addLight(t.x, t.y, t.z + 0.3, [1.6, 0.8, 0.3], 4, 0.4); removeThing(t); return; }
   if (t.d.drop) {
@@ -572,13 +609,15 @@ function killProj(p) { p.dead = true; worldGroup.remove(p.spr); worldGroup.remov
 function burstProj(p, n) {
   const pd = p.pd;
   if (n) addDecal('scorch', p.x, p.y, p.z, n, pd.splash ? 1.3 : 0.45);
-  if (pd.splash) { explosion(p.x, p.y, p.z, true); radiusDamage(p.x, p.y, p.z, pd.splash, 128, p.src); }
+  if (pd.gas) { addGas(p.x, p.y, Math.max(cell(p.x, p.y).f, p.z - 0.3), pd.gas, 5); fireBurst(p.x, p.y, p.z, pd.col, 18, 1.6, 0.3); sfx('sporepop', p.x, p.y); killProj(p); return; }
+  if (pd.splash) { explosion(p.x, p.y, p.z, true); radiusDamage(p.x, p.y, p.z, pd.splash, pd.splashD || 128, p.src); }
   else { fireBurst(p.x, p.y, p.z, pd.col, 16, 2.2, 0.22); addLight(p.x, p.y, p.z, pd.light, pd.lrad, 0.25); sfx(pd.hit, p.x, p.y); }
   killProj(p);
 }
 function updateProj(p, dt) {
   const steps = Math.max(1, Math.ceil(p.pd.speed * dt / 0.1)), sd = dt / steps;
   for (let i = 0; i < steps; i++) {
+    if (p.pd.grav) p.vz -= p.pd.grav * sd;
     const nx = p.x + p.vx * sd, ny = p.y + p.vy * sd, nz = p.z + p.vz * sd, c = cell(nx, ny);
     if (c.solid || nz < c.f || nz > ceilOf(c)) {
       if (!c.solid && c.sky && !c.door && nz > c.c) { killProj(p); return; }
@@ -610,6 +649,10 @@ function updateProj(p, dt) {
 function wake(t, loud) { if (t.state !== 'idle') return; t.state = 'chase'; t.think = 0; t.cool = rr(0.4, 1.0) * DIFF.cool; if (loud) sfx(t.d.sight, t.x, t.y); }
 function alertMonsters() {
   for (const t of things) {
+    if (t.d.dodge && !t.dead && t.state === 'chase' && t.sees && t.z <= t.floorZ + 0.02 && Math.random() < 0.35) {
+      const a = Math.atan2(t.y - P.y, t.x - P.x);
+      if (Math.abs(normA(a - P.a)) < 0.14) { const side = P.a + (Math.random() < 0.5 ? 1 : -1) * Math.PI / 2; t.kvx = Math.cos(side) * 4.2; t.kvy = Math.sin(side) * 4.2; }
+    }
     if (!t.d.mon || t.dead || t.state !== 'idle') continue;
     const d = Math.hypot(t.x - P.x, t.y - P.y);
     if (d < 9 || (d < 18 && canSee(t, P))) wake(t, true);
@@ -645,16 +688,70 @@ function doAttack(t, tg) {
     t.flashT = 0.12; addLight(t.x, t.y, oz, [1.3, 0.9, 0.4], 4, 0.08);
     sfx(r.n > 1 ? 'shotgun' : 'pistol', t.x, t.y);
     for (let i = 0; i < r.n; i++) hitscan(t, t.x, t.y, oz, ang + rr(-0.09, 0.09), slope, 40, 3 * ri(1, 5));
-  } else if (r.kind === 'proj') {
-    spawnProj(r.proj, t, t.x + Math.cos(ang) * (t.r + 0.1), t.y + Math.sin(ang) * (t.r + 0.1), oz, Math.cos(ang), Math.sin(ang), slope);
-    sfx('fireball', t.x, t.y); t.flashT = 0.15;
+  } else if (r.kind === 'proj' || r.kind === 'burst') {
+    const pd = PROJ[r.proj], sx = t.x + Math.cos(ang) * (t.r + 0.1), sy = t.y + Math.sin(ang) * (t.r + 0.1);
+    spawnProj(r.proj, t, sx, sy, oz, Math.cos(ang), Math.sin(ang), slope);
+    if (pd.grav) { const p = projs[projs.length - 1], tf = Math.max(0.3, dist / pd.speed); p.vx = Math.cos(ang) * pd.speed; p.vy = Math.sin(ang) * pd.speed; p.vz = (tg.z + tg.h * 0.4 - oz) / tf + 0.5 * pd.grav * tf; }
+    sfx(r.kind === 'burst' ? 'acidshot' : 'fireball', t.x, t.y); t.flashT = 0.15;
   }
+}
+// Gorvath's ground slam: a shockwave along the floor; jumping over it avoids the damage
+function doSlam(t) {
+  sfx('slam', t.x, t.y); addLight(t.x, t.y, t.z + 0.3, [1.4, 0.9, 0.5], 6, 0.35);
+  for (let i = 0; i < 48; i++) { const a = i / 48 * TAU; PDK.spawn(t.x + Math.cos(a) * 0.6, t.y + Math.sin(a) * 0.6, t.floorZ + 0.1, Math.cos(a) * 4.5, Math.sin(a) * 4.5, rr(0.2, 1), 0.45, 0.4, 0.36, rr(0.3, 0.55), 0.7); }
+  addDecal('scorch', t.x, t.y, t.floorZ, [0, 0, 1], 2.2);
+  const R = 3.4, hitIt = o => { const d = Math.hypot(o.x - t.x, o.y - t.y); if (d < R && o.z <= o.floorZ + 0.15) damage(o, 45 * (1 - d / R) + 5, t, t.x, t.y); };
+  if (!P.dead) { hitIt(P); P.shake = Math.min(1, P.shake + Math.max(0, 0.7 - Math.hypot(P.x - t.x, P.y - t.y) * 0.1)); }
+  for (const o of things) if (o !== t && o.d.mon && !o.dead && !o.fly) hitIt(o);
+}
+// open cells next to a cover block, used by gunners to hide
+function coverSpots() {
+  if (WD.spots) return WD.spots;
+  WD.spots = [];
+  for (const c of WD.cells) {
+    if (c.solid || c.cover || c.door || c.liquid) continue;
+    if (DIRS.some(([dx, dy]) => cellAt(c.x + dx, c.y + dy).cover)) WD.spots.push({ x: c.x + 0.5, y: c.y + 0.5, f: c.f });
+  }
+  return WD.spots;
+}
+function findCover(t, tg) {
+  let best = null, bs = 1e9;
+  for (const sp of coverSpots()) {
+    const dm = Math.hypot(sp.x - t.x, sp.y - t.y), dt = Math.hypot(sp.x - tg.x, sp.y - tg.y);
+    if (dm > 7 || dt < 2.5 || dt > 13) continue;
+    if (things.some(o => o !== t && o.goal && Math.hypot(o.goal.x - sp.x, o.goal.y - sp.y) < 0.5)) continue;
+    if (sightLine(sp.x, sp.y, sp.f + 0.4, tg.x, tg.y, tg.z + tg.h * 0.6)) continue;
+    if (!sightLine(sp.x, sp.y, sp.f + 0.9, tg.x, tg.y, tg.z + tg.h * 0.85)) continue;
+    const sc = dm + Math.abs(dt - 6) * 0.3;
+    if (sc < bs) { bs = sc; best = sp; }
+  }
+  return best;
+}
+// returns true while the gunner is busy moving to / hiding behind cover
+function coverAI(t, tg, dt, dist) {
+  t.coverT = (t.coverT || 0) - dt;
+  if ((!t.goal && t.coverT <= 0 && t.sees && dist < 14) || (t.goal && t.coverT <= -4)) { t.goal = findCover(t, tg); t.coverT = 3; t.hiding = false; }
+  if (!t.goal) return false;
+  const gd = Math.hypot(t.goal.x - t.x, t.goal.y - t.y);
+  if (gd > 0.3) {
+    t.hiding = false;
+    const a = Math.atan2(t.goal.y - t.y, t.goal.x - t.x), sp = t.d.speed * 1.2 * dt;
+    if (tryMove(t, t.x + Math.cos(a) * sp, t.y + Math.sin(a) * sp) || tryMove(t, t.x + Math.cos(a) * sp, t.y) || tryMove(t, t.x, t.y + Math.sin(a) * sp)) { t.moved = true; t.dir = a; }
+    else { t.goal = null; t.coverT = 1.5; }
+    return true;
+  }
+  t.hideT = (t.hideT || 0) - dt;
+  if (t.hiding) { if (t.hideT <= 0) { t.hiding = false; t.hideT = rr(0.7, 1.1); } t.dir = Math.atan2(tg.y - t.y, tg.x - t.x); return true; }
+  if (t.hideT <= 0) { t.hiding = true; t.hideT = rr(1.2, 2.2); }
+  if (t.cool <= 0 && t.sees) { startAttack(t, 'ranged'); t.hideAfter = true; }
+  t.dir = Math.atan2(tg.y - t.y, tg.x - t.x);
+  return true;
 }
 function updateMonster(t, dt) {
   const d = t.d; t.anim += dt; t.moved = false;
   if (t.kvx || t.kvy) {
     tryMove(t, t.x + t.kvx * dt, t.y) || (t.kvx = 0); tryMove(t, t.x, t.y + t.kvy * dt) || (t.kvy = 0);
-    const f = Math.exp(-7 * dt); t.kvx *= f; t.kvy *= f; if (Math.abs(t.kvx) + Math.abs(t.kvy) < 0.03) t.kvx = t.kvy = 0;
+    const f = t.state === 'leap' ? 1 : Math.exp(-7 * dt); t.kvx *= f; t.kvy *= f; if (Math.abs(t.kvx) + Math.abs(t.kvy) < 0.03) t.kvx = t.kvy = 0;
   }
   if (t.jolt) t.jolt = Math.max(0, t.jolt - dt * 3);
   if (t.flashT > 0) t.flashT -= dt; if (t.hitFlash > 0) t.hitFlash -= dt;
@@ -670,14 +767,31 @@ function updateMonster(t, dt) {
   if (t.state === 'pain') { t.timer -= dt; if (t.timer <= 0) t.state = 'chase'; return; }
   if (t.state === 'attack') {
     t.timer -= dt;
-    if (!t.fired && t.timer <= 0.22) { t.fired = true; doAttack(t, tg); }
-    if (t.timer <= 0) { t.state = 'chase'; t.cool = rr(d.cool[0], d.cool[1]) * DIFF.cool; }
+    if (!t.fired && t.timer <= 0.22) {
+      t.fired = true;
+      if (t.akind === 'slam') doSlam(t); else doAttack(t, tg);
+      if (t.akind === 'ranged' && d.ranged && d.ranged.kind === 'burst') { t.burstLeft = (t.burstLeft === undefined ? d.ranged.n : t.burstLeft) - 1; if (t.burstLeft > 0) { t.fired = false; t.timer = 0.36; } }
+    }
+    if (t.timer <= 0) { t.state = 'chase'; t.burstLeft = undefined; t.cool = rr(d.cool[0], d.cool[1]) * DIFF.cool; if (t.hideAfter) { t.hiding = true; t.hideT = rr(1.2, 2.2); t.hideAfter = false; } }
+    return;
+  }
+  if (t.state === 'leap') {
+    t.timer -= dt;
+    if (!t.leapHit && Math.hypot(tg.x - t.x, tg.y - t.y) < t.r + tg.r + 0.18 && t.z < tg.z + tg.h && tg.z < t.z + t.h + 0.3) { t.leapHit = true; sfx('shardbite', t.x, t.y); damage(tg, 3 * ri(1, 6), t); }
+    if (t.timer <= 0 || (t.timer < 0.7 && t.z <= t.floorZ + 0.01)) { t.state = 'chase'; t.cool = rr(0.6, 1.1) * DIFF.cool; }
     return;
   }
   if (t.state === 'charge') { updateCharge(t, tg, dt); return; }
   t.cool -= dt; t.seeT -= dt;
   if (t.seeT <= 0) { t.seeT = 0.2; t.sees = canSee(t, tg); }
   const dx = tg.x - t.x, dy = tg.y - t.y, dist = Math.hypot(dx, dy);
+  if (d.cloak) t.revealT = (t.revealT || 0) - dt;
+  t.h = d.cover && t.hiding ? 0.55 : d.h;
+  if (d.cover && tg === P && coverAI(t, tg, dt, dist)) return;
+  if (d.leap && t.sees && t.cool <= 0 && dist > 1.0 && dist < 3.6 && t.z <= t.floorZ + 0.02 && Math.random() < dt * 2.5) {
+    const a = Math.atan2(dy, dx); t.kvx = Math.cos(a) * 5.5; t.kvy = Math.sin(a) * 5.5; t.vz = 3.4; t.state = 'leap'; t.timer = 1.0; t.leapHit = false; t.dir = a; sfx('leap', t.x, t.y); return;
+  }
+  if (d.slam && t.sees && t.cool <= 0 && dist > 1.4 && dist < 4.6 && Math.random() < dt * 1.3) { startAttack(t, 'slam'); t.timer = 1.1; return; }
   if (t.sees && t.cool <= 0) {
     if (d.melee && dist < d.melee.range + tg.r && Math.abs(tg.z - t.z) < 0.9) { startAttack(t, 'melee'); return; }
     if (d.ranged && dist > 1.2 && dist < 30 && Math.random() < dt * d.ranged.rate / DIFF.cool * (dist < 8 ? 1.5 : 0.8)) {
@@ -692,7 +806,11 @@ function updateMonster(t, dt) {
     t.z = nz;
   }
   t.think -= dt;
-  if (t.think <= 0 || t.blocked) { chooseDir(t, tg); t.think = rr(0.35, 0.8); t.blocked = false; }
+  if (t.think <= 0 || t.blocked) {
+    let goal = tg;
+    if (d.flank && dist > 2.6) { if (!t.side) t.side = Math.random() < 0.5 ? 1 : -1; const a = Math.atan2(t.y - tg.y, t.x - tg.x) + t.side * 1.3; goal = { x: tg.x + Math.cos(a) * 2.2, y: tg.y + Math.sin(a) * 2.2 }; }
+    chooseDir(t, goal); t.think = rr(0.35, 0.8) * (d.speed > 3 ? 0.6 : 1); t.blocked = false;
+  }
   if (dist < (d.melee ? d.melee.range * 0.75 + tg.r : 1.1)) return;
   const sp = d.speed * dt, mx = Math.cos(t.dir) * sp, my = Math.sin(t.dir) * sp;
   if (tryMove(t, t.x + mx, t.y + my) || tryMove(t, t.x + mx, t.y) || tryMove(t, t.x, t.y + my)) t.moved = true;
@@ -811,7 +929,7 @@ function updatePlayer(dt) {
   P.stepLag += (0 - P.stepLag) * Math.min(1, dt * 9);
   P.turnV *= Math.max(0, 1 - dt * 8);
   const c = cell(P.x, P.y);
-  if (c.liquid && P.z <= c.f + 0.02) { P.liqT -= dt; if (P.liqT <= 0) { P.liqT = 1; hurtPlayer(c.liquid === 'lava' ? 10 : 5, null); sfx('sizzle'); } }
+  if (c.liquid && P.z <= c.f + 0.02) { P.liqT -= dt; if (P.liqT <= 0) { P.liqT = 1; hurtPlayer(c.liquid === 'lava' ? 10 : c.liquid === 'acid' ? 8 : 5, null); sfx('sizzle'); } }
   else P.liqT = Math.min(P.liqT, 0.3);
   // weapon state
   if (P.pendingW) { st.drop += dt * 12; if (st.drop >= 1) { P.w = P.pendingW; P.pendingW = null; } }
@@ -853,15 +971,38 @@ function animMonster(t, dt) {
   const J = t.J, d = t.d, R = J.root;
   const tg = !t.dead && (t.state === 'attack' || t.state === 'charge' || t.state === 'pain') ? targetOf(t) : null;
   const want = tg ? Math.atan2(tg.y - t.y, tg.x - t.x) : t.dir;
-  if (!t.dead) t.yaw += normA(want - t.yaw) * Math.min(1, dt * 7);
+  if (!t.dead) t.yaw += normA(want - t.yaw) * Math.min(1, dt * (d.turn || 7));
   R.rotation.y = Math.atan2(Math.cos(t.yaw), Math.sin(t.yaw));
   if (t.moved) t.walkPh += dt * d.speed * 4.2;
   const s = Math.sin(t.walkPh), aimT = t.state === 'attack' || t.state === 'charge' ? 1 : 0;
-  t.aim += (aimT - t.aim) * Math.min(1, dt * 9);
+  t.aim += ((aimT || t.state === 'leap' ? 1 : 0) - t.aim) * Math.min(1, dt * 9);
   const a = t.aim, pain = t.state === 'pain' ? 1 : 0, rig = d.rig;
   const set = (j, x, y = 0, z = 0) => { if (J[j]) J[j].rotation.set(x, y, z); };
   if (J.legL) { set('legL', t.dead ? 0.3 : s * 0.6); set('legR', t.dead ? -0.2 : -s * 0.6); }
   if (J.body) { J.body.rotation.x = -0.35 * pain - (t.jolt || 0) * 0.7 + (rig === 'biter' ? 0.15 * a : 0); J.body.position.y = J.body.userData.base.y + Math.abs(s) * 0.012; }
+  if (rig === 'shard') {
+    for (let i = 0; i < 3; i++) { const ph = t.walkPh * 2 + i * 2.1; set('l' + i, 0, 0, Math.sin(ph) * 0.35); set('r' + i, 0, 0, Math.sin(ph + Math.PI) * 0.35); }
+    set('head', -0.35 * a); J.body.rotation.x = t.state === 'leap' ? -0.4 : 0;
+  }
+  if (rig === 'brute') {
+    const slam = t.state === 'attack' && t.akind === 'slam', melee = t.state === 'attack' && t.akind === 'melee', thr = t.state === 'attack' && t.akind === 'ranged';
+    const up = slam ? (t.fired ? 0.6 : -2.7 * a) : null;
+    set('armL', up !== null ? up : melee ? -1.4 * a : -s * 0.3);
+    set('armR', up !== null ? up : (melee || thr) ? -2.2 * a : s * 0.3);
+    if (J.legL) { set('legL', s * 0.35); set('legR', -s * 0.35); }
+  }
+  if (rig === 'stalker') { set('armL', a ? -1.9 * a : 0.5 + s * 0.15); set('armR', a ? -1.6 * a : 0.5 - s * 0.15); set('head', 0.25 - 0.3 * a); }
+  if (rig === 'spore') {
+    for (let i = 0; i < 8; i++) set('t' + i, Math.sin(gtime * 2 + i) * 0.28, 0, Math.cos(gtime * 1.7 + i * 1.3) * 0.28);
+    const pul = 1 + Math.sin(gtime * 3 + t.x) * 0.04 + a * 0.08; J.body.scale.set(pul, 2 - pul, pul);
+  }
+  if (rig === 'gunner') {
+    const ck = t.crouchK = lerp(t.crouchK || 0, t.hiding ? 1 : 0, Math.min(1, dt * 10));
+    set('arms', lerp(0.5, -0.05, a) - ck * 0.3);
+    J.body.position.y = J.body.userData.base.y - ck * 0.3;
+    if (ck > 0.05) { set('legL', 1.25 * ck); set('legR', 1.1 * ck); J.legL.position.y = J.legL.userData.base.y - ck * 0.3; J.legR.position.y = J.legR.userData.base.y - ck * 0.3; }
+    else { J.legL.position.y = J.legL.userData.base.y; J.legR.position.y = J.legR.userData.base.y; }
+  }
   if (rig === 'soldier') { set('arms', lerp(0.55, -0.05, a) + Math.sin(t.walkPh * 0.5) * 0.04); }
   if (rig === 'thrower') {
     const melee = t.akind === 'melee';
@@ -872,7 +1013,7 @@ function animMonster(t, dt) {
   if (rig === 'caco') { set('jaw', 0.6 * a); if (J.lid) J.lid.visible = pain > 0 || t.dead; R.position.y += 0; }
   if (rig === 'soul') { set('jaw', 0.5 * a); J.fl.scale.set(1 + Math.sin(gtime * 19) * 0.08, 1 + Math.sin(gtime * 23) * 0.15, 1 + Math.sin(gtime * 17) * 0.2); }
   if (J.head && rig !== 'biter') J.head.rotation.x = pain * 0.3;
-  if (J.flash) J.flash.visible = !t.dead && (t.flashT > 0 || (rig === 'thrower' && a > 0.6 && !t.fired && t.akind !== 'melee') || (rig === 'caco' && a > 0.5));
+  if (J.flash) J.flash.visible = !t.dead && (t.flashT > 0 || (rig === 'spore' && a > 0.4) || (rig === 'thrower' && a > 0.6 && !t.fired && t.akind !== 'melee') || (rig === 'caco' && a > 0.5));
   // death: topple backwards (or squash for the cacodemon)
   const k = ease(t.deathK);
   if (rig === 'caco') { R.rotation.x = 0; R.scale.set(1 + 0.15 * k, 1 - 0.5 * k, 1 + 0.15 * k); }
@@ -937,7 +1078,8 @@ function updateVisuals(dt) {
     else { animItem(t, dt); }
     sampleLight(t.x, t.y, _L); t.mat.uniforms.tint.value.set(Math.min(_L[0], 1.15), Math.min(_L[1], 1.15), Math.min(_L[2], 1.15));
     t.mat.uniforms.flash.value = t.hitFlash > 0 ? 0.25 : 0;
-    if (t.shadow) { t.shadow.position.set(t.x, t.floorZ + 0.012, t.y); t.shadow.visible = !(t.d.mon && t.dead); }
+    if (t.d.cloak) { const want = t.dead ? 0 : (t.state === 'attack' || (t.revealT || 0) > 0) ? 0.08 : 0.93; t.cloakV = lerp(t.cloakV === undefined ? 0.93 : t.cloakV, want, Math.min(1, dt * 6)); t.mat.uniforms.cloak.value = t.cloakV; }
+    if (t.shadow) { t.shadow.position.set(t.x, t.floorZ + 0.012, t.y); t.shadow.visible = !(t.d.mon && t.dead) && !(t.cloakV > 0.5); }
   }
   if (GIB_MAT && gibs.length) { sampleLight(P.x, P.y, _L); GIB_MAT.uniforms.tint.value.set(Math.min(_L[0], 1.1), Math.min(_L[1], 1.1), Math.min(_L[2], 1.1)); }
   for (const h of halos) {
@@ -954,7 +1096,7 @@ function updateVisuals(dt) {
   const n = Math.min(8, _cand.length);
   for (let i = 0; i < n; i++) { const c = _cand[i]; SU.dlPos.value[i].set(c[0], c[2], c[1]); SU.dlCol.value[i].set(c[3], c[4], c[5]); SU.dlRad.value[i] = c[6]; }
   SU.dlN.value = n;
-  for (const k of ['nukage', 'lava']) if (MAT[k]) MAT[k].uniforms.scroll.value.set(Math.sin(gtime * 0.4) * 0.08, gtime * (k === 'lava' ? 0.03 : 0.05));
+  for (const k of ['nukage', 'lava', 'acid']) if (MAT[k]) MAT[k].uniforms.scroll.value.set(Math.sin(gtime * 0.4) * 0.08, gtime * (k === 'lava' ? 0.03 : 0.05));
   SU.time.value = gtime; SU.gain.value = OPTS.gain;
   P.shake = Math.max(0, P.shake - dt * 1.5);
   const sh = P.shake * 0.06, bobZ = OPTS.bob ? Math.sin(P.bob * 2) * 0.028 * P.moveAmt : 0;
@@ -991,7 +1133,7 @@ function update(dt) {
   P.hurt = Math.max(0, P.hurt - dt * 0.9); P.bonus = Math.max(0, P.bonus - dt);
   P.msgT -= dt; P.ouchT -= dt; P.grinT -= dt; P.lookT -= dt; P.hitT -= dt; P.killT -= dt; P.hitSndT -= dt;
   P.kick *= Math.exp(-11 * dt);
-  updateGibs(dt);
+  updateGibs(dt); updateGas(dt); P.gasT = (P.gasT || 0) - dt;
   if (P.lookT <= 0) { P.lookT = rr(0.8, 2); P.lookDir = ri(-1, 1); }
   if (state === 'dying') { stateT -= dt; if (stateT <= 0) { state = 'dead'; showOv('ovDead'); } }
   if (state === 'exiting') { stateT -= dt; if (stateT <= 0) showIntermission(); }
@@ -1016,10 +1158,19 @@ function drawOverlay() {
     O.strokeStyle = kill ? `rgba(255,60,40,${a})` : `rgba(255,255,255,${a})`; O.lineWidth = kill ? 2.5 : 2;
     O.beginPath(); for (const [sx, sy] of [[1, 1], [1, -1], [-1, 1], [-1, -1]]) { O.moveTo(OW / 2 + sx * r0, VIEWH / 2 + sy * r0); O.lineTo(OW / 2 + sx * r1, VIEWH / 2 + sy * r1); } O.stroke();
   }
+  if (P.gasT > 0 && !P.dead) { O.fillStyle = `rgba(90,200,40,${Math.min(0.22, P.gasT * 0.4)})`; O.fillRect(0, 0, OW, VIEWH); }
+  const boss = state === 'play' && things.find(t => t.d.boss && !t.dead && t.state !== 'idle');
+  if (boss) {
+    const f = Math.max(0, boss.hp / boss.d.hp), bw = 300, bx = (OW - bw) / 2, by = 38;
+    O.fillStyle = 'rgba(0,0,0,0.65)'; O.fillRect(bx - 3, by - 3, bw + 6, 16);
+    O.fillStyle = '#4a0a06'; O.fillRect(bx, by, bw, 10);
+    O.fillStyle = f > 0.3 ? '#d8301c' : '#ff7a20'; O.fillRect(bx, by, bw * f, 10);
+    O.font = '600 15px "Rubik", sans-serif'; O.textAlign = 'center'; O.textBaseline = 'bottom'; O.direction = 'rtl'; O.fillStyle = '#f2e4b8'; O.fillText(boss.d.boss, OW / 2, by - 4); O.direction = 'ltr';
+  }
   if (P.hurt > 0) { O.fillStyle = `rgba(200,0,0,${P.hurt * 0.5})`; O.fillRect(0, 0, OW, VIEWH); }
   if (P.bonus > 0) { O.fillStyle = `rgba(255,215,90,${P.bonus * 0.3})`; O.fillRect(0, 0, OW, VIEWH); }
   const c = cell(P.x, P.y);
-  if (c.liquid && P.z <= c.f + 0.02 && !P.dead) { O.fillStyle = c.liquid === 'lava' ? 'rgba(255,90,0,0.18)' : 'rgba(40,255,40,0.12)'; O.fillRect(0, 0, OW, VIEWH); }
+  if (c.liquid && P.z <= c.f + 0.02 && !P.dead) { O.fillStyle = c.liquid === 'lava' ? 'rgba(255,90,0,0.18)' : c.liquid === 'acid' ? 'rgba(200,60,255,0.16)' : 'rgba(40,255,40,0.12)'; O.fillRect(0, 0, OW, VIEWH); }
   if (!P.dead && P.health <= 25 && state === 'play') { O.fillStyle = `rgba(160,0,0,${0.12 + Math.sin(gtime * 4) * 0.08})`; O.fillRect(0, 0, OW, VIEWH); }
   if (P.dead) { O.fillStyle = `rgba(110,0,0,${0.45 * P.deathT})`; O.fillRect(0, 0, OW, VIEWH); }
   if (showMap) drawAutomap(O, P, LV);
@@ -1046,6 +1197,7 @@ const pct = (a, b) => (b ? Math.round(a / b * 100) : 100) + '%';
 function showIntermission() {
   const last = levelIndex === LEVELS.length - 1;
   state = last ? 'win' : 'inter';
+  if (last) clearSave();
   document.getElementById('iTitle').textContent = last ? 'ניצחת' : 'השלב הושלם';
   document.getElementById('iName').textContent = last ? 'סגרת את שער התופת. לבינתיים.' : LV.name;
   document.getElementById('sK').textContent = pct(P.kills, totalKills);
@@ -1064,7 +1216,11 @@ document.addEventListener('pointerlockchange', () => {
   if (!locked && hadLock && state === 'play') pauseGame();
   hadLock = locked;
 });
-function beginPlay() { state = 'play'; showOv(null); initAudio(); applyVolumes(); startMusic(); lockPointer(); }
+function saveProgress() { try { localStorage.setItem('inferno-gate-save', JSON.stringify({ level: levelIndex, loadout: startLoadout, diff: OPTS.diff })); } catch (e) { } }
+function loadSave() { try { return JSON.parse(localStorage.getItem('inferno-gate-save') || 'null'); } catch (e) { return null; } }
+function clearSave() { try { localStorage.removeItem('inferno-gate-save'); } catch (e) { } }
+function refreshContinue() { const sv = loadSave(); $('bCont').hidden = !sv; if (sv) $('bCont').textContent = 'המשך משחק · ' + (LEVELS[sv.level] ? LEVELS[sv.level].name.split(':')[0] : ''); }
+function beginPlay() { if (state !== 'pause') saveProgress(); state = 'play'; showOv(null); initAudio(); applyVolumes(); startMusic(); lockPointer(); }
 function pauseGame() { if (state !== 'play') return; state = 'pause'; stopMusic(); showOv('ovPause'); }
 function togglePause() { if (state === 'play') pauseGame(); else if (state === 'pause') beginPlay(); }
 function openPanel(name) {
@@ -1082,12 +1238,13 @@ function newGame(diff) {
 }
 const $ = id => document.getElementById(id);
 $('bNew').onclick = () => openPanel('pNew');
+$('bCont').onclick = e => { e.currentTarget.blur(); const sv = loadSave(); if (!sv) return; OPTS.diff = sv.diff || 'normal'; DIFF = DIFFS[OPTS.diff] || DIFFS.normal; loadLevel(clamp(sv.level, 0, LEVELS.length - 1), sv.loadout); beginPlay(); };
 for (const d of ['easy', 'normal', 'hard']) $('bDiff_' + d).onclick = e => { e.currentTarget.blur(); newGame(d); };
 for (const [id, p] of [['bOptT', 'pOptions'], ['bHelpT', 'pHelp'], ['bKeysT', 'pKeys'], ['bOptP', 'pOptions'], ['bHelpP', 'pHelp'], ['bKeysP', 'pKeys']]) $(id).onclick = () => openPanel(p);
 $('bBack').onclick = closePanel;
 $('bResume').onclick = e => { e.currentTarget.blur(); beginPlay(); };
 $('bRestartP').onclick = e => { e.currentTarget.blur(); loadLevel(levelIndex, startLoadout); beginPlay(); };
-$('bQuitP').onclick = () => { stopMusic(); loadLevel(0, freshLoadout()); state = 'title'; showOv('ovTitle'); };
+$('bQuitP').onclick = () => { stopMusic(); loadLevel(0, freshLoadout()); state = 'title'; refreshContinue(); showOv('ovTitle'); };
 $('bNext').onclick = e => { e.currentTarget.blur(); if (state === 'win') loadLevel(0, freshLoadout()); else loadLevel(levelIndex + 1, saveLoadout()); beginPlay(); };
 $('bRetry').onclick = e => { e.currentTarget.blur(); loadLevel(levelIndex, startLoadout); beginPlay(); };
 // options UI
@@ -1221,6 +1378,7 @@ function boot(data) {
   const lvl = data && Number.isInteger(data.level) ? clamp(data.level, 0, LEVELS.length - 1) : 0;
   loadLevel(lvl, (data && data.loadout) || freshLoadout());
   $('loading').hidden = true;
+  refreshContinue();
   showOv('ovTitle');
   requestAnimationFrame(t => { last = t; loop(t); });
 }

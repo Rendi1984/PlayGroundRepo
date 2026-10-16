@@ -63,6 +63,7 @@ function sfx(name, x, y) {
     case 'locked': Tn('square', 200, 200, 0.12, 0.2); Tn('square', 150, 150, 0.15, 0.2, 0.14); break;
     case 'oof': Tn('sawtooth', 160, 90, 0.15, 0.22); break;
     case 'land': N(0.12, 300, 0.5); break;
+    case 'jump': N(0.08, 500, 0.25); Tn('sine', 180, 260, 0.08, 0.12); break;
     case 'hurt': Tn('sawtooth', 320, 110, 0.22, 0.3); N(0.1, 900, 0.2); break;
     case 'pdeath': Tn('sawtooth', 300, 40, 0.9, 0.42); N(0.6, 500, 0.3); break;
     case 'zsight': Tn('sawtooth', 180, 110, 0.35, 0.28); break;

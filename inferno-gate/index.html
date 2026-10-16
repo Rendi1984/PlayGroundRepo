@@ -9,9 +9,9 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Metal+Mania&family=Rubik:wght@400;600;800&family=VT323&display=swap">
 <style>
-/* Layout: one letterboxed 16:10 screen in a black void; 3D view on top 84%, overlay canvas (weapon + status bar) above it, menus stacked on top */
+/* Layout: one letterboxed 16:10 screen in a black void; 3D view on top 84%, overlay canvas (status bar) above it, menus stacked on top */
 :root{
-  --void:#08070a; --rust:#2a1d17; --blood:#c0170e; --ember:#ff8a2a; --bone:#eadfc8; --ash:#948a80;
+  --void:#08070a; --rust:#2a1d17; --blood:#c0170e; --ember:#ff8a2a; --bone:#eadfc8; --ash:#948a80; --panel:#120e0c; --line:#3a2a22;
   --f-display:"Metal Mania","Impact","Haettenschweiler",fantasy;
   --f-body:"Rubik",system-ui,"Segoe UI",Arial,sans-serif;
   --f-mono:"VT323",ui-monospace,"Courier New",monospace;
@@ -27,24 +27,56 @@ body{margin:0;background:var(--void);color:var(--bone);font-family:var(--f-body)
 #frame{position:relative;background:#000;box-shadow:0 0 0 1px var(--rust),0 0 70px rgba(192,23,14,.2);max-width:100%;overflow:hidden;cursor:crosshair}
 #gl{position:absolute;left:0;top:0;width:100%;height:84%;display:block}
 #ov{position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none}
-.ov{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(6px,2vh,16px);
-  background:radial-gradient(ellipse at 50% 40%,rgba(60,8,4,.62),rgba(4,3,5,.92) 72%);text-align:center;padding:14px;direction:rtl;overflow:auto;cursor:default}
+.ov{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(6px,1.8vh,14px);
+  background:radial-gradient(ellipse at 50% 40%,rgba(60,8,4,.6),rgba(4,3,5,.92) 72%);text-align:center;padding:14px;direction:rtl;overflow:auto;cursor:default}
 .ov.dead{background:rgba(90,0,0,.55)}
 #loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--f-mono);font-size:clamp(18px,3vw,28px);color:var(--ember);background:#000;direction:rtl;padding:16px;text-align:center}
-.logo{font-family:var(--f-display);font-weight:400;font-size:clamp(30px,8.5vw,92px);line-height:.9;color:var(--blood);letter-spacing:.02em;direction:ltr;
+.logo{font-family:var(--f-display);font-weight:400;font-size:clamp(30px,8vw,88px);line-height:.9;color:var(--blood);letter-spacing:.02em;direction:ltr;
   text-shadow:0 3px 0 #4a0602,0 0 26px rgba(255,90,20,.45);margin:0}
-.sub{font-size:clamp(12px,1.8vw,17px);color:var(--bone);max-width:46ch;margin:0;line-height:1.5;text-wrap:balance}
-.keys{display:grid;grid-template-columns:auto auto auto auto;gap:3px 16px;font-size:clamp(11px,1.45vw,14px);color:var(--ash);text-align:right}
-.keys b{color:var(--bone);font-weight:600}
-kbd{font-family:var(--f-mono);font-size:1.15em;background:#1b1512;border:1px solid #4a3a30;border-bottom-width:2px;border-radius:3px;padding:0 5px;color:var(--ember);direction:ltr;display:inline-block;line-height:1.1}
-.btn{font-family:var(--f-body);font-weight:800;font-size:clamp(14px,2vw,19px);color:#fff;background:var(--blood);border:0;border-radius:2px;padding:9px 28px;cursor:pointer;box-shadow:0 3px 0 #4a0602;letter-spacing:.02em}
+.sub{font-size:clamp(12px,1.7vw,16px);color:var(--bone);max-width:46ch;margin:0;line-height:1.5;text-wrap:balance}
+.menu{display:flex;flex-direction:column;gap:6px;width:min(280px,80%)}
+.mi{font-family:var(--f-body);font-weight:600;font-size:clamp(14px,1.9vw,18px);color:var(--bone);background:rgba(20,12,10,.75);border:1px solid var(--line);
+  border-radius:2px;padding:8px 16px;cursor:pointer;text-align:center;letter-spacing:.01em}
+.mi:hover,.mi:focus-visible{background:#2a120c;border-color:var(--blood);color:#fff;outline:none}
+.mi.primary{background:var(--blood);border-color:var(--blood);color:#fff;font-weight:800;box-shadow:0 3px 0 #4a0602}
+.mi.primary:hover,.mi.primary:focus-visible{background:#d8200f}
+.btn{font-family:var(--f-body);font-weight:800;font-size:clamp(14px,2vw,19px);color:#fff;background:var(--blood);border:0;border-radius:2px;padding:9px 28px;cursor:pointer;box-shadow:0 3px 0 #4a0602}
 .btn:hover{background:#d8200f}
 .btn:focus-visible{outline:2px solid var(--ember);outline-offset:3px}
-h2{font-family:var(--f-display);color:var(--blood);font-weight:400;font-size:clamp(26px,5vw,54px);margin:0;text-shadow:0 0 18px rgba(255,90,20,.35)}
+h2{font-family:var(--f-display);color:var(--blood);font-weight:400;font-size:clamp(26px,5vw,52px);margin:0;text-shadow:0 0 18px rgba(255,90,20,.35)}
 .lvl{font-family:var(--f-mono);font-size:clamp(17px,2.6vw,26px);color:var(--ember);margin:0}
 .stats{font-family:var(--f-mono);font-size:clamp(19px,3.2vw,30px);color:var(--bone);display:grid;grid-template-columns:auto auto;gap:0 32px;direction:ltr;text-align:left}
 .stats span:nth-child(even){color:var(--blood);text-align:right;font-variant-numeric:tabular-nums}
 .hint{font-size:clamp(11px,1.4vw,13px);color:var(--ash);margin:0;max-width:52ch}
+/* panels: options, how to play, controls, difficulty */
+#ovPanel{justify-content:flex-start;padding-block:clamp(10px,3vh,24px)}
+.panel{width:min(620px,100%);background:rgba(14,10,9,.94);border:1px solid var(--line);border-radius:3px;padding:clamp(12px,2.4vw,22px);text-align:right;
+  display:flex;flex-direction:column;gap:12px;min-height:0}
+.phead{display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid var(--line);padding-bottom:8px}
+.phead h3{margin:0;font-family:var(--f-display);font-weight:400;color:var(--blood);font-size:clamp(24px,3.6vw,36px)}
+.back{font:600 14px var(--f-body);color:var(--bone);background:none;border:1px solid var(--line);border-radius:2px;padding:5px 12px;cursor:pointer}
+.back:hover,.back:focus-visible{border-color:var(--blood);outline:none}
+.row{display:grid;grid-template-columns:minmax(0,9rem) minmax(0,1fr) 3.4rem;align-items:center;gap:10px;font-size:14px}
+.row label{color:var(--bone)}
+.row output{font-family:var(--f-mono);font-size:18px;color:var(--ember);text-align:left;direction:ltr;font-variant-numeric:tabular-nums}
+.row input[type=range]{width:100%;accent-color:var(--blood)}
+.row select{font:14px var(--f-body);background:#1b1512;color:var(--bone);border:1px solid var(--line);border-radius:2px;padding:4px 6px}
+.chk{display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer}
+.chk input{accent-color:var(--blood);width:16px;height:16px}
+.chks{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,13rem),1fr));gap:8px 14px}
+.note{font-size:12px;color:var(--ash);margin:0}
+.help{display:flex;flex-direction:column;gap:10px;font-size:14px;line-height:1.55;color:var(--bone)}
+.help h4{margin:4px 0 0;font-size:15px;color:var(--ember);font-weight:600}
+.help p{margin:0;max-width:62ch}
+.help ul{margin:0;padding-inline-start:18px;display:flex;flex-direction:column;gap:3px}
+.ktable{display:grid;grid-template-columns:auto minmax(0,1fr);gap:6px 16px;font-size:14px;align-items:center}
+.ktable span{color:var(--ash)}
+kbd{font-family:var(--f-mono);font-size:1.15em;background:#1b1512;border:1px solid #4a3a30;border-bottom-width:2px;border-radius:3px;padding:0 6px;color:var(--ember);direction:ltr;display:inline-block;line-height:1.15}
+.diffs{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,10rem),1fr));gap:8px}
+.diff{display:flex;flex-direction:column;gap:4px;align-items:flex-start;text-align:right;padding:10px 12px}
+.diff b{font-size:17px}
+.diff small{color:var(--ash);font-weight:400;font-size:12px;line-height:1.4}
+/* touch */
 #touch{position:absolute;inset:0;pointer-events:none}
 #lookpad{pointer-events:auto;position:absolute;right:0;top:0;width:55%;height:84%;touch-action:none}
 .tb{pointer-events:auto;position:absolute;border-radius:50%;border:2px solid rgba(234,223,200,.35);background:rgba(20,10,8,.35);color:var(--bone);
@@ -53,9 +85,11 @@ h2{font-family:var(--f-display);color:var(--blood);font-weight:400;font-size:cla
 #knob{position:absolute;width:42%;height:42%;left:29%;top:29%;border-radius:50%;background:rgba(234,223,200,.35)}
 #bFire{right:4%;bottom:21%;width:16%;max-width:92px;aspect-ratio:1;background:rgba(192,23,14,.45)}
 #bUse{right:22%;bottom:19%;width:11%;max-width:62px;aspect-ratio:1}
+#bJump{right:22%;bottom:38%;width:10%;max-width:58px;aspect-ratio:1}
 #bWpn{right:4%;bottom:52%;width:10%;max-width:58px;aspect-ratio:1}
-#bMap{right:16%;bottom:56%;width:9%;max-width:52px;aspect-ratio:1}
-@media (max-width:560px){.keys{grid-template-columns:auto auto}}
+#bMap{right:16%;bottom:58%;width:9%;max-width:52px;aspect-ratio:1}
+#bMenu{left:3%;top:4%;width:9%;max-width:50px;aspect-ratio:1;border-radius:4px;font-size:18px}
+@media (max-width:560px){.row{grid-template-columns:minmax(0,1fr) 3rem}.row label{grid-column:1/-1}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head>
@@ -69,27 +103,130 @@ h2{font-family:var(--f-display);color:var(--blood);font-weight:400;font-size:cla
     <div class="tb" id="stick"><div id="knob"></div></div>
     <div class="tb" id="bFire">ירי</div>
     <div class="tb" id="bUse">פתח</div>
+    <div class="tb" id="bJump">קפוץ</div>
     <div class="tb" id="bWpn">נשק</div>
     <div class="tb" id="bMap">מפה</div>
+    <div class="tb" id="bMenu" aria-label="תפריט">☰</div>
   </div>
+
   <div class="ov" id="ovTitle" hidden>
     <h1 class="logo">INFERNO GATE</h1>
-    <p class="sub">שלושה שלבים בתלת־ממד אמיתי: מדרגות, חצרות פתוחות, נהרות לבה ופסולת רעילה. שמונה סוגי מפלצות, שישה כלי נשק, והמפלצות נלחמות גם זו בזו.</p>
-    <div class="keys">
-      <b>תנועה</b><span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></span>
-      <b>סיבוב</b><span>עכבר / <kbd>←</kbd><kbd>→</kbd></span>
-      <b>ירי</b><span>קליק / <kbd>Space</kbd></span>
-      <b>דלת / מתג</b><span><kbd>E</kbd></span>
-      <b>ריצה</b><span><kbd>Shift</kbd></span>
-      <b>נשק</b><span><kbd>1</kbd>–<kbd>6</kbd> / גלגלת</span>
-      <b>מפה</b><span><kbd>Tab</kbd></span>
-      <b>בהירות</b><span><kbd>B</kbd></span>
-      <b>מוזיקה</b><span><kbd>M</kbd></span>
-      <b>הפסקה</b><span><kbd>P</kbd></span>
+    <p class="sub">שלושה שלבים בתלת־ממד, שמונה סוגי מפלצות ושישה כלי נשק. מצא את המפתחות, הגע למתג היציאה, ואל תיפול ללבה.</p>
+    <div class="menu">
+      <button class="mi primary" id="bNew">משחק חדש</button>
+      <button class="mi" id="bOptT">אפשרויות</button>
+      <button class="mi" id="bHelpT">איך משחקים</button>
+      <button class="mi" id="bKeysT">מקשים</button>
     </div>
-    <button class="btn" id="bStart">התחל לשחק</button>
-    <p class="hint">דלתות צבעוניות נפתחות רק עם מפתח באותו צבע. ירייה בחבית ליד שדים חוסכת הרבה תחמושת.</p>
   </div>
+
+  <div class="ov" id="ovPause" hidden>
+    <h2>הפסקה</h2>
+    <div class="menu">
+      <button class="mi primary" id="bResume">המשך לשחק</button>
+      <button class="mi" id="bOptP">אפשרויות</button>
+      <button class="mi" id="bHelpP">איך משחקים</button>
+      <button class="mi" id="bKeysP">מקשים</button>
+      <button class="mi" id="bRestartP">התחל את השלב מחדש</button>
+      <button class="mi" id="bQuitP">יציאה לתפריט הראשי</button>
+    </div>
+    <p class="hint"><kbd>Esc</kbd> חוזר למשחק</p>
+  </div>
+
+  <div class="ov" id="ovPanel" hidden>
+    <div class="panel">
+      <div class="phead"><h3 id="panelTitle">אפשרויות</h3><button class="back" id="bBack">חזרה</button></div>
+
+      <div id="pNew" hidden>
+        <div class="diffs">
+          <button class="mi diff" id="bDiff_easy"><b>קל</b><small>חצי נזק, מפלצות איטיות יותר, תחמושת כפולה.</small></button>
+          <button class="mi diff primary" id="bDiff_normal"><b>רגיל</b><small>האיזון המומלץ למשחק ראשון.</small></button>
+          <button class="mi diff" id="bDiff_hard"><b>קשה</b><small>יותר נזק, מפלצות תוקפות מהר יותר.</small></button>
+        </div>
+      </div>
+
+      <div id="pOptions" hidden>
+        <div class="help">
+          <h4>שליטה</h4>
+          <div class="row"><label for="oSens">רגישות עכבר</label><input type="range" id="oSens" min="1" max="12" step="0.5"><output id="oSensV"></output></div>
+          <div class="row"><label for="oFov">שדה ראייה</label><input type="range" id="oFov" min="70" max="110" step="1"><output id="oFovV"></output></div>
+          <div class="chks">
+            <label class="chk"><input type="checkbox" id="oInvert">היפוך ציר אנכי</label>
+            <label class="chk"><input type="checkbox" id="oAim">כיוון אוטומטי למעלה/למטה</label>
+          </div>
+          <h4>תמונה</h4>
+          <div class="row"><label for="oGain">בהירות</label><input type="range" id="oGain" min="0.8" max="2" step="0.05"><output id="oGainV"></output></div>
+          <div class="row"><label for="oQuality">איכות גרפיקה</label>
+            <select id="oQuality"><option value="auto">אוטומטית</option><option value="low">נמוכה</option><option value="medium">בינונית</option><option value="high">גבוהה</option></select><span></span></div>
+          <div class="chks">
+            <label class="chk"><input type="checkbox" id="oBob">נדנוד מצלמה בהליכה</label>
+            <label class="chk"><input type="checkbox" id="oFps">הצגת FPS</label>
+          </div>
+          <h4>שמע</h4>
+          <div class="row"><label for="oSfx">אפקטים</label><input type="range" id="oSfx" min="0" max="100" step="5"><output id="oSfxV"></output></div>
+          <div class="row"><label for="oMusic">מוזיקה</label><input type="range" id="oMusic" min="0" max="100" step="5"><output id="oMusicV"></output></div>
+          <p class="note">ההגדרות נשמרות בדפדפן הזה. "אוטומטית" מורידה רזולוציה כשהמחשב מתקשה.</p>
+          <div><button class="back" id="oReset">איפוס לברירת מחדל</button></div>
+        </div>
+      </div>
+
+      <div id="pHelp" hidden>
+        <div class="help">
+          <h4>המטרה</h4>
+          <p>בכל שלב מחכה מתג יציאה עם שלט EXIT אדום. הגע אליו, עמוד מולו ולחץ <kbd>E</kbd>. בסוף השלב תראה כמה מפלצות הרגת, כמה פריטים אספת ובכמה זמן.</p>
+          <h4>דלתות ומפתחות</h4>
+          <p>דלת רגילה נפתחת ב־<kbd>E</kbd> ונסגרת לבד אחרי כמה שניות. דלת עם מסגרת אדומה או כחולה דורשת מפתח באותו צבע. המפתחות מרחפים ומאירים, קשה לפספס אותם.</p>
+          <h4>בריאות ושריון</h4>
+          <ul>
+            <li>זריקת מרץ מוסיפה 10 בריאות, ערכת עזרה ראשונה 25. כדור הנשמה הכחול מעלה עד 200.</li>
+            <li>שריון ירוק סופג שליש מהנזק, שריון כחול סופג חצי.</li>
+            <li>הפרצוף בשורת הסטטוס מסתכל לכיוון מי שפגע בך.</li>
+          </ul>
+          <h4>סכנות</h4>
+          <ul>
+            <li>פסולת ירוקה ולבה כתומה פוגעות בך כל שנייה שאתה עומד בהן.</li>
+            <li>חביות ירוקות מתפוצצות כשיורים בהן, ופוגעות בכל מי שקרוב, כולל בך.</li>
+            <li>טילים פוגעים גם בך אם הם מתפוצצים קרוב.</li>
+          </ul>
+          <h4>טיפים</h4>
+          <ul>
+            <li>מפלצות שפוגעות זו בזו בטעות מתחילות להילחם ביניהן. תן להן.</li>
+            <li>אפשר לקפוץ על מדרגות ומדפים נמוכים.</li>
+            <li>כשנגמרת התחמושת המשחק עובר לבד לנשק הבא שיש לו כדורים.</li>
+            <li>בגלל הכיוון האוטומטי לא צריך לכוון בדיוק לגובה, מספיק לכוון לכיוון.</li>
+            <li>המפה (<kbd>Tab</kbd>) מראה רק את מה שכבר ראית.</li>
+          </ul>
+          <h4>המפלצות</h4>
+          <ul>
+            <li><b>חייל וסמל:</b> יורים מרחוק. הסמל עם רובה ציד כואב יותר.</li>
+            <li><b>אימפ:</b> זורק כדורי אש ושורט מקרוב.</li>
+            <li><b>שד ורוח רפאים:</b> נושכים מקרוב ומהירים. רוח הרפאים כמעט שקופה.</li>
+            <li><b>גולגולת בוערת:</b> עפה ומסתערת עליך.</li>
+            <li><b>קקודמון:</b> כדור אדום מעופף שיורה כדורי אנרגיה.</li>
+            <li><b>בארון:</b> הכי חזק. 1000 נקודות חיים וכדורי אש ירוקים.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div id="pKeys" hidden>
+        <div class="ktable">
+          <div><kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd></div><span>תנועה קדימה, שמאלה, אחורה, ימינה</span>
+          <div>עכבר</div><span>הסתכלות לכל הכיוונים (לחץ על המסך כדי לנעול את העכבר)</span>
+          <div><kbd>←</kbd> <kbd>→</kbd></div><span>סיבוב בלי עכבר</span>
+          <div>קליק שמאלי / <kbd>F</kbd></div><span>ירי (החזק לירי רצוף)</span>
+          <div><kbd>Space</kbd></div><span>קפיצה</span>
+          <div><kbd>Shift</kbd></div><span>ריצה</span>
+          <div><kbd>E</kbd></div><span>פתיחת דלת והפעלת מתג</span>
+          <div><kbd>1</kbd>–<kbd>6</kbd> / גלגלת</div><span>החלפת נשק: אגרוף, אקדח, רובה ציד, מקלע, משגר טילים, פלזמה</span>
+          <div><kbd>Tab</kbd></div><span>מפה</span>
+          <div><kbd>M</kbd></div><span>הפעלה וכיבוי של המוזיקה</span>
+          <div><kbd>Esc</kbd> / <kbd>P</kbd></div><span>עצירה ותפריט</span>
+        </div>
+        <p class="note">בטלפון: ג'ויסטיק בצד שמאל, גרירה בצד ימין להסתכלות, כפתור ☰ לתפריט.</p>
+      </div>
+    </div>
+  </div>
+
   <div class="ov" id="ovInter" hidden>
     <h2 id="iTitle">השלב הושלם</h2>
     <p class="lvl" id="iName"></p>
@@ -101,10 +238,6 @@ h2{font-family:var(--f-display);color:var(--blood);font-weight:400;font-size:cla
     <p class="sub">השלב יתחיל מחדש עם הציוד שהיה לך בכניסה אליו.</p>
     <button class="btn" id="bRetry">נסה שוב</button>
   </div>
-  <div class="ov" id="ovPause" hidden>
-    <h2>הפסקה</h2>
-    <button class="btn" id="bResume">המשך</button>
-  </div>
   <div id="loading">בונה את הגיהנום…</div>
 </div></div>
 
@@ -114,6 +247,7 @@ h2{font-family:var(--f-display);color:var(--blood);font-weight:400;font-size:cla
 <script src="js/sprites.js"></script>
 <script src="js/levels.js"></script>
 <script src="js/world.js"></script>
+<script src="js/models.js"></script>
 <script src="js/audio.js"></script>
 <script src="js/hud.js"></script>
 <script src="js/game.js"></script>

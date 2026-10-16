@@ -275,9 +275,11 @@ function sampleLight(x, y, out) {
   if (w > 0) { out[0] = r / w; out[1] = g / w; out[2] = b / w; } else { out[0] = out[1] = out[2] = 0.3; }
   return out;
 }
-function makeSkyMesh(tex) {
-  const geo = new THREE.CylinderGeometry(70, 70, 72, 48, 1, true);
-  const m = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ map: tex, side: THREE.BackSide, depthWrite: false, fog: false }));
-  m.renderOrder = -1; m.frustumCulled = false;
-  return m;
+function makeSkyMesh(tex, top) {
+  const g = new THREE.Group();
+  const cylM = new THREE.Mesh(new THREE.CylinderGeometry(70, 70, 150, 48, 1, true), new THREE.MeshBasicMaterial({ map: tex, side: THREE.BackSide, depthWrite: false, fog: false }));
+  const cap = new THREE.Mesh(new THREE.CircleGeometry(70, 48), new THREE.MeshBasicMaterial({ color: new THREE.Color(top), side: THREE.DoubleSide, depthWrite: false, fog: false }));
+  cap.rotation.x = Math.PI / 2; cap.position.y = 74.9;
+  for (const m of [cylM, cap]) { m.renderOrder = -1; m.frustumCulled = false; g.add(m); }
+  return g;
 }

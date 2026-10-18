@@ -91,6 +91,8 @@ kbd{font-family:var(--f-mono);font-size:1.15em;background:#1b1512;border:1px sol
 .tb.on{background:rgba(192,23,14,.55);border-color:var(--ember)}
 #bCrouch{left:31%;bottom:20%;width:10%;max-width:58px;aspect-ratio:1}
 #bAim{right:38%;bottom:20%;width:10%;max-width:58px;aspect-ratio:1}
+#bMelee{right:38%;bottom:38%;width:9%;max-width:52px;aspect-ratio:1}
+#bGren{right:29%;bottom:58%;width:9%;max-width:52px;aspect-ratio:1}
 #bMenu{left:3%;top:4%;width:9%;max-width:50px;aspect-ratio:1;border-radius:4px;font-size:18px}
 @media (max-width:560px){.row{grid-template-columns:minmax(0,1fr) 3rem}.row label{grid-column:1/-1}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
@@ -109,6 +111,8 @@ kbd{font-family:var(--f-mono);font-size:1.15em;background:#1b1512;border:1px sol
     <div class="tb" id="bJump">קפוץ</div>
     <div class="tb" id="bCrouch">כריעה</div>
     <div class="tb" id="bAim">כוונת</div>
+    <div class="tb" id="bMelee">מכה</div>
+    <div class="tb" id="bGren">רימון</div>
     <div class="tb" id="bWpn">נשק</div>
     <div class="tb" id="bMap">מפה</div>
     <div class="tb" id="bMenu" aria-label="תפריט">☰</div>
@@ -145,7 +149,7 @@ kbd{font-family:var(--f-mono);font-size:1.15em;background:#1b1512;border:1px sol
 
       <div id="pNew" hidden>
         <div class="diffs">
-          <button class="mi diff" id="bDiff_easy"><b>קל</b><small>חצי נזק, מפלצות איטיות יותר, תחמושת כפולה.</small></button>
+          <button class="mi diff" id="bDiff_easy"><b>קל</b><small>שליש נזק, מפלצות איטיות יותר, תחמושת כפולה.</small></button>
           <button class="mi diff primary" id="bDiff_normal"><b>רגיל</b><small>האיזון המומלץ למשחק ראשון.</small></button>
           <button class="mi diff" id="bDiff_hard"><b>קשה</b><small>יותר נזק, מפלצות תוקפות מהר יותר.</small></button>
         </div>
@@ -181,9 +185,9 @@ kbd{font-family:var(--f-mono);font-size:1.15em;background:#1b1512;border:1px sol
       <div id="pHelp" hidden>
         <div class="help">
           <h4>המטרה</h4>
-          <p>בכל שלב מחכה מתג יציאה עם שלט EXIT אדום. הגע אליו, עמוד מולו ולחץ <kbd>E</kbd>. בסוף השלב תראה כמה מפלצות הרגת, כמה פריטים אספת ובכמה זמן.</p>
+          <p>בכל שלב מחכה מתג יציאה עם שלט EXIT אדום. הגע אליו, עמוד מולו ולחץ <kbd>R</kbd>. בסוף השלב תראה כמה מפלצות הרגת, כמה פריטים אספת ובכמה זמן.</p>
           <h4>דלתות ומפתחות</h4>
-          <p>דלת רגילה נפתחת ב־<kbd>E</kbd> ונסגרת לבד אחרי כמה שניות. דלת עם מסגרת אדומה או כחולה דורשת מפתח באותו צבע. המפתחות מרחפים ומאירים, קשה לפספס אותם.</p>
+          <p>דלת רגילה נפתחת כשהולכים לתוכה (או ב־<kbd>R</kbd>) ונסגרת לבד אחרי כמה שניות. דלת עם מסגרת אדומה או כחולה דורשת מפתח באותו צבע. המפתחות מרחפים ומאירים, קשה לפספס אותם.</p>
           <h4>בריאות ושריון</h4>
           <ul>
             <li>זריקת מרץ מוסיפה 10 בריאות, ערכת עזרה ראשונה 25. כדור הנשמה הכחול מעלה עד 200.</li>
@@ -193,7 +197,7 @@ kbd{font-family:var(--f-mono);font-size:1.15em;background:#1b1512;border:1px sol
           <h4>סכנות</h4>
           <ul>
             <li>פסולת ירוקה ולבה כתומה פוגעות בך כל שנייה שאתה עומד בהן.</li>
-            <li>חביות ירוקות מתפוצצות כשיורים בהן, ופוגעות בכל מי שקרוב, כולל בך.</li>
+            <li>חביות ירוקות מתפוצצות כשיורים בהן, בפיצוץ גדול שקוטל אויבים בסביבה. גם אתה נפגע, אבל פחות מהם.</li>
             <li>טילים פוגעים גם בך אם הם מתפוצצים קרוב.</li>
           </ul>
           <h4>טיפים</h4>
@@ -201,10 +205,15 @@ kbd{font-family:var(--f-mono);font-size:1.15em;background:#1b1512;border:1px sol
             <li>מפלצות שפוגעות זו בזו בטעות מתחילות להילחם ביניהן. תן להן.</li>
             <li>ארגזים ומחסומי בטון עוצרים כדורים וכדורי אש. כרע (<kbd>C</kbd>) מאחורי ארגז נמוך והמפלצות מפסיקות לראות אותך. ערימת ארגזים גבוהה מסתירה גם בעמידה.</li>
             <li>לחץ ימני מכניס לכוונת: זום, ירי מדויק ורובה ציד מרוכז יותר. התנועה איטית יותר בזמן הכיוון.</li>
-            <li>אפשר לקפוץ על מדרגות, מדפים נמוכים וארגזים.</li>
+            <li>קפיצה כפולה (<kbd>Space</kbd> פעמיים) מעלה על ערימות ארגזים ומדפים. מלמעלה רואים יותר, אבל גם רואים אותך.</li>
+            <li>הצצה (<kbd>Q</kbd>/<kbd>E</kbd>) מאחורי פינה חושפת רק את הראש. אפשר לירות בלי לצאת מהמחסה.</li>
+            <li>רימון (<kbd>G</kbd>) הוא הדרך הטובה להוציא תותחן קסנון מאחורי ארגז. תותחנים משאירים רימונים כשהם מתים.</li>
+            <li>מכה (<kbd>F</kbd>) משתקת אויב לרגע. שימושית נגד שארדלינגים שקפצו עליך.</li>
+            <li>הקשתות האדומות סביב הכוונת מראות מאיפה יורים עליך.</li>
             <li>כשנגמרת התחמושת המשחק עובר לבד לנשק הבא שיש לו כדורים.</li>
             <li>בגלל הכיוון האוטומטי לא צריך לכוון בדיוק לגובה, מספיק לכוון לכיוון.</li>
             <li>המפה (<kbd>Tab</kbd>) מראה רק את מה שכבר ראית.</li>
+            <li>פגיעה בראש עושה נזק כפול. הסימן ליד הכוונת נצבע צהוב.</li>
           </ul>
           <h4>המפלצות</h4>
           <ul>
@@ -230,13 +239,15 @@ kbd{font-family:var(--f-mono);font-size:1.15em;background:#1b1512;border:1px sol
         <div class="ktable">
           <div><kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd></div><span>תנועה קדימה, שמאלה, אחורה, ימינה</span>
           <div>עכבר</div><span>הסתכלות לכל הכיוונים (לחץ על המסך כדי לנעול את העכבר)</span>
-          <div><kbd>←</kbd> <kbd>→</kbd></div><span>סיבוב בלי עכבר</span>
-          <div>קליק שמאלי / <kbd>F</kbd></div><span>ירי (החזק לירי רצוף)</span>
+          <div>קליק שמאלי</div><span>ירי (החזק לירי רצוף, לחיצות מהירות עם האקדח יורות מהר יותר)</span>
           <div>קליק ימני</div><span>כוונת וזום (החזק). ירי מדויק בלי פיזור</span>
+          <div><kbd>F</kbd></div><span>מכה עם הנשק מקרוב: הודפת ומשתקת את האויב לרגע</span>
+          <div><kbd>G</kbd></div><span>זריקת רימון. קופץ מהקירות ומתפוצץ אחרי שנייה וחצי</span>
+          <div><kbd>Q</kbd> / <kbd>E</kbd></div><span>הצצה שמאלה / ימינה מעבר לפינה או למחסה</span>
+          <div><kbd>Space</kbd></div><span>קפיצה. לחיצה שנייה באוויר = קפיצה כפולה, לעלות על ארגזים ומדפים גבוהים</span>
           <div><kbd>C</kbd></div><span>כריעה (החזק). מסתתרים מאחורי ארגזים ומחסומים</span>
-          <div><kbd>Space</kbd></div><span>קפיצה</span>
           <div><kbd>Shift</kbd></div><span>ריצה</span>
-          <div><kbd>E</kbd></div><span>פתיחת דלת והפעלת מתג</span>
+          <div><kbd>R</kbd></div><span>הפעלת מתג יציאה (דלתות נפתחות כשהולכים לתוכן)</span>
           <div><kbd>1</kbd>–<kbd>6</kbd> / גלגלת</div><span>החלפת נשק: אגרוף, אקדח, רובה ציד, מקלע, משגר טילים, פלזמה</span>
           <div><kbd>Tab</kbd></div><span>מפה</span>
           <div><kbd>M</kbd></div><span>הפעלה וכיבוי של המוזיקה</span>

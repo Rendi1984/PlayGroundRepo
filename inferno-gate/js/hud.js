@@ -43,11 +43,12 @@ function drawHud(o, P, LV) {
   const key = (k, col, yy) => { if (!P.keys[k]) return; hcyl(o, 476, yy, 12, 14, col, 2); o.fillStyle = '#fff'; o.fillRect(478, yy + 4, 8, 2); };
   key('red', '#e01818', y0 + 12); key('blue', '#2050f0', y0 + 34);
   o.font = '16px "VT323", monospace'; o.textAlign = 'left';
-  const rows = [['BULL', 'bul'], ['SHEL', 'shl'], ['RCKT', 'rkt'], ['CELL', 'cel']];
+  const rows = [['BULL', 'bul'], ['SHEL', 'shl'], ['RCKT', 'rkt'], ['CELL', 'cel'], ['GREN', 'gren']];
+  o.font = '14px "VT323", monospace';
   rows.forEach(([nm, k], i) => {
-    const yy = y0 + 19 + i * 11;
+    const yy = y0 + 16 + i * 9.4;
     o.fillStyle = '#c8bfb0'; o.textAlign = 'left'; o.fillText(nm, 506, yy);
-    o.fillStyle = '#f0d040'; o.textAlign = 'right'; o.fillText(P.ammo[k] + '/' + AMMO_MAX[k], 630, yy);
+    o.fillStyle = '#f0d040'; o.textAlign = 'right'; o.fillText((P.ammo[k] || 0) + '/' + AMMO_MAX[k], 630, yy);
   });
 }
 function drawFace(o, x, y, P) {

@@ -79,6 +79,14 @@ function sfx(name, x, y) {
     case 'gnsight': Tn('sawtooth', 240, 480, 0.12, 0.18); Tn('sawtooth', 240, 480, 0.12, 0.18, 0.16); break;
     case 'acidshot': Tn('square', 600, 1500, 0.07, 0.14); N(0.08, 4000, 0.2, true); break;
     case 'acidhit': N(0.3, 3000, 0.35, true); break;
+    case 'jump2': Tn('sine', 300, 700, 0.12, 0.12); N(0.15, 3000, 0.15, true); break;
+    case 'bash': N(0.12, 900, 0.8); Tn('sine', 140, 60, 0.12, 0.45); break;
+    case 'bashwall': N(0.1, 1400, 0.5); Tn('square', 180, 120, 0.05, 0.12); break;
+    case 'throw': N(0.15, 2200, 0.2, true); break;
+    case 'clink': Tn('triangle', 1800, 1500, 0.05, 0.12); break;
+    case 'step': N(0.05, 400, 0.08); break;
+    case 'stepm': N(0.04, 1600, 0.06, true); Tn('triangle', 420, 380, 0.03, 0.03); break;
+    case 'headshot': aTone(t, 'square', 2400, 1800, 0.05, 0.1, null, 0); aTone(t + 0.04, 'square', 3000, 2600, 0.05, 0.08, null, 0); break;
     case 'land': N(0.12, 300, 0.5); break;
     case 'jump': N(0.08, 500, 0.25); Tn('sine', 180, 260, 0.08, 0.12); break;
     case 'hurt': Tn('sawtooth', 320, 110, 0.22, 0.3); N(0.1, 900, 0.2); break;

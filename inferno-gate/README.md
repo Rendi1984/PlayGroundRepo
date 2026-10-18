@@ -12,18 +12,21 @@ The previous version (a single-file raycaster) is kept in `classic.html`.
 |---|---|
 | Move | W A S D |
 | Look in every direction | Mouse (click the screen for pointer lock) or the arrow keys |
-| Fire | Left click / F |
+| Fire | Left click (fast clicks fire the pistol faster) |
 | Aim down sights (zoom, no spread) | Hold right click |
+| Weapon bash (melee) | F |
+| Throw grenade | G |
+| Lean left / right | Q / E |
+| Jump / double jump | Space / Space again in the air |
 | Crouch (hide behind cover) | Hold C |
-| Jump | Space |
 | Run | Shift |
-| Open door / flip switch | E |
+| Use exit switch | R (doors open when you walk into them) |
 | Weapons | 1–6 or the mouse wheel |
 | Automap | Tab |
 | Pause and menu | Esc / P |
 | Music | M |
 
-On a phone, a joystick and on-screen buttons appear, including crouch and aim toggles and ☰ for the menu.
+On a phone, a joystick and on-screen buttons appear, including crouch, aim, bash and grenade, and ☰ for the menu.
 
 ## Menus
 - **Main menu:** new game with a difficulty level (easy / normal / hard), options, how to play, controls
@@ -46,6 +49,7 @@ On a phone, a joystick and on-screen buttons appear, including crouch and aim to
   - Spore Mother: floating sac that lobs spore pods; each leaves a toxic gas cloud, and it bursts into a big one when it dies
   - Xenon Gunner: moves to cover, crouches, pops up to fire a 3-shot acid burst, then hides again; dodges when you aim at it
   - Gorvath (boss): armored front (x0.35 damage), glowing weak spot on the back (x2.5), slow to turn, ground-slam shockwave you jump over, thrown boulders, health bar
+- **Combat:** headshots do double damage, weapon bash staggers enemies, grenades bounce and explode on a fuse, barrels blow up in a large radius that hurts monsters far more than you, red arcs show where you are being hit from
 - **Weapons (6):** fist, pistol, shotgun, chaingun, rocket launcher (splash damage), plasma rifle
 - **Effects:** blood, sparks and smoke particles, exploding barrels with chain reactions, and automatic resolution scaling for weak devices
 

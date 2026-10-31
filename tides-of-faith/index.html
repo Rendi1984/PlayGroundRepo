@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>גאות האמונה — Tides of Faith</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #0b0d12; font-family: "Segoe UI", Arial, sans-serif; color: #eee; user-select: none; }
+  canvas#c { display: block; position: absolute; inset: 0; cursor: none; }
+  .panel { position: absolute; background: rgba(12, 14, 22, 0.78); border: 1px solid rgba(255,255,255,0.12); border-radius: 10px; padding: 8px 12px; backdrop-filter: blur(4px); }
+  #top { top: 10px; right: 50%; transform: translateX(50%); display: flex; gap: 18px; align-items: center; font-size: 14px; white-space: nowrap; }
+  .bar { width: 160px; height: 12px; background: #222; border-radius: 6px; overflow: hidden; position: relative; display: inline-block; vertical-align: middle; }
+  .bar > i { position: absolute; inset: 0 auto 0 0; background: linear-gradient(90deg, #3a7bd5, #7fd3ff); width: 0; }
+  #moral { width: 160px; height: 12px; border-radius: 6px; display: inline-block; vertical-align: middle; position: relative; background: linear-gradient(90deg, #ffd36b, #777 50%, #8b1030); }
+  #moral > i { position: absolute; top: -3px; width: 4px; height: 18px; background: #fff; border-radius: 2px; left: 50%; box-shadow: 0 0 6px #fff; }
+  #miracles { bottom: 12px; right: 50%; transform: translateX(50%); display: flex; gap: 8px; padding: 8px; }
+  .mbtn { width: 78px; padding: 6px 4px; text-align: center; border-radius: 8px; background: rgba(255,255,255,0.06); border: 2px solid transparent; cursor: pointer; font-size: 12px; line-height: 1.3; }
+  .mbtn .ic { font-size: 22px; display: block; }
+  .mbtn.sel { border-color: #ffd36b; background: rgba(255, 211, 107, 0.15); }
+  .mbtn.off { opacity: 0.45; }
+  .mbtn.bad.sel { border-color: #ff5a6e; background: rgba(255, 90, 110, 0.15); }
+  #spirit { top: 10px; right: 10px; width: 250px; font-size: 13px; }
+  #spirit h3 { margin: 0 0 6px; font-size: 15px; color: #9fe8ff; }
+  #learned { margin: 6px 0; padding: 0; list-style: none; max-height: 170px; overflow: auto; }
+  #learned li { padding: 2px 0; border-bottom: 1px dashed rgba(255,255,255,0.08); }
+  #learned li.weak { opacity: 0.5; }
+  .row { display: flex; gap: 6px; }
+  button { font: inherit; color: #eee; background: #2a3550; border: 1px solid #456; border-radius: 6px; padding: 5px 10px; cursor: pointer; }
+  button:hover { background: #35456a; }
+  button:disabled { opacity: 0.4; cursor: default; }
+  #praise { background: #2f5a3a; } #scold { background: #5a2f35; }
+  #lastAct { color: #ffd36b; min-height: 18px; margin: 4px 0; }
+  #log { top: 10px; left: 10px; width: 300px; font-size: 13px; max-height: 210px; overflow: hidden; }
+  #log div { padding: 2px 0; transition: opacity 1s; }
+  #log .good { color: #a6f0b0; } #log .bad { color: #ff9aa6; } #log .sp { color: #9fe8ff; } #log .info { color: #ddd; }
+  #miniWrap { bottom: 12px; left: 12px; padding: 4px; }
+  #mini { display: block; cursor: pointer; border-radius: 6px; }
+  #overlay { position: absolute; inset: 0; background: rgba(5, 6, 10, 0.86); display: flex; align-items: center; justify-content: center; z-index: 10; }
+  #overlay .box { max-width: 620px; text-align: right; line-height: 1.6; background: #141826; padding: 26px 32px; border-radius: 14px; border: 1px solid #334; }
+  #overlay h1 { margin: 0 0 4px; font-size: 34px; color: #ffd36b; }
+  #overlay h2 { margin: 0 0 14px; font-size: 15px; color: #9ab; font-weight: normal; }
+  #overlay ul { padding-right: 18px; margin: 8px 0; }
+  #overlay .go { font-size: 18px; padding: 10px 26px; margin-top: 12px; background: #b8862b; border-color: #e0b050; }
+  #pauseTag { position: absolute; top: 50%; width: 100%; text-align: center; font-size: 40px; color: #fff; text-shadow: 0 0 10px #000; display: none; pointer-events: none; }
+  kbd { background: #2a2f40; border-radius: 4px; padding: 0 5px; font-size: 12px; border: 1px solid #445; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+
+<div id="top" class="panel">
+  <span>✦ מאנה <span class="bar"><i id="manaFill"></i></span> <b id="manaTxt">0</b></span>
+  <span>יצירה <span id="moral"><i id="moralMark"></i></span> הרס</span>
+  <span>🏛 כפרים: <b id="vCount">0</b></span>
+  <span style="color:#c9a0ff">🜏 היריב: <b id="rCount">0</b></span>
+  <span id="clock">☀</span>
+</div>
+
+<div id="spirit" class="panel">
+  <h3>✧ נוֹגַה — הרוח השומרת</h3>
+  <div>אנרגיה <span class="bar" style="width:120px"><i id="spFill" style="background:linear-gradient(90deg,#3ad5c0,#c8fff6)"></i></span></div>
+  <div id="lastAct">עדיין צופה בך ולומדת…</div>
+  <div class="row">
+    <button id="praise" disabled>👍 שבח <kbd>Z</kbd></button>
+    <button id="scold" disabled>👎 נזיפה <kbd>X</kbd></button>
+  </div>
+  <div style="margin-top:8px;color:#9ab">מה נוגה למדה ממך:</div>
+  <ul id="learned"><li class="weak">כלום עדיין. הטל ניסים — היא מחקה אותך.</li></ul>
+</div>
+
+<div id="log" class="panel"></div>
+<div id="miracles" class="panel"></div>
+<div id="miniWrap" class="panel"><canvas id="mini" width="200" height="138"></canvas></div>
+<div id="pauseTag">⏸ מושהה</div>
+
+<div id="overlay">
+  <div class="box" id="ovBox">
+    <h1>גאות האמונה</h1>
+    <h2>Tides of Faith — משחק אלוהים מקורי</h2>
+    <p>אתה אל צעיר על אי שבו שבעה כפרים. אל יריב, <b style="color:#c9a0ff">צל-המים</b>, מתחרה בך על לבם של בני האדם.
+       כל כפר שמאמין בך מתפלל ומעניק לך <b>מאנה</b>, ובה אתה מחולל ניסים — אבל רק בתוך תחום ההשפעה שלך.</p>
+    <ul>
+      <li><b>ניסים טובים</b> (גשם, שפע, ריפוי) מעוררים אהבה. <b>ניסים הרסניים</b> (אש, ברק) מעוררים פחד — גם פחד הוא אמונה, אבל העולם משתנה בהתאם.</li>
+      <li>ככל שאתה נוטה ליצירה — ניסים טובים זולים יותר. נוטה להרס — ניסים הרסניים זולים יותר.</li>
+      <li><b>נוגה</b>, הרוח השומרת, צופה בכל נס שאתה מטיל ובהקשר שלו (שריפה, כפר רעב, כפר יריב…) — ומתחילה לפעול לבד באותו אופן. שבח או נזוף בה כדי לחנך אותה.</li>
+      <li><b>ניצחון:</b> כל שבעת הכפרים מאמינים בך. <b>הפסד:</b> לא נשאר כפר אחד שמאמין בך.</li>
+    </ul>
+    <p style="color:#9ab;font-size:13px">
+      שליטה: <kbd>לחיצה שמאלית</kbd> הטלת נס · <kbd>1</kbd>–<kbd>5</kbd> בחירת נס · גרירה ימנית / <kbd>WASD</kbd> / חיצים — הזזת מצלמה ·
+      גלגלת — זום · <kbd>Z</kbd>/<kbd>X</kbd> שבח/נזיפה · <kbd>רווח</kbd> השהיה · לחיצה על המפה הקטנה — קפיצה
+    </p>
+    <button class="go" id="startBtn">התחל לשלוט</button>
+  </div>
+</div>
+
+<script>
+'use strict';
+// ============================================================ constants
+const TILE = 20, MW = 90, MH = 62, WW = MW * TILE, WH = MH * TILE;
+const T = { WATER: 0, SAND: 1, GRASS: 2, FOREST: 3, ROCK: 4, BURNT: 5 };
+const DAY_LEN = 150;
+
+const MIRACLES = [
+  { id: 'rain',   name: 'גשם',   icon: '🌧', cost: 25, good: true,  radius: 90,  desc: 'מכבה אש, מצמיח, מפרה שדות' },
+  { id: 'bounty', name: 'שפע',   icon: '🌾', cost: 35, good: true,  radius: 140, desc: 'מזון לכפר הקרוב' },
+  { id: 'heal',   name: 'ריפוי', icon: '✨', cost: 20, good: true,  radius: 90,  desc: 'מרפא את התושבים' },
+  { id: 'fire',   name: 'אש',    icon: '🔥', cost: 30, good: false, radius: 45,  desc: 'מצית — זורע פחד' },
+  { id: 'bolt',   name: 'ברק',   icon: '⚡', cost: 45, good: false, radius: 30,  desc: 'מכה הורסת — פחד עמוק' },
+];
+const MBY = Object.fromEntries(MIRACLES.map(m => [m.id, m]));
+const CTXS = {
+  fire: 'שריפה', hungry: 'כפר רעב שלך', wounded: 'פצועים בכפר שלך', own: 'כפר משגשג שלך',
+  neutral: 'כפר ניטרלי', rival: 'כפר של היריב', wild: 'שממה',
+};
+const VNAMES = ['אור-גן', 'רמת-טל', 'נחל-תמר', 'גבעת-רוח', 'עין-שקד', 'כפר-ענן', 'מצפה-אש'];
+const COLORS = { p: '#ffd36b', r: '#b07cff', n: '#9aa3ad' };
+
+// ============================================================ rng / noise
+let seed = (Date.now() % 2147483646) + 1;
+function rnd() { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; }
+function makeNoise(scale) {
+  const gw = Math.ceil(MW / scale) + 2, gh = Math.ceil(MH / scale) + 2, g = [];
+  for (let i = 0; i < gw * gh; i++) g.push(rnd());
+  return (x, y) => {
+    const fx = x / scale, fy = y / scale, ix = Math.floor(fx), iy = Math.floor(fy);
+    const tx = fx - ix, ty = fy - iy, sx = tx * tx * (3 - 2 * tx), sy = ty * ty * (3 - 2 * ty);
+    const a = g[iy * gw + ix], b = g[iy * gw + ix + 1], c = g[(iy + 1) * gw + ix], d = g[(iy + 1) * gw + ix + 1];
+    return a + (b - a) * sx + (c - a) * sy + (a - b - c + d) * sx * sy;
+  };
+}
+const rand = (a, b) => a + Math.random() * (b - a);
+const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
+const dist = (ax, ay, bx, by) => Math.hypot(ax - bx, ay - by);
+
+// ============================================================ world state
+const tiles = new Uint8Array(MW * MH), elev = new Float32Array(MW * MH), shade = new Float32Array(MW * MH);
+const fire = new Float32Array(MW * MH);
+let villages = [], clouds = [], parts = [], bolts = [], rings = [];
+const gods = { p: { mana: 60, morality: 0 }, r: { mana: 60, morality: -0.4 } };
+let selected = 'rain', time = 0, paused = false, started = false, ended = false, shake = 0;
+const cam = { x: 0, y: 0, zoom: 1 };
+const mouse = { x: 0, y: 0, wx: 0, wy: 0, rdrag: false, lx: 0, ly: 0 };
+const keys = {};
+
+const inMap = (x, y) => x >= 0 && y >= 0 && x < MW && y < MH;
+const tIdx = (px, py) => { const x = Math.floor(px / TILE), y = Math.floor(py / TILE); return inMap(x, y) ? y * MW + x : -1; };
+const tileAt = (px, py) => { const i = tIdx(px, py); return i < 0 ? T.WATER : tiles[i]; };
+const isLand = t => t !== T.WATER && t !== T.ROCK;
+
+// ============================================================ terrain canvas
+const terr = document.createElement('canvas'); terr.width = WW; terr.height = WH;
+const tc = terr.getContext('2d');
+function drawTile(x, y) {
+  const i = y * MW + x, t = tiles[i], s = shade[i], px = x * TILE, py = y * TILE;
+  const grass = `hsl(${92 + s * 14},${38 + s * 8}%,${33 + s * 6}%)`;
+  if (t === T.WATER) {
+    const d = clamp((0.5 - elev[i]) * 3, 0, 1);
+    tc.fillStyle = `hsl(${205 + d * 8},${55}%,${44 - d * 20 + s * 3}%)`;
+    tc.fillRect(px, py, TILE, TILE);
+  } else if (t === T.SAND) {
+    tc.fillStyle = `hsl(44,${45 + s * 10}%,${66 + s * 6}%)`; tc.fillRect(px, py, TILE, TILE);
+  } else if (t === T.GRASS) {
+    tc.fillStyle = grass; tc.fillRect(px, py, TILE, TILE);
+    if (s > 0.75) { tc.fillStyle = 'rgba(255,240,150,0.35)'; tc.fillRect(px + 6, py + 9, 2, 2); }
+  } else if (t === T.FOREST) {
+    tc.fillStyle = grass; tc.fillRect(px, py, TILE, TILE);
+    const trees = s > 0.5 ? [[6, 7, 5], [14, 13, 5.5]] : [[10, 10, 7]];
+    for (const [ox, oy, r] of trees) {
+      tc.fillStyle = 'rgba(0,0,0,0.25)'; tc.beginPath(); tc.arc(px + ox + 2, py + oy + 2, r, 0, 7); tc.fill();
+      tc.fillStyle = `hsl(${110 + s * 25},45%,${20 + s * 6}%)`; tc.beginPath(); tc.arc(px + ox, py + oy, r, 0, 7); tc.fill();
+      tc.fillStyle = `hsla(${100 + s * 25},50%,40%,0.6)`; tc.beginPath(); tc.arc(px + ox - r * 0.3, py + oy - r * 0.3, r * 0.45, 0, 7); tc.fill();
+    }
+  } else if (t === T.ROCK) {
+    tc.fillStyle = `hsl(30,6%,${42 + s * 10}%)`; tc.fillRect(px, py, TILE, TILE);
+    tc.fillStyle = `hsl(30,6%,${30 + s * 6}%)`;
+    tc.beginPath(); tc.moveTo(px + 3, py + 17); tc.lineTo(px + 9, py + 4); tc.lineTo(px + 17, py + 15); tc.fill();
+  } else if (t === T.BURNT) {
+    tc.fillStyle = `hsl(25,12%,${16 + s * 6}%)`; tc.fillRect(px, py, TILE, TILE);
+    tc.fillStyle = 'rgba(120,110,100,0.5)'; tc.fillRect(px + 4 + s * 8, py + 5, 2, 2); tc.fillRect(px + 12, py + 12 - s * 4, 2, 2);
+  }
+}
+function setTile(i, t) { if (tiles[i] === t) return; tiles[i] = t; drawTile(i % MW, (i / MW) | 0); miniDirty = true; }
+
+// ============================================================ generation
+function generate() {
+  const n1 = makeNoise(13), n2 = makeNoise(5), nf = makeNoise(7);
+  for (let y = 0; y < MH; y++) for (let x = 0; x < MW; x++) {
+    const i = y * MW + x, nx = x / MW - 0.5, ny = y / MH - 0.5;
+    const d = Math.sqrt(nx * nx + ny * ny) * 1.8;
+    const e = n1(x, y) * 0.65 + n2(x, y) * 0.35 + 0.25 - Math.max(0, d - 0.55) * 1.7;
+    elev[i] = e; shade[i] = rnd();
+    let t = T.GRASS;
+    if (e < 0.5) t = T.WATER; else if (e < 0.54) t = T.SAND; else if (e > 0.95) t = T.ROCK;
+    else if (nf(x, y) > 0.58) t = T.FOREST;
+    tiles[i] = t;
+  }
+  const spots = [[0.24, 0.68, 'p', 8], [0.76, 0.32, 'r', 8], [0.5, 0.5, null, 6], [0.25, 0.27, null, 5],
+                 [0.75, 0.73, null, 5], [0.52, 0.17, null, 6], [0.48, 0.84, null, 6]];
+  villages = spots.map(([nx, ny, own, pop], k) => makeVillage(VNAMES[k], nx, ny, own, pop));
+  for (let y = 0; y < MH; y++) for (let x = 0; x < MW; x++) drawTile(x, y);
+}
+function makeVillage(name, nx, ny, owner, pop) {
+  const tx = Math.round(nx * MW), ty = Math.round(ny * MH);
+  for (let dy = -8; dy <= 8; dy++) for (let dx = -8; dx <= 8; dx++) {
+    const x = tx + dx, y = ty + dy; if (!inMap(x, y)) continue;
+    const d = Math.hypot(dx, dy), i = y * MW + x;
+    if (d <= 7.5 && tiles[i] !== T.GRASS && tiles[i] !== T.FOREST) { tiles[i] = T.GRASS; elev[i] = Math.max(elev[i], 0.6); }
+    if (d <= 3.5) tiles[i] = T.GRASS;
+  }
+  const v = { name, x: tx * TILE + TILE / 2, y: ty * TILE + TILE / 2, food: 30, wood: 8, belief: { p: 0, r: 0 },
+              owner, houses: [], villagers: [], growT: 0, fert: 0, flash: 0 };
+  if (owner) v.belief[owner] = 85;
+  const nh = Math.ceil(pop / 4) + 1;
+  for (let k = 0; k < nh; k++) addHouse(v);
+  for (let k = 0; k < pop; k++) addVillager(v);
+  return v;
+}
+function addHouse(v) {
+  for (let tries = 0; tries < 50; tries++) {
+    const a = Math.random() * Math.PI * 2, r = rand(38, 100), x = v.x + Math.cos(a) * r, y = v.y + Math.sin(a) * r;
+    const i = tIdx(x, y); if (i < 0) continue;
+    const t = tiles[i]; if (!isLand(t)) continue;
+    if (v.houses.some(h => dist(h.x, h.y, x, y) < 24)) continue;
+    if (t === T.FOREST) setTile(i, T.GRASS);
+    v.houses.push({ x, y, hp: 100 }); return true;
+  }
+  return false;
+}
+function addVillager(v) {
+  v.villagers.push({ x: v.x + rand(-20, 20), y: v.y + rand(-20, 20), tx: 0, ty: 0, state: 'idle', goal: null,
+                     t: Math.random() * 2, hp: 100, task: null, carry: null, fear: 0 });
+}
+
+// ============================================================ influence & belief
+const owned = g => villages.filter(v => v.owner === g);
+const infR = v => Math.min(520, 220 + v.villagers.length * 11);
+function inInfluence(g, x, y) { return villages.some(v => v.owner === g && dist(v.x, v.y, x, y) <= infR(v)); }
+// point inside g's influence from which village v can be reached by a miracle (or null)
+function reachPoint(g, v) {
+  let best = null, bd = 1e9;
+  for (const o of owned(g)) {
+    const d = dist(o.x, o.y, v.x, v.y), R = infR(o);
+    if (d <= R) return { x: v.x, y: v.y };
+    if (d - R <= 125 && d - R < bd) { bd = d - R; const k = (R - 4) / d; best = { x: o.x + (v.x - o.x) * k, y: o.y + (v.y - o.y) * k }; }
+  }
+  return best;
+}
+function impress(g, x, y, amt, good) {
+  const other = g === 'p' ? 'r' : 'p';
+  for (const v of villages) {
+    const d = dist(v.x, v.y, x, y); if (d > 165) continue;
+    const k = amt * (d < 90 ? 1 : 0.6);
+    if (good) { v.belief[g] += k; if (v.owner === other) v.belief[other] -= k * 0.5; }
+    else if (v.owner === g) { v.belief[g] -= k * 1.2; }
+    else { v.belief[g] += k * 0.6; v.belief[other] -= k * 0.6; v.villagers.forEach(u => u.fear = 4); }
+    v.belief.p = clamp(v.belief.p, 0, 100); v.belief.r = clamp(v.belief.r, 0, 100);
+    v.flash = 1;
+  }
+}
+function fireNear(x, y, r) {
+  const x0 = Math.floor((x - r) / TILE), x1 = Math.floor((x + r) / TILE), y0 = Math.floor((y - r) / TILE), y1 = Math.floor((y + r) / TILE);
+  for (let ty = y0; ty <= y1; ty++) for (let tx = x0; tx <= x1; tx++) {
+    if (inMap(tx, ty) && fire[ty * MW + tx] > 0 && dist(tx * TILE + 10, ty * TILE + 10, x, y) <= r) return { x: tx * TILE + 10, y: ty * TILE + 10 };
+  }
+  return null;
+}
+function nearestVillage(x, y, maxD) {
+  let b = null, bd = maxD;
+  for (const v of villages) { const d = dist(v.x, v.y, x, y); if (d < bd) { bd = d; b = v; } }
+  return b;
+}
+
+// ============================================================ miracles
+function costOf(g, id) {
+  const m = MBY[id], mor = gods[g].morality;
+  const k = m.good ? 1 - 0.3 * Math.max(0, mor) : 1 - 0.3 * Math.max(0, -mor);
+  return Math.round(m.cost * k);
+}
+function ignite(i, t) { if (i < 0) return; const tt = tiles[i]; if ((tt === T.GRASS || tt === T.FOREST) && fire[i] <= 0) fire[i] = t || (tt === T.FOREST ? 7 : 3); }
+
+// returns true if the miracle happened
+function cast(g, id, x, y, power = 1, bySpirit = false) {
+  const m = MBY[id], who = g === 'p' ? (bySpirit ? 'נוגה' : 'אתה') : 'צל-המים';
+  if (id === 'rain') {
+    clouds.push({ x, y, r: m.radius, t: 7 * power + 1, g });
+    impress(g, x, y, 4 * power, true);
+  } else if (id === 'bounty') {
+    const v = nearestVillage(x, y, 140); if (!v) { if (g === 'p' && !bySpirit) msg('שפע צריך כפר קרוב', 'info'); return false; }
+    v.food += 45 * power; impress(g, v.x, v.y, 12 * power, true);
+    for (let k = 0; k < 30; k++) parts.push({ x: v.x + rand(-40, 40), y: v.y - 60 + rand(-20, 20), vx: rand(-10, 10), vy: rand(30, 70), life: 1.2, c: '#ffe08a', s: 3 });
+  } else if (id === 'heal') {
+    let n = 0;
+    for (const v of villages) for (const u of v.villagers) if (dist(u.x, u.y, x, y) < m.radius) { if (u.hp < 100) n++; u.hp = 100; }
+    impress(g, x, y, (4 + n * 0.7) * power, true);
+    for (let k = 0; k < 40; k++) { const a = rand(0, 7), r = rand(0, m.radius); parts.push({ x: x + Math.cos(a) * r, y: y + Math.sin(a) * r, vx: 0, vy: -rand(20, 50), life: 1.4, c: '#bfffe0', s: 2.5 }); }
+  } else if (id === 'fire') {
+    const cx = Math.floor(x / TILE), cy = Math.floor(y / TILE);
+    for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) if (inMap(cx + dx, cy + dy) && Math.hypot(dx, dy) <= 2.3 * power + 0.2) ignite((cy + dy) * MW + cx + dx);
+    for (const v of villages) for (const h of v.houses) if (dist(h.x, h.y, x, y) < m.radius) h.hp -= 30 * power;
+    impress(g, x, y, 8 * power, false);
+  } else if (id === 'bolt') {
+    bolts.push(makeBolt(x, y)); shake = 0.4;
+    for (const v of villages) {
+      for (const u of v.villagers) if (dist(u.x, u.y, x, y) < 24 * power + 6) u.hp -= 150;
+      for (const h of v.houses) if (dist(h.x, h.y, x, y) < 30) h.hp -= 100 * power;
+    }
+    ignite(tIdx(x, y), 5);
+    impress(g, x, y, 14 * power, false);
+  }
+  rings.push({ x, y, r: 5, max: m.radius, life: 0.6, c: m.good ? '#bff' : '#f86' });
+  if (g === 'p') {
+    const near = nearestVillage(x, y, 165);
+    let dm = m.good ? 0.025 : -0.035;
+    if (!m.good && near && near.owner === 'p') dm -= 0.04;
+    gods.p.morality = clamp(gods.p.morality + dm * (bySpirit ? 0.6 : 1), -1, 1);
+    if (bySpirit) msg(`נוגה הטילה ${m.name}${near ? ' ליד ' + near.name : ''}`, 'sp');
+  } else if (g === 'r') {
+    const near = nearestVillage(x, y, 165);
+    if (near && (near.owner === 'p' || !m.good)) msg(`${who} הטיל ${m.name} על ${near.name}`, m.good ? 'info' : 'bad');
+  }
+  return true;
+}
+function makeBolt(x, y) {
+  const pts = [[x + rand(-40, 40), y - 420]];
+  for (let k = 1; k <= 10; k++) pts.push([x + rand(-18, 18) * (1 - k / 10), y - 420 + 42 * k]);
+  pts[pts.length - 1] = [x, y];
+  return { pts, life: 0.5 };
+}
+
+// ============================================================ spirit
+const spirit = { x: 0, y: 0, vx: 0, vy: 0, energy: 40, cool: 6, state: 'idle', target: null, last: null, w: {}, orbit: 0, trail: [] };
+for (const c in CTXS) { spirit.w[c] = {}; for (const m of MIRACLES) spirit.w[c][m.id] = 0; }
+function ctxAt(x, y) {
+  if (fireNear(x, y, 70)) return 'fire';
+  const v = nearestVillage(x, y, 165); if (!v) return 'wild';
+  if (v.owner === 'p') {
+    if (v.food < v.villagers.length * 1.5) return 'hungry';
+    if (v.villagers.some(u => u.hp < 60)) return 'wounded';
+    return 'own';
+  }
+  return v.owner === 'r' ? 'rival' : 'neutral';
+}
+function spiritLearn(ctx, id, amt) {
+  const before = spirit.w[ctx][id];
+  spirit.w[ctx][id] = Math.max(0, before + amt);
+  if (before < 2 && spirit.w[ctx][id] >= 2) msg(`נוגה למדה: מול "${CTXS[ctx]}" — ${MBY[id].name}`, 'sp');
+  if (before >= 2 && spirit.w[ctx][id] < 2) msg(`נוגה הפסיקה: ${MBY[id].name} מול "${CTXS[ctx]}"`, 'sp');
+  learnedDirty = true;
+}
+function bestFor(ctx) {
+  let bm = null, bw = 1.99;
+  for (const m in spirit.w[ctx]) if (spirit.w[ctx][m] > bw) { bw = spirit.w[ctx][m]; bm = m; }
+  return bm ? { m: bm, w: bw } : null;
+}
+function spiritChoose() {
+  const mine = owned('p'); if (!mine.length) return;
+  const cands = [];
+  const fb = bestFor('fire');
+  if (fb) for (const v of mine) { const f = fireNear(v.x, v.y, infR(v) * 0.8); if (f) { cands.push({ ctx: 'fire', ...fb, x: f.x, y: f.y }); break; } }
+  for (const v of villages) {
+    let c;
+    if (v.owner === 'p') c = v.food < v.villagers.length * 1.5 ? 'hungry' : v.villagers.some(u => u.hp < 60) ? 'wounded' : 'own';
+    else c = v.owner === 'r' ? 'rival' : 'neutral';
+    const b = bestFor(c); if (!b) continue;
+    const pt = v.owner === 'p' ? { x: v.x, y: v.y } : reachPoint('p', v); if (!pt) continue;
+    // don't spam "own"/"neutral" boons on villages that don't need them
+    if ((c === 'own' && v.food > 80) || (c === 'neutral' && v.belief.p > 90)) continue;
+    cands.push({ ctx: c, ...b, x: pt.x + rand(-15, 15), y: pt.y + rand(-15, 15) });
+  }
+  if (!cands.length) return;
+  cands.forEach(c => c.score = c.w + Math.random() * 2);
+  cands.sort((a, b) => b.score - a.score);
+  spirit.target = cands[0]; spirit.state = 'go';
+}
+function updSpirit(dt) {
+  spirit.energy = Math.min(100, spirit.energy + 3 * dt);
+  spirit.cool -= dt;
+  let tx, ty, sp = 70;
+  if (spirit.state === 'go' && spirit.target) {
+    tx = spirit.target.x; ty = spirit.target.y; sp = 170;
+    if (dist(spirit.x, spirit.y, tx, ty) < 12) {
+      const tg = spirit.target;
+      if (cast('p', tg.m, tg.x, tg.y, 0.6, true)) { spirit.energy -= 35; spirit.last = { ctx: tg.ctx, m: tg.m }; lastActDirty = true; }
+      spirit.state = 'idle'; spirit.target = null; spirit.cool = 4;
+    }
+  } else {
+    const home = owned('p').sort((a, b) => b.villagers.length - a.villagers.length)[0];
+    spirit.orbit += dt * 0.6;
+    if (home) { tx = home.x + Math.cos(spirit.orbit) * 60; ty = home.y - 30 + Math.sin(spirit.orbit) * 35; }
+    else { tx = spirit.x; ty = spirit.y; }
+    if (spirit.cool <= 0 && spirit.energy >= 35) { spirit.cool = 3; spiritChoose(); }
+  }
+  const dx = tx - spirit.x, dy = ty - spirit.y, d = Math.hypot(dx, dy);
+  if (d > 1) { const s = Math.min(d, sp * dt); spirit.x += dx / d * s; spirit.y += dy / d * s; }
+  spirit.trail.push({ x: spirit.x, y: spirit.y, life: 0.7 });
+  if (spirit.trail.length > 40) spirit.trail.shift();
+}
+
+// ============================================================ rival AI
+let rivalT = 6;
+function rivalThink() {
+  const R = gods.r, mine = owned('r'); if (!mine.length) return;
+  const can = id => R.mana >= costOf('r', id);
+  const doCast = (id, x, y) => { if (cast('r', id, x, y)) R.mana -= costOf('r', id); };
+  for (const v of mine) { const f = fireNear(v.x, v.y, 110); if (f && can('rain')) return doCast('rain', f.x, f.y); }
+  for (const v of mine) if (v.food < v.villagers.length * 1.3 && can('bounty')) return doCast('bounty', v.x, v.y);
+  const aggression = Math.min(0.4, 0.1 + time / 1200);
+  const targets = villages.filter(v => v.owner !== 'r').map(v => ({ v, pt: reachPoint('r', v) })).filter(o => o.pt);
+  if (!targets.length) return;
+  targets.sort((a, b) => (a.v.owner === 'p') - (b.v.owner === 'p') || b.v.belief.r - a.v.belief.r);
+  const pv = targets.find(o => o.v.owner === 'p');
+  if (pv && Math.random() < aggression && can('bolt') && R.mana > 70) {
+    const h = pv.v.houses[(Math.random() * pv.v.houses.length) | 0];
+    const tgt = h && reachPointXY('r', h.x, h.y) ? h : pv.pt;
+    return doCast(Math.random() < 0.5 ? 'bolt' : 'fire', tgt.x, tgt.y);
+  }
+  const o = targets[0];
+  if (can('bounty')) return doCast('bounty', o.pt.x, o.pt.y);
+  if (can('rain') && Math.random() < 0.5) return doCast('rain', o.pt.x, o.pt.y);
+}
+const reachPointXY = (g, x, y) => inInfluence(g, x, y);
+
+// ============================================================ simulation
+function updVillager(u, v, dt) {
+  if (u.fear > 0) u.fear -= dt;
+  if (u.state === 'walk') {
+    const dx = u.tx - u.x, dy = u.ty - u.y, d = Math.hypot(dx, dy), s = (u.fear > 0 ? 55 : 28) * dt;
+    if (d <= s) { u.x = u.tx; u.y = u.ty; arrive(u, v); } else { u.x += dx / d * s; u.y += dy / d * s; }
+  } else {
+    u.t -= dt;
+    if (u.t <= 0) { if (u.state === 'work') finishWork(u, v); else chooseTask(u, v); }
+  }
+  const i = tIdx(u.x, u.y); if (i >= 0 && fire[i] > 0) u.hp -= 30 * dt;
+  if (v.food <= 0) u.hp -= 2.5 * dt; else if (u.hp < 100) u.hp = Math.min(100, u.hp + 0.8 * dt);
+}
+function walkTo(u, x, y, goal) { u.tx = x; u.ty = y; u.goal = goal; u.state = 'walk'; }
+function chooseTask(u, v) {
+  if (v.wood < 24 && Math.random() < 0.4) {
+    for (let k = 0; k < 20; k++) {
+      const x = v.x + rand(-130, 130), y = v.y + rand(-130, 130), i = tIdx(x, y);
+      if (i >= 0 && tiles[i] === T.FOREST && fire[i] <= 0) { u.task = 'wood'; return walkTo(u, Math.floor(x / TILE) * TILE + 10, Math.floor(y / TILE) * TILE + 10, 'work'); }
+    }
+  }
+  for (let k = 0; k < 12; k++) {
+    const a = rand(0, 7), r = rand(30, 105), x = v.x + Math.cos(a) * r, y = v.y + Math.sin(a) * r, t = tileAt(x, y);
+    if (t === T.GRASS || t === T.BURNT) { u.task = 'food'; return walkTo(u, x, y, 'work'); }
+  }
+  u.task = null; walkTo(u, v.x + rand(-30, 30), v.y + rand(-30, 30), 'home');
+}
+function arrive(u, v) {
+  if (u.goal === 'work') { u.state = 'work'; u.t = rand(2, 4); }
+  else {
+    if (u.carry === 'food') v.food += 2.2 * (v.fert > 0 ? 2 : 1);
+    else if (u.carry === 'wood') v.wood += 1.5;
+    u.carry = null; u.state = 'idle'; u.t = rand(0.3, 1.5);
+  }
+}
+function finishWork(u, v) {
+  const i = tIdx(u.x, u.y);
+  if (u.task === 'wood') { if (i >= 0 && tiles[i] === T.FOREST) { u.carry = 'wood'; if (Math.random() < 0.18) setTile(i, T.GRASS); } }
+  else if (u.task === 'food') u.carry = 'food';
+  walkTo(u, v.x + rand(-25, 25), v.y + rand(-25, 25), 'home');
+}
+function updVillage(v, dt) {
+  const pop = v.villagers.length;
+  for (const u of v.villagers) updVillager(u, v, dt);
+  for (let k = v.villagers.length - 1; k >= 0; k--) {
+    const u = v.villagers[k];
+    if (u.hp <= 0) { v.villagers.splice(k, 1); for (let q = 0; q < 8; q++) parts.push({ x: u.x, y: u.y, vx: rand(-20, 20), vy: rand(-40, -10), life: 1, c: '#ccc', s: 2 }); }
+  }
+  v.food = clamp(v.food - pop * 0.06 * dt, 0, 60 + pop * 8);
+  if (v.fert > 0) v.fert -= dt;
+  if (v.flash > 0) v.flash -= dt * 2;
+  for (let k = v.houses.length - 1; k >= 0; k--) {
+    const h = v.houses[k], i = tIdx(h.x, h.y);
+    if (i >= 0 && fire[i] > 0) h.hp -= 18 * dt;
+    if (h.hp <= 0) { v.houses.splice(k, 1); ignite(i, 4); for (let q = 0; q < 14; q++) parts.push({ x: h.x, y: h.y, vx: rand(-30, 30), vy: rand(-60, -10), life: 1.3, c: '#555', s: 3 }); }
+  }
+  if (pop > 0 && v.food > pop * 4 && pop < v.houses.length * 4) { v.growT += dt; if (v.growT > 8) { v.growT = 0; v.food -= 6; addVillager(v); } }
+  if (v.wood >= 12 && pop >= v.houses.length * 4 - 1 && v.houses.length < 13) { if (addHouse(v)) v.wood -= 12; }
+  // belief dynamics
+  for (const g of ['p', 'r']) {
+    if (v.owner === g) {
+      if (v.food <= 0) v.belief[g] -= 1.5 * dt; else if (v.food > pop * 2) v.belief[g] += 0.6 * dt;
+      gods[g].mana += pop * 0.32 * dt * (v.belief[g] / 100) * (g === 'r' ? 0.75 : 1);
+    } else {
+      v.belief[g] -= 0.12 * dt;
+      // thriving nearby villages slowly win over their neighbours
+      for (const o of villages) if (o.owner === g && o !== v && o.villagers.length >= 6 && dist(o.x, o.y, v.x, v.y) < 560)
+        v.belief[g] += 0.12 * dt * (o.villagers.length / 10);
+    }
+    v.belief[g] = clamp(v.belief[g], 0, 100);
+  }
+  if (pop === 0) { v.belief.p = Math.min(v.belief.p, 10); v.belief.r = Math.min(v.belief.r, 10); }
+  // ownership
+  const prev = v.owner;
+  for (const g of ['p', 'r']) {
+    const o = g === 'p' ? 'r' : 'p';
+    if (v.owner !== g && v.belief[g] >= 60 && v.belief[g] > v.belief[o] + 10) { v.owner = g; v.belief[o] = Math.min(v.belief[o], 30); }
+  }
+  if (v.owner && v.belief[v.owner] < 35) v.owner = null;
+  if (prev !== v.owner) {
+    if (v.owner === 'p') msg(`${v.name} מאמין בך! ✦`, 'good');
+    else if (v.owner === 'r') msg(`${v.name} עבר לסגוד לצל-המים`, 'bad');
+    else msg(`${v.name} איבד את אמונתו`, 'info');
+    miniDirty = true;
+  }
+  // prayer sparkles
+  if (v.owner && Math.random() < pop * 0.25 * dt) parts.push({ x: v.x + rand(-6, 6), y: v.y - 18, vx: rand(-4, 4), vy: -rand(25, 45), life: 1.6, c: COLORS[v.owner], s: 2 });
+}
+let fireAcc = 0;
+function updFire(dt) {
+  fireAcc += dt; if (fireAcc < 0.25) return; const st = fireAcc; fireAcc = 0;
+  let burning = 0;
+  for (let i = 0; i < fire.length; i++) if (fire[i] > 0) burning++;
+  for (let i = 0; i < fire.length; i++) {
+    if (fire[i] > 0) {
+      fire[i] -= st;
+      const x = i % MW, y = (i / MW) | 0;
+      if (burning < 350) for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        if (!inMap(x + dx, y + dy)) continue;
+        const j = (y + dy) * MW + x + dx, t = tiles[j];
+        if (fire[j] <= 0 && ((t === T.FOREST && Math.random() < 0.16) || (t === T.GRASS && Math.random() < 0.035))) { fire[j] = t === T.FOREST ? 7 : 3; burning++; }
+      }
+      if (fire[i] <= 0) { fire[i] = 0; setTile(i, T.BURNT); }
+    } else if (tiles[i] === T.BURNT && Math.random() < 0.0012) setTile(i, T.GRASS);
+  }
+}
+function updClouds(dt) {
+  for (const c of clouds) {
+    c.t -= dt;
+    const x0 = Math.floor((c.x - c.r) / TILE), x1 = Math.floor((c.x + c.r) / TILE), y0 = Math.floor((c.y - c.r) / TILE), y1 = Math.floor((c.y + c.r) / TILE);
+    for (let ty = y0; ty <= y1; ty++) for (let tx = x0; tx <= x1; tx++) {
+      if (!inMap(tx, ty) || dist(tx * TILE + 10, ty * TILE + 10, c.x, c.y) > c.r) continue;
+      const i = ty * MW + tx;
+      fire[i] = 0;
+      if (tiles[i] === T.BURNT && Math.random() < 0.4 * dt) setTile(i, T.GRASS);
+      else if (tiles[i] === T.GRASS && Math.random() < 0.006 * dt && elev[i] > 0.56) setTile(i, T.FOREST);
+    }
+    for (const v of villages) if (dist(v.x, v.y, c.x, c.y) < c.r + 60) v.fert = 25;
+    for (let k = 0; k < 6; k++) { const a = rand(0, 7), r = Math.sqrt(Math.random()) * c.r; parts.push({ x: c.x + Math.cos(a) * r, y: c.y + Math.sin(a) * r - 60, vx: -15, vy: 260, life: 0.23, c: 'rgba(170,200,255,0.8)', s: 1.3, rain: true }); }
+  }
+  clouds = clouds.filter(c => c.t > 0);
+}
+function update(dt) {
+  time += dt;
+  for (const v of villages) updVillage(v, dt);
+  updFire(dt); updClouds(dt); updSpirit(dt);
+  rivalT -= dt; if (rivalT <= 0) { rivalT = rand(3, 5); rivalThink(); }
+  for (const g of ['p', 'r']) gods[g].mana = Math.min(150 + 50 * owned(g).length, gods[g].mana);
+  for (const p of parts) { p.x += p.vx * dt; p.y += p.vy * dt; p.life -= dt; }
+  parts = parts.filter(p => p.life > 0); if (parts.length > 2500) parts.splice(0, parts.length - 2500);
+  for (const b of bolts) b.life -= dt; bolts = bolts.filter(b => b.life > 0);
+  for (const r of rings) { r.life -= dt; r.r += (r.max - r.r) * Math.min(1, dt * 8); } rings = rings.filter(r => r.life > 0);
+  for (const t of spirit.trail) t.life -= dt;
+  if (shake > 0) shake -= dt;
+  checkEnd();
+}
+function checkEnd() {
+  if (ended) return;
+  const mine = owned('p').length;
+  if (mine === villages.length) endGame(true);
+  else if (mine === 0 && time > 5) endGame(false);
+}
+
+// ============================================================ rendering
+const cv = document.getElementById('c'), ctx = cv.getContext('2d');
+let VW = 0, VH = 0;
+function resize() { VW = cv.width = innerWidth; VH = cv.height = innerHeight; clampCam(); }
+function clampCam() {
+  cam.zoom = clamp(cam.zoom, Math.max(0.45, VW / WW, VH / WH), 2);
+  cam.x = clamp(cam.x, 0, Math.max(0, WW - VW / cam.zoom)); cam.y = clamp(cam.y, 0, Math.max(0, WH - VH / cam.zoom));
+}
+function centerOn(x, y) { cam.x = x - VW / cam.zoom / 2; cam.y = y - VH / cam.zoom / 2; clampCam(); }
+function lerpColor(a, b, t) {
+  const pa = a.match(/\w\w/g).map(h => parseInt(h, 16)), pb = b.match(/\w\w/g).map(h => parseInt(h, 16));
+  return `rgb(${pa.map((v, i) => Math.round(v + (pb[i] - v) * t)).join(',')})`;
+}
+function drawHouse(h, v) {
+  const x = h.x, y = h.y;
+  let roof = '#8a6a4a';
+  if (v.owner === 'p') { const m = gods.p.morality; roof = m >= 0 ? lerpColor('#b07040', '#4f8fd8', m) : lerpColor('#b07040', '#5a0c1c', -m); }
+  else if (v.owner === 'r') roof = '#5d3a8a';
+  ctx.fillStyle = 'rgba(0,0,0,0.3)'; ctx.fillRect(x - 6, y - 2, 15, 9);
+  ctx.fillStyle = h.hp < 50 ? '#7a6a5a' : '#d8c7a6'; ctx.fillRect(x - 7, y - 4, 14, 9);
+  ctx.fillStyle = roof; ctx.beginPath(); ctx.moveTo(x - 9, y - 4); ctx.lineTo(x, y - 12); ctx.lineTo(x + 9, y - 4); ctx.fill();
+  ctx.fillStyle = '#4a3020'; ctx.fillRect(x - 1.5, y, 3, 5);
+}
+function drawTemple(v) {
+  const x = v.x, y = v.y, col = v.owner ? COLORS[v.owner] : COLORS.n;
+  const pulse = v.flash > 0 ? v.flash : 0;
+  if (v.owner) { const gr = ctx.createRadialGradient(x, y - 10, 2, x, y - 10, 40 + pulse * 30); gr.addColorStop(0, col + '88'); gr.addColorStop(1, col + '00'); ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(x, y - 10, 40 + pulse * 30, 0, 7); ctx.fill(); }
+  ctx.fillStyle = 'rgba(0,0,0,0.35)'; ctx.beginPath(); ctx.ellipse(x + 3, y + 8, 20, 7, 0, 0, 7); ctx.fill();
+  ctx.fillStyle = '#cfc6b8'; ctx.fillRect(x - 16, y - 6, 32, 14);
+  ctx.fillStyle = '#e8e0d0'; for (let k = -12; k <= 12; k += 8) ctx.fillRect(x + k - 1.5, y - 6, 3, 14);
+  const evil = v.owner === 'r' || (v.owner === 'p' && gods.p.morality < -0.3);
+  ctx.fillStyle = col;
+  if (evil) { ctx.beginPath(); for (let k = -14; k <= 14; k += 7) { ctx.moveTo(x + k - 3, y - 6); ctx.lineTo(x + k, y - 22); ctx.lineTo(x + k + 3, y - 6); } ctx.fill(); }
+  else { ctx.beginPath(); ctx.arc(x, y - 6, 13, Math.PI, 0); ctx.fill(); ctx.fillRect(x - 1, y - 26, 2, 8); }
+}
+function drawVillageLabel(v) {
+  const x = v.x, y = v.y - 46;
+  ctx.font = 'bold 13px Arial'; ctx.textAlign = 'center';
+  ctx.fillStyle = 'rgba(0,0,0,0.6)'; ctx.fillRect(x - 46, y - 14, 92, 30);
+  ctx.fillStyle = v.owner ? COLORS[v.owner] : '#ddd'; ctx.fillText(`${v.name} (${v.villagers.length})`, x, y);
+  ctx.fillStyle = '#333'; ctx.fillRect(x - 40, y + 4, 80, 4); ctx.fillRect(x - 40, y + 10, 80, 4);
+  ctx.fillStyle = COLORS.p; ctx.fillRect(x - 40, y + 4, 0.8 * v.belief.p, 4);
+  ctx.fillStyle = COLORS.r; ctx.fillRect(x - 40, y + 10, 0.8 * v.belief.r, 4);
+  if (v.food < v.villagers.length * 1.5) { ctx.fillStyle = '#ff8a5a'; ctx.fillText('רעב!', x, y - 18); }
+}
+function render() {
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.fillStyle = '#123'; ctx.fillRect(0, 0, VW, VH);
+  const sx = shake > 0 ? rand(-6, 6) : 0, sy = shake > 0 ? rand(-6, 6) : 0;
+  ctx.setTransform(cam.zoom, 0, 0, cam.zoom, -cam.x * cam.zoom + sx, -cam.y * cam.zoom + sy);
+  ctx.drawImage(terr, 0, 0);
+  // water shimmer
+  const x0 = Math.max(0, Math.floor(cam.x / TILE)), y0 = Math.max(0, Math.floor(cam.y / TILE));
+  const x1 = Math.min(MW - 1, Math.ceil((cam.x + VW / cam.zoom) / TILE)), y1 = Math.min(MH - 1, Math.ceil((cam.y + VH / cam.zoom) / TILE));
+  ctx.fillStyle = 'rgba(255,255,255,0.08)';
+  for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) {
+    const i = y * MW + x;
+    if (tiles[i] === T.WATER && Math.sin(time * 1.5 + x * 0.7 + y * 1.3 + shade[i] * 6) > 0.85) ctx.fillRect(x * TILE + 4, y * TILE + 9, 10, 1.5);
+    if (fire[i] > 0) {
+      const f = 0.6 + Math.random() * 0.4;
+      ctx.fillStyle = `rgba(255,${(90 + Math.random() * 80) | 0},20,${0.55 * f})`; ctx.fillRect(x * TILE, y * TILE, TILE, TILE);
+      ctx.fillStyle = 'rgba(255,230,120,0.7)'; ctx.beginPath(); ctx.arc(x * TILE + 10 + rand(-3, 3), y * TILE + 10 + rand(-3, 3), 3 + Math.random() * 3, 0, 7); ctx.fill();
+      if (Math.random() < 0.08) parts.push({ x: x * TILE + 10, y: y * TILE + 6, vx: rand(-8, 8), vy: -rand(20, 40), life: 1.5, c: 'rgba(60,55,50,0.5)', s: 4 });
+      ctx.fillStyle = 'rgba(255,255,255,0.08)';
+    }
+  }
+  // influence rings
+  ctx.lineWidth = 2 / cam.zoom;
+  for (const g of ['p', 'r']) {
+    ctx.strokeStyle = g === 'p' ? 'rgba(255,211,107,0.35)' : 'rgba(176,124,255,0.35)';
+    ctx.setLineDash([10, 8]);
+    for (const v of owned(g)) { ctx.beginPath(); ctx.arc(v.x, v.y, infR(v), 0, 7); ctx.stroke(); }
+  }
+  ctx.setLineDash([]);
+  // villages (sorted drawing by y for a tiny bit of depth)
+  for (const v of villages) {
+    const items = v.houses.map(h => ({ y: h.y, f: () => drawHouse(h, v) }));
+    items.push({ y: v.y, f: () => drawTemple(v) });
+    items.sort((a, b) => a.y - b.y).forEach(o => o.f());
+    for (const u of v.villagers) {
+      ctx.fillStyle = 'rgba(0,0,0,0.3)'; ctx.beginPath(); ctx.ellipse(u.x + 1, u.y + 3, 3, 1.5, 0, 0, 7); ctx.fill();
+      ctx.fillStyle = u.hp < 50 ? '#e66' : v.owner ? COLORS[v.owner] : '#e8e0d0';
+      ctx.beginPath(); ctx.arc(u.x, u.y - 2, 3, 0, 7); ctx.fill();
+      ctx.fillStyle = '#f2d2b0'; ctx.beginPath(); ctx.arc(u.x, u.y - 6, 1.8, 0, 7); ctx.fill();
+      if (u.carry === 'wood') { ctx.fillStyle = '#7a4a20'; ctx.fillRect(u.x + 2, u.y - 6, 4, 2); }
+      if (u.carry === 'food') { ctx.fillStyle = '#e8c040'; ctx.beginPath(); ctx.arc(u.x + 3, u.y - 4, 1.8, 0, 7); ctx.fill(); }
+    }
+  }
+  for (const v of villages) drawVillageLabel(v);
+  // particles
+  for (const p of parts) {
+    ctx.globalAlpha = clamp(p.life, 0, 1); ctx.fillStyle = p.c;
+    if (p.rain) ctx.fillRect(p.x, p.y, 1, 6); else { ctx.beginPath(); ctx.arc(p.x, p.y, p.s, 0, 7); ctx.fill(); }
+  }
+  ctx.globalAlpha = 1;
+  // clouds
+  for (const c of clouds) {
+    const a = Math.min(1, c.t) * 0.75;
+    for (let k = 0; k < 6; k++) {
+      const ox = Math.cos(k * 1.7 + time * 0.3) * c.r * 0.45, oy = Math.sin(k * 2.3) * c.r * 0.2 - 70;
+      ctx.fillStyle = `rgba(${c.g === 'r' ? '120,100,150' : '200,210,225'},${a * 0.6})`;
+      ctx.beginPath(); ctx.arc(c.x + ox, c.y + oy, c.r * 0.38, 0, 7); ctx.fill();
+    }
+  }
+  // lightning
+  for (const b of bolts) {
+    ctx.strokeStyle = `rgba(230,240,255,${b.life * 2})`; ctx.lineWidth = 3; ctx.beginPath();
+    b.pts.forEach(([x, y], k) => k ? ctx.lineTo(x, y) : ctx.moveTo(x, y)); ctx.stroke();
+    ctx.strokeStyle = `rgba(150,180,255,${b.life})`; ctx.lineWidth = 9; ctx.stroke();
+  }
+  for (const r of rings) { ctx.strokeStyle = r.c; ctx.globalAlpha = r.life / 0.6; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(r.x, r.y, r.r, 0, 7); ctx.stroke(); }
+  ctx.globalAlpha = 1;
+  drawSpirit();
+  drawCursor();
+  // light: day/night + morality tint
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  const phase = ((time / DAY_LEN) + 0.1) % 1, light = 0.5 + 0.5 * Math.cos(phase * Math.PI * 2);
+  ctx.fillStyle = `rgba(10,15,45,${(1 - light) * 0.45})`; ctx.fillRect(0, 0, VW, VH);
+  const m = gods.p.morality;
+  ctx.fillStyle = m < 0 ? `rgba(70,0,20,${-m * 0.2})` : `rgba(255,220,130,${m * 0.08})`; ctx.fillRect(0, 0, VW, VH);
+  if (shake > 0.25) { ctx.fillStyle = `rgba(255,255,255,${(shake - 0.25) * 1.5})`; ctx.fillRect(0, 0, VW, VH); }
+}
+function drawSpirit() {
+  const m = gods.p.morality;
+  const col = m >= 0 ? [160, 240, 255] : [255, 90 + (1 + m) * 120, 110 + (1 + m) * 100];
+  const learnedTotal = Object.values(spirit.w).reduce((s, o) => s + Object.values(o).reduce((a, b) => a + b, 0), 0);
+  const size = 7 + Math.min(9, learnedTotal * 0.25);
+  for (const t of spirit.trail) { if (t.life <= 0) continue; ctx.fillStyle = `rgba(${col.join(',')},${t.life * 0.3})`; ctx.beginPath(); ctx.arc(t.x, t.y, size * t.life * 0.8, 0, 7); ctx.fill(); }
+  const bob = Math.sin(time * 3) * 3, x = spirit.x, y = spirit.y + bob;
+  const g = ctx.createRadialGradient(x, y, 1, x, y, size * 3); g.addColorStop(0, `rgba(255,255,255,0.95)`); g.addColorStop(0.3, `rgba(${col.join(',')},0.7)`); g.addColorStop(1, `rgba(${col.join(',')},0)`);
+  ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, size * 3, 0, 7); ctx.fill();
+  ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(x, y, size * 0.5, 0, 7); ctx.fill();
+}
+function drawCursor() {
+  const m = MBY[selected], ok = inInfluence('p', mouse.wx, mouse.wy), afford = gods.p.mana >= costOf('p', selected);
+  const col = !ok ? '#ff5a5a' : !afford ? '#999' : m.good ? '#bff' : '#ff9a5a';
+  ctx.strokeStyle = col; ctx.lineWidth = 2 / cam.zoom; ctx.setLineDash([6, 6]);
+  ctx.beginPath(); ctx.arc(mouse.wx, mouse.wy, m.radius, 0, 7); ctx.stroke(); ctx.setLineDash([]);
+  // the "god light" cursor
+  const g = ctx.createRadialGradient(mouse.wx, mouse.wy, 0, mouse.wx, mouse.wy, 18); g.addColorStop(0, 'rgba(255,255,255,0.9)'); g.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = g; ctx.beginPath(); ctx.arc(mouse.wx, mouse.wy, 18, 0, 7); ctx.fill();
+  ctx.font = '18px Arial'; ctx.textAlign = 'center'; ctx.fillText(m.icon, mouse.wx, mouse.wy - 22);
+}
+
+// ============================================================ minimap
+const mini = document.getElementById('mini'), mc = mini.getContext('2d');
+const miniBase = document.createElement('canvas'); miniBase.width = MW; miniBase.height = MH;
+let miniDirty = true, miniT = 0;
+function drawMini() {
+  if (miniDirty) {
+    const bc = miniBase.getContext('2d'), img = bc.createImageData(MW, MH);
+    const pal = { 0: [40, 90, 140], 1: [210, 190, 130], 2: [80, 130, 60], 3: [40, 80, 40], 4: [120, 115, 110], 5: [50, 42, 36] };
+    for (let i = 0; i < MW * MH; i++) { const c = pal[tiles[i]]; img.data.set([c[0], c[1], c[2], 255], i * 4); }
+    bc.putImageData(img, 0, 0); miniDirty = false;
+  }
+  mc.imageSmoothingEnabled = false;
+  mc.drawImage(miniBase, 0, 0, mini.width, mini.height);
+  const k = mini.width / WW;
+  mc.fillStyle = 'rgba(255,120,30,0.9)';
+  for (let i = 0; i < fire.length; i++) if (fire[i] > 0) mc.fillRect((i % MW) * TILE * k, ((i / MW) | 0) * TILE * k, 2, 2);
+  for (const v of villages) {
+    mc.fillStyle = v.owner ? COLORS[v.owner] : '#ddd';
+    mc.beginPath(); mc.arc(v.x * k, v.y * k, 4, 0, 7); mc.fill();
+    mc.strokeStyle = '#000'; mc.lineWidth = 1; mc.stroke();
+  }
+  mc.fillStyle = '#9fe8ff'; mc.fillRect(spirit.x * k - 1.5, spirit.y * k - 1.5, 3, 3);
+  mc.strokeStyle = '#fff'; mc.strokeRect(cam.x * k, cam.y * k, VW / cam.zoom * k, VH / cam.zoom * k);
+}
+mini.addEventListener('mousedown', e => { const r = mini.getBoundingClientRect(), k = WW / mini.width; centerOn((e.clientX - r.left) * k, (e.clientY - r.top) * k); e.stopPropagation(); });
+
+// ============================================================ HUD
+const $ = id => document.getElementById(id);
+const logEl = $('log');
+function msg(text, cls = 'info') {
+  const d = document.createElement('div'); d.className = cls; d.textContent = text;
+  logEl.prepend(d); while (logEl.children.length > 9) logEl.lastChild.remove();
+  setTimeout(() => d.style.opacity = 0.45, 9000);
+}
+const mWrap = $('miracles');
+for (const [k, m] of MIRACLES.entries()) {
+  const b = document.createElement('div');
+  b.className = 'mbtn' + (m.good ? '' : ' bad'); b.dataset.id = m.id; b.title = m.desc;
+  b.innerHTML = `<span class="ic">${m.icon}</span>${m.name} <kbd>${k + 1}</kbd><br><span class="c"></span>`;
+  b.addEventListener('mousedown', e => { e.stopPropagation(); selected = m.id; });
+  mWrap.appendChild(b);
+}
+let learnedDirty = true, lastActDirty = true, hudT = 0;
+function updHUD() {
+  const P = gods.p, cap = 150 + 50 * owned('p').length;
+  $('manaFill').style.width = (100 * P.mana / cap) + '%';
+  $('manaTxt').textContent = `${Math.floor(P.mana)}/${cap}`;
+  $('moralMark').style.left = `calc(${(1 + P.morality) * 50}% - 2px)`;
+  $('vCount').textContent = `${owned('p').length}/${villages.length}`;
+  $('rCount').textContent = owned('r').length;
+  const phase = ((time / DAY_LEN) + 0.1) % 1;
+  $('clock').textContent = (phase > 0.25 && phase < 0.75 ? '🌙' : '☀') + ' ' + Math.floor(time / 60) + ':' + String(Math.floor(time % 60)).padStart(2, '0');
+  $('spFill').style.width = spirit.energy + '%';
+  for (const b of mWrap.children) {
+    const id = b.dataset.id, c = costOf('p', id);
+    b.classList.toggle('sel', id === selected); b.classList.toggle('off', P.mana < c);
+    b.querySelector('.c').textContent = `${c} ✦`;
+  }
+  if (lastActDirty) {
+    lastActDirty = false;
+    const L = spirit.last;
+    $('lastAct').textContent = L ? `פעולה אחרונה: ${MBY[L.m].icon} ${MBY[L.m].name} מול "${CTXS[L.ctx]}"` : 'עדיין צופה בך ולומדת…';
+    $('praise').disabled = $('scold').disabled = !L;
+  }
+  if (learnedDirty) {
+    learnedDirty = false;
+    const rows = [];
+    for (const c in spirit.w) for (const m in spirit.w[c]) if (spirit.w[c][m] > 0) rows.push({ c, m, w: spirit.w[c][m] });
+    rows.sort((a, b) => b.w - a.w);
+    $('learned').innerHTML = rows.length ? rows.slice(0, 12).map(r =>
+      `<li class="${r.w < 2 ? 'weak' : ''}">${CTXS[r.c]} ← ${MBY[r.m].icon} ${MBY[r.m].name} <span style="float:left">${r.w.toFixed(0)}</span></li>`).join('')
+      : '<li class="weak">כלום עדיין. הטל ניסים — היא מחקה אותך.</li>';
+  }
+}
+function praise(good) {
+  const L = spirit.last; if (!L) return;
+  spiritLearn(L.ctx, L.m, good ? 2 : -3);
+  msg(good ? `שיבחת את נוגה על ${MBY[L.m].name}` : `נזפת בנוגה על ${MBY[L.m].name}`, 'sp');
+  for (let k = 0; k < 20; k++) parts.push({ x: spirit.x, y: spirit.y, vx: rand(-60, 60), vy: rand(-60, 60), life: 0.8, c: good ? '#bfffbf' : '#ff7a7a', s: 2.5 });
+  spirit.last = null; lastActDirty = true;
+}
+$('praise').onclick = () => praise(true);
+$('scold').onclick = () => praise(false);
+
+// ============================================================ input
+function screenToWorld() { mouse.wx = cam.x + mouse.x / cam.zoom; mouse.wy = cam.y + mouse.y / cam.zoom; }
+cv.addEventListener('contextmenu', e => e.preventDefault());
+cv.addEventListener('mousemove', e => {
+  if (mouse.rdrag) { cam.x -= (e.clientX - mouse.lx) / cam.zoom; cam.y -= (e.clientY - mouse.ly) / cam.zoom; clampCam(); }
+  mouse.lx = e.clientX; mouse.ly = e.clientY; mouse.x = e.clientX; mouse.y = e.clientY; screenToWorld();
+});
+cv.addEventListener('mousedown', e => {
+  mouse.x = e.clientX; mouse.y = e.clientY; mouse.lx = e.clientX; mouse.ly = e.clientY; screenToWorld();
+  if (e.button === 2 || e.button === 1) { mouse.rdrag = true; return; }
+  if (e.button === 0) playerCast(mouse.wx, mouse.wy);
+});
+addEventListener('mouseup', () => mouse.rdrag = false);
+cv.addEventListener('wheel', e => {
+  e.preventDefault();
+  const before = { x: mouse.wx, y: mouse.wy };
+  cam.zoom *= e.deltaY < 0 ? 1.1 : 1 / 1.1; clampCam();
+  cam.x = before.x - mouse.x / cam.zoom; cam.y = before.y - mouse.y / cam.zoom; clampCam(); screenToWorld();
+}, { passive: false });
+addEventListener('keydown', e => {
+  keys[e.code] = true;
+  const n = /^Digit([1-5])$/.exec(e.code); if (n) selected = MIRACLES[+n[1] - 1].id;
+  if (e.code === 'KeyZ') praise(true);
+  if (e.code === 'KeyX') praise(false);
+  if (e.code === 'Space' && started && !ended) { paused = !paused; $('pauseTag').style.display = paused ? 'block' : 'none'; e.preventDefault(); }
+});
+addEventListener('keyup', e => keys[e.code] = false);
+function playerCast(x, y) {
+  if (!started || ended || paused) return;
+  if (!inInfluence('p', x, y)) { msg('מחוץ לתחום ההשפעה שלך', 'info'); return; }
+  const c = costOf('p', selected);
+  if (gods.p.mana < c) { msg('אין מספיק מאנה — הכפרים צריכים להתפלל עוד', 'info'); return; }
+  const ctxName = ctxAt(x, y);
+  if (cast('p', selected, x, y)) {
+    gods.p.mana -= c;
+    if (ctxName !== 'wild') spiritLearn(ctxName, selected, 1);
+  }
+}
+
+// ============================================================ flow
+function endGame(win) {
+  ended = true;
+  const ov = $('overlay'); ov.style.display = 'flex';
+  const m = gods.p.morality;
+  const kind = m > 0.4 ? 'אל של חסד ושפע' : m < -0.4 ? 'אל של אימה ואש' : 'אל מאוזן ובלתי צפוי';
+  $('ovBox').innerHTML = win
+    ? `<h1>ניצחון ✦</h1><h2>כל האי מתפלל לך</h2><p>אחרי ${Math.floor(time / 60)} דקות, צל-המים נשכח. בני האדם זוכרים אותך כ<b>${kind}</b>.</p><button class="go" onclick="location.reload()">שחק שוב</button>`
+    : `<h1 style="color:#ff7a8a">נשכחת</h1><h2>אף כפר כבר לא מאמין בך</h2><p>בלי מתפללים — אין אל. צל-המים שולט עכשיו ב-${owned('r').length} כפרים.</p><button class="go" onclick="location.reload()">נסה שוב</button>`;
+}
+$('startBtn').onclick = () => {
+  $('overlay').style.display = 'none'; started = true;
+  msg('הכפר אור-גן מתפלל לך. הרחב את אמונתך!', 'good');
+  msg('טיפ: הטל שפע על כפר ניטרלי בקצה תחום ההשפעה', 'info');
+};
+let last = performance.now();
+function frame(now) {
+  const dt = Math.min(0.05, (now - last) / 1000); last = now;
+  const pan = 520 * dt / cam.zoom;
+  if (keys.KeyA || keys.ArrowLeft) cam.x -= pan; if (keys.KeyD || keys.ArrowRight) cam.x += pan;
+  if (keys.KeyW || keys.ArrowUp) cam.y -= pan; if (keys.KeyS || keys.ArrowDown) cam.y += pan;
+  clampCam(); screenToWorld();
+  if (started && !paused && !ended) update(dt);
+  render();
+  hudT -= dt; if (hudT <= 0) { hudT = 0.1; updHUD(); }
+  miniT -= dt; if (miniT <= 0) { miniT = 0.25; drawMini(); }
+  requestAnimationFrame(frame);
+}
+generate();
+spirit.x = villages[0].x; spirit.y = villages[0].y - 40;
+resize(); addEventListener('resize', resize);
+centerOn(villages[0].x + 150, villages[0].y - 80);
+mouse.x = VW / 2; mouse.y = VH / 2;
+requestAnimationFrame(frame);
+// expose for automated testing
+window.__game = { villages: () => villages, gods, spirit, cast, update, owned, reachPoint, costOf, ctxAt, spiritLearn, time: () => time };
+</script>
+</body>
+</html>

@@ -29,6 +29,12 @@ An original 3D god game in a single HTML file. Open `index.html` in a modern bro
 - Migration: people move to another god's village when life there is clearly better (in both directions).
 - Advisor voices prefer the most natural speech voices on the device; pick and test them with the 🗣 button.
 
+## War
+Build a ⚔ Barracks to train soldiers (helmet, shield, spear) from your villagers. In the ⚔ War tab choose 🗡 Attack and click a village: your army marches, fights any defenders, and conquers the village by holding its plaza for 18 seconds. 🏳 Recall brings the army home. The Tidewraith builds barracks and attacks when its army is stronger.
+
+## Look
+Physical sky with image-based lighting, procedural ground variation with rock on slopes, wind-blown grass and trees, earthy clothing, colour grading and a medieval-styled interface.
+
 ## Your artwork
 Drop these files into `assets/` and the game uses them automatically (otherwise built-in placeholder portraits are drawn):
 - `assets/advisor-good.png` — the light advisor portrait

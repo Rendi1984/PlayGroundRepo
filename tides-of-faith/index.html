@@ -4,12 +4,21 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Tides of Faith</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Alegreya+Sans:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
   * { box-sizing: border-box; }
-  html, body { margin: 0; height: 100%; overflow: hidden; background: #0b0d12; font-family: "Segoe UI", Arial, sans-serif; color: #eee; user-select: none; }
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #0b0d12; font-family: "Alegreya Sans", "Segoe UI", Arial, sans-serif; color: #eee; user-select: none; }
   #view { position: absolute; inset: 0; cursor: crosshair; }
   #view canvas { display: block; }
-  .panel { position: absolute; background: rgba(12, 14, 22, 0.72); border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; padding: 8px 12px; backdrop-filter: blur(6px); box-shadow: 0 6px 24px rgba(0,0,0,0.35); }
+  .panel { position: absolute; background: linear-gradient(180deg, rgba(30,25,20,0.86), rgba(12,10,9,0.9)); border: 1px solid rgba(186,146,84,0.45); border-radius: 10px; padding: 8px 12px; backdrop-filter: blur(6px);
+           box-shadow: 0 8px 26px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,220,160,0.08); }
+  #overlay h1, #spirit h3, .lbl b, #info .ih b, #tabs button, #top, .adv .bubble small, #tip b { font-family: "Cinzel", Georgia, serif; letter-spacing: 0.4px; }
+  #overlay { background: radial-gradient(ellipse at center, rgba(20,14,8,0.82), rgba(4,3,2,0.96)) !important; }
+  #overlay .box { background: linear-gradient(180deg, #1d1813, #100d0a) !important; border: 1px solid rgba(186,146,84,0.55) !important; box-shadow: 0 20px 60px rgba(0,0,0,0.7); }
+  #overlay h1 { font-size: 46px !important; color: #e8c27a !important; text-shadow: 0 2px 12px rgba(232,180,90,0.35); }
+  .tile .orb { border-color: rgba(214,170,100,0.55) !important; }
+  .lbl { background: rgba(14,11,8,0.7) !important; border-color: rgba(186,146,84,0.35) !important; }
   #top { top: 10px; left: 50%; transform: translateX(-50%); display: flex; gap: 12px; align-items: center; font-size: 14px; white-space: nowrap; }
   #top button { padding: 2px 7px; font-size: 15px; }
   #top button.off { opacity: 0.4; }
@@ -110,7 +119,7 @@
   .tile { position: relative; width: 62px; text-align: center; cursor: pointer; font-size: 11px; color: #dde; transition: transform .15s; }
   .tile:hover { transform: translateY(-4px); }
   .tile .orb { width: 48px; height: 48px; margin: 0 auto 3px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 25px;
-    background: radial-gradient(circle at 34% 28%, color-mix(in srgb, var(--c) 55%, white), var(--c) 52%, color-mix(in srgb, var(--c) 45%, black));
+    background: radial-gradient(circle at 34% 28%, color-mix(in srgb, color-mix(in srgb, var(--c) 72%, #6a6050) 55%, white), color-mix(in srgb, var(--c) 72%, #6a6050) 52%, color-mix(in srgb, var(--c) 40%, black));
     box-shadow: inset 0 -5px 9px rgba(0,0,0,.35), 0 4px 10px rgba(0,0,0,.5); border: 2px solid rgba(255,255,255,.22); transition: box-shadow .2s, filter .2s; }
   .tile.sel .orb { border-color: #fff; box-shadow: 0 0 0 3px var(--c), 0 0 22px var(--c), inset 0 -5px 9px rgba(0,0,0,.35); }
   .tile.off .orb { filter: grayscale(.85) brightness(.55); }
@@ -148,6 +157,7 @@
   <span>Ruin <span id="moral"><i id="moralMark"></i></span> Creation</span>
   <span title="Villages that believe in you / villages needed to win">🏛 <b id="vCount">0</b></span>
   <span title="Believers">👥 <b id="popCount">0</b></span>
+  <span title="Your soldiers">⚔ <b id="armyCount">0</b></span>
   <span style="color:#c9a0ff" title="Villages of the Tidewraith">🜏 <b id="rCount">0</b></span>
   <span id="clock">☀</span>
   <button id="musBtn" title="Music (M)">🎵</button>
@@ -197,13 +207,14 @@
       <li><b>Miracles:</b> Rain (it also makes forests grow), Bounty, Heal, <b>Fertility</b> (more babies) and <b>Joy</b> (a festival) inspire love. Fire, Lightning and Fireball inspire fear.</li>
       <li><b>⛰ Shape Land:</b> raise hills and mountains, dig ponds and lakes, flatten ground, grow forests.</li>
       <li><b>🔨 Build:</b> four house styles, granary, well, garden and shrine — and found <b>new settlements</b>. Villagers haul the wood and build it themselves.</li>
+      <li><b>⚔ War:</b> build a Barracks to train soldiers, then send your army against a village — defeat its defenders and hold its plaza to conquer it. The Tidewraith raises armies too.</li>
       <li><b>Wildlife &amp; migration:</b> villagers hunt deer and boar for meat; people move to whichever god's village offers the better life.</li>
       <li><b>Happiness &amp; children:</b> happy, well-fed villages have children; children grow up; more people means more mana and wider influence.</li>
       <li><b>Ember, your Phoenix,</b> learns from what you do — and its form follows your soul: Benevolent Guardian, Awakening, or Harbinger of Destruction. Two advisors, <b>Aurel</b> and <b>Cinder</b>, whisper opposite counsel.</li>
       <li><b>Win:</b> the Tidewraith has no village left, or 70% of all villages believe in you. <b>Lose:</b> no village believes in you for 40 seconds.</li>
     </ul>
     <p style="color:#9ab;font-size:13px">
-      <kbd>G</kbd> Hand · <kbd>1</kbd>–<kbd>9</kbd> miracles · <kbd>B</kbd> build · <kbd>T</kbd> shape land · Left click: act · Right drag / <kbd>WASD</kbd>: pan ·
+      <kbd>G</kbd> Hand · <kbd>1</kbd>–<kbd>9</kbd> miracles · <kbd>B</kbd> build · <kbd>T</kbd> land & nature · <kbd>K</kbd> war · Left click: act · Right drag / <kbd>WASD</kbd>: pan ·
       Middle drag / <kbd>Q</kbd><kbd>E</kbd> rotate · <kbd>R</kbd><kbd>F</kbd> tilt · Wheel: zoom · Click a villager or building for details · <b>Right click</b>: let go / cancel · <kbd>Z</kbd>/<kbd>X</kbd> praise/scold ·
       <kbd>M</kbd>/<kbd>N</kbd>/<kbd>V</kbd> music/sound/voices · <kbd>Space</kbd> pause · <kbd>Esc</kbd> back to Hand
     </p>
@@ -222,6 +233,8 @@ import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
+import { Sky } from 'three/addons/objects/Sky.js';
 
 // ============================================================ constants
 const TILE = 20, MW = 125, MH = 85, WW = MW * TILE, WH = MH * TILE;
@@ -247,6 +260,7 @@ const BUILDS = [
   { id: 'manor',   cat: 'house', name: 'Townhouse', icon: '🏘', wood: 26, cap: 7, desc: 'Two-storey timber house — houses 7' },
   { id: 'granary', cat: 'fac',   name: 'Granary',   icon: '🧺', wood: 20, desc: 'Stores more food, better harvests' },
   { id: 'well',    cat: 'fac',   name: 'Well',      icon: '⛲', wood: 14, desc: 'Happiness, and douses nearby fires' },
+  { id: 'barracks', cat: 'fac',  name: 'Barracks',  icon: '⚔', wood: 24, desc: 'Trains soldiers from your villagers (10 food each). Soldiers guard your land and conquer on your command.' },
   { id: 'field',   cat: 'fac',   name: 'Field',     icon: '🌽', wood: 6,  desc: 'A tilled crop field: farmers here bring double food, and ripe crops give a big harvest. Rain speeds the crops.' },
   { id: 'garden',  cat: 'fac',   name: 'Garden',    icon: '🌷', wood: 10, desc: 'A flower garden — happiness' },
   { id: 'shrine',  cat: 'fac',   name: 'Shrine',    icon: '🗿', wood: 30, desc: 'Widens your influence and boosts prayer' },
@@ -262,7 +276,7 @@ const TERRA = [
 ];
 const TMY = Object.fromEntries(TERRA.map(t => [t.id, t]));
 const TCOL = { shield: '#e0c050', plant: '#3aa850', hand: '#5fc8f0', rain: '#3a98f0', bounty: '#e0a828', heal: '#2fc890', fert: '#f0609e', joy: '#9a68f0', fire: '#f0601e', bolt: '#6aa8f0', fireball: '#d8301a',
-  hut: '#b98a52', cottage: '#c4904e', stone: '#8e8e9a', manor: '#9a6a40', granary: '#c9a040', well: '#3a88c0', garden: '#d86898', field: '#a8a830', water: '#2a8ad8', shrine: '#7a8270', settle: '#c8a850',
+  hut: '#b98a52', cottage: '#c4904e', stone: '#8e8e9a', manor: '#9a6a40', granary: '#c9a040', well: '#3a88c0', garden: '#d86898', barracks: '#8a5040', attack: '#b02a2a', recall: '#7a8a9a', field: '#a8a830', water: '#2a8ad8', shrine: '#7a8270', settle: '#c8a850',
   raise: '#9a7a52', lower: '#2a90d0', flatten: '#b89a68' };
 const CTXS = {
   fire: 'a fire', hungry: 'your hungry village', wounded: 'your wounded', own: 'your thriving village',
@@ -304,7 +318,8 @@ const treeG = new Float32Array(MW * MH), treeDrawn = new Float32Array(MW * MH); 
 const treeVis = i => clamp(treeG[i], 0.15, 1.5);
 const CW = MW + 1, CH = MH + 1, hc = new Float32Array(CW * CH);
 let animals = [], homeV = null, villages = [], clouds = [], parts = [], bolts = [], rings = [], logs = [], fireballs = [], pendingMoves = [];
-const gods = { p: { mana: 60, morality: 0, rate: 0 }, r: { mana: 60, morality: -0.4, rate: 0 } };
+const gods = { p: { mana: 60, morality: 0, rate: 0, war: { target: null } }, r: { mana: 60, morality: -0.4, rate: 0, war: { target: null } } };
+let SOLDIERS = [];
 let selected = 'hand', time = 0, paused = false, started = false, ended = false, shake = 0, held = null, hover = null, aim = null, newNameIdx = 0;
 const mouse = { x: 0, y: 0, wx: 0, wy: 0, rdrag: false, mdrag: false, lx: 0, ly: 0, valid: false };
 const keys = {};
@@ -383,12 +398,13 @@ function makeVillageAt(name, x, y, owner, pop) {
   return v;
 }
 function recount(v) {
-  v.cap = 0; v.nGranary = v.nShrine = v.nWell = v.nGarden = 0; v.fields = [];
+  v.cap = 0; v.nGranary = v.nShrine = v.nWell = v.nGarden = v.nBarracks = 0; v.fields = [];
   for (const h of v.houses) {
     const b = BMY[h.type];
     if (b.cat === 'house') v.cap += b.cap;
     else if (h.type === 'granary') v.nGranary++; else if (h.type === 'shrine') v.nShrine++;
     else if (h.type === 'well') v.nWell++; else if (h.type === 'garden') v.nGarden++;
+    else if (h.type === 'barracks') v.nBarracks++;
     else if (h.type === 'field') { v.fields.push(h); if (h.g === undefined) h.g = 0.3; }
   }
   layoutDirty = true;
@@ -418,6 +434,7 @@ function addHouse(v, type) {
 }
 const SKINS = [0xf3cfae, 0xe0b08a, 0xc68a5e, 0x9a6844, 0x6e4a30];
 const HAIRS = [0x2a1a10, 0x4a2c16, 0x7a5228, 0xc9a060, 0x1a1a1a, 0x9a9a9a, 0x8a3a1a];
+const CLOTHS = [0x6a5a44, 0x5a4a3a, 0x4e5a3e, 0x6e6250, 0x4a4e58, 0x7a5a3a, 0x5c4636, 0x6a6a5a, 0x3e4a52, 0x7a6a50];
 const PANTS = [0x4a3a2a, 0x3a3a44, 0x5a4a36, 0x2e3e2e];
 const isChild = u => u.age < CHILD_AGE;
 const NAMES_M = ['Aldo', 'Bram', 'Cael', 'Dorin', 'Edric', 'Finn', 'Garrin', 'Hob', 'Ivo', 'Jory', 'Kellan', 'Loric', 'Milo', 'Ned', 'Oren', 'Piers', 'Rowan', 'Silas', 'Tamsin', 'Ulf', 'Varo', 'Wat', 'Yorick', 'Zeb'];
@@ -434,7 +451,7 @@ function addVillager(v, child, x, y) {
     t: Math.random() * 2, hp: 100, task: null, carry: null, fear: 0, phase: Math.random() * 6, dir: 0, hitT: 0,
     age: child ? 0 : rand(CHILD_AGE, 400), vx: 0, vy: 0, vh: 0, spin: 0,
     id: ++uidSeq, name: (() => { const pool = (female ? NAMES_F : NAMES_M).filter(n => !v.villagers.some(o => o.name === n)); return pick(pool.length ? pool : female ? NAMES_F : NAMES_M); })(), trait: pick(TRAITS), mood: 60, fearT: 0, home: null,
-    look: { female, skin: pick(SKINS), hair: pick(HAIRS), pants: pick(PANTS), dh: rand(-0.04, 0.04), dl: rand(-0.12, 0.08) },
+    look: { cloth: pick(CLOTHS), female, skin: pick(SKINS), hair: pick(HAIRS), pants: pick(PANTS), dh: rand(-0.04, 0.04), dl: rand(-0.12, 0.08) },
   });
 }
 
@@ -719,6 +736,17 @@ function updSpirit(dt) {
 let rivalT = 6;
 function rivalThink() {
   const R = gods.r, mine = owned('r'); if (!mine.length) return;
+  if (time > 150) {
+    const home = mine.sort((a, b) => b.villagers.length - a.villagers.length)[0];
+    if (home.villagers.length >= 12 && !home.nBarracks && !home.sites.some(s => s.type === 'barracks') && home.sites.length < 3) {
+      for (let k = 0; k < 60; k++) { const a = rand(0, 7), r = rand(PLAZA + 12, PLAZA + 70), x = home.x + Math.cos(a) * r, y = home.y + Math.sin(a) * r; if (freeSpot(x, y, 32)) { home.sites.push({ type: 'barracks', x, y, v: home, need: BMY.barracks.wood, progress: 0, mesh: null }); layoutDirty = true; break; } }
+    }
+    const myArmy = SOLDIERS.filter(s => s.vOwner === 'r').length, theirs = SOLDIERS.filter(s => s.vOwner === 'p').length;
+    if (!R.war.target && time > 300 && myArmy >= 4 && myArmy > theirs * 1.25 && Math.random() < 0.25) {
+      const tgt = owned('p').sort((a, b) => dist(a.x, a.y, home.x, home.y) - dist(b.x, b.y, home.x, home.y))[0];
+      if (tgt) declareWar('r', tgt);
+    }
+  }
   // the Tidewraith grows its realm by founding settlements of its own
   if (time > 60 && time - (R.lastSettle ?? -999) > 75 && mine.length < 6) {
     const base = mine.filter(v => v.villagers.length >= 9 && !v.sites.some(s => s.type === 'settle')).sort((a, b) => b.villagers.length - a.villagers.length)[0];
@@ -768,6 +796,28 @@ function zapVillager(u, dmg) {
   u.state = 'zap'; u.zap = 1.3 + Math.random() * 0.5; u.zapDmg = dmg; u.fear = 6; u.h = surfPx(u.x, u.y);
   S.zap(u.x, u.y, u.zap); if (dmg > 50) S.scream(u.x, u.y, u.look.female);
 }
+// soldiers seek out enemy soldiers nearby and fight them hand to hand
+function soldierTick(u, v, dt) {
+  if (!u.soldier || !v.owner) return false;
+  u.atk = (u.atk || 0) - dt;
+  let foe = null, fd = 130;
+  for (const e of SOLDIERS) {
+    if (e === u || e.hp <= 0 || e.state === 'dead' || e.state === 'held' || e.state === 'fly' || !e.vOwner || e.vOwner === v.owner) continue;
+    const d = dist(e.x, e.y, u.x, u.y); if (d < fd) { fd = d; foe = e; }
+  }
+  if (!foe) { if (u.state === 'fight') { u.state = 'idle'; u.t = 0.2; } return false; }
+  u.state = 'fight'; u.dir = Math.atan2(foe.x - u.x, foe.y - u.y);
+  if (fd > 15) { const sp = 42 * dt; u.x += (foe.x - u.x) / fd * sp; u.y += (foe.y - u.y) / fd * sp; u.moving = true; }
+  else {
+    u.moving = false;
+    if (u.atk <= 0) {
+      u.atk = rand(0.7, 1.1); foe.hp -= rand(14, 24); foe.fear = 1; S.clash(u.x, u.y);
+      const gy = surfPx(foe.x, foe.y);
+      for (let k = 0; k < 6; k++) spawn(foe.x, foe.y, gy + 0.4, rand(-1, 1), rand(0.5, 2), rand(-1, 1), 0.3, k < 3 ? 0xfff0c0 : 0x8a1a1a, 0.1, k < 3, -8);
+    }
+  }
+  return true;
+}
 function updVillager(u, v, dt) {
   if (u.state === 'dead') { u.deadT -= dt; if (Math.random() < 2 * dt && u.char > 0) spawn(u.x, u.y, surfPx(u.x, u.y) + 0.2, rand(-.1, .1), rand(0.5, 1), rand(-.1, .1), 2, 0x3a3634, 0.3, false); return; }
   if (u.state === 'zap') {
@@ -784,6 +834,7 @@ function updVillager(u, v, dt) {
   }
   if (u.char > 0) u.char -= dt * 0.5;
   if (u.state === 'held') return;
+  if (u.state !== 'fly' && u.state !== 'swim' && soldierTick(u, v, dt)) return;
   if (u.state === 'fly') { u.spin += dt * 9; if (flyStep(u, dt)) landVillager(u, v); return; }
   u.age += dt;
   if (u.fear > 0) u.fear -= dt;
@@ -818,6 +869,11 @@ function walkTo(u, x, y, goal) { u.tx = x; u.ty = y; u.goal = goal; u.state = 'w
 function ringPoint(v, r0, r1) { const a = rand(0, 7), r = rand(r0, r1); return [v.x + Math.cos(a) * r, v.y + Math.sin(a) * r]; }
 function chooseTask(u, v) {
   if (isChild(u)) return walkTo(u, ...ringPoint(v, 30, 120), 'play');
+  if (u.soldier && v.owner) {
+    const T = gods[v.owner].war.target;
+    if (T && T.owner !== v.owner) return walkTo(u, ...ringPoint(T, 20, PLAZA + 30), 'war');
+    return walkTo(u, ...ringPoint(v, PLAZA + 10, PLAZA + 80), 'guard');
+  }
   // food comes first: a hungry village sends nearly everyone to the fields
   const pop = v.villagers.length, hungry = v.food < pop * 3, starving = v.food < pop * 1.2;
   if (!starving && v.festival > 0 && Math.random() < (hungry ? 0.2 : 0.55)) return walkTo(u, ...ringPoint(v, 45, 90), 'dance');
@@ -859,6 +915,7 @@ function arrive(u, v) {
   } else if (u.goal === 'pray') { u.state = 'pray'; u.t = rand(5, 9); u.dir = Math.atan2(v.x - u.x, v.y - u.y); }
   else if (u.goal === 'dance') { u.state = 'dance'; u.t = rand(4, 7); }
   else if (u.goal === 'play') { u.state = 'idle'; u.t = rand(0.2, 1.5); }
+  else if (u.goal === 'guard' || u.goal === 'war') { u.state = 'guard'; u.t = u.goal === 'war' ? rand(1.5, 3) : rand(3, 7); }
   else {
     if (u.carry === 'food') v.food += 2.2 * (v.fert > 0 ? 2 : 1) * (1 + 0.25 * v.nGranary) * (u.foodMul || 1);
     else if (u.carry === 'wood') v.wood += u.woodAmt || 1.5;
@@ -1018,6 +1075,14 @@ function updVillage(v, dt) {
     }
   }
   v.food = clamp(v.food - eaters * 0.06 * dt, 0, 60 + pop * 8 + 80 * v.nGranary);
+  if (v.nBarracks && v.owner) {
+    v.trainT = (v.trainT || 0) + dt;
+    const adults = v.villagers.filter(u => !isChild(u) && u.state !== 'dead'), army = adults.filter(u => u.soldier).length;
+    if (v.trainT > 18 && army < Math.max(2, Math.floor(v.villagers.length * 0.35 * Math.min(2, v.nBarracks))) && v.food > 25) {
+      const rec = adults.find(u => !u.soldier && (u.state === 'idle' || u.state === 'walk'));
+      if (rec) { v.trainT = 0; rec.soldier = true; rec.hp = 140; rec.task = null; rec.carry = null; rec.state = 'idle'; rec.t = 0; v.food -= 10; S.clash(rec.x, rec.y); if (v.owner === 'p') msg(`🛡 ${rec.name} took up the spear in ${v.name}`, 'info'); }
+    }
+  }
   for (const f of v.fields) f.g = Math.min(1, f.g + dt / 70 * (v.fert > 0 ? 2.5 : 1));
   for (const k of ['fert', 'flash', 'boost', 'festival', 'grace', 'shield', 'shieldHit']) if (v[k] > 0) v[k] -= dt * (k === 'flash' ? 2 : 1);
   v.grief = Math.max(0, v.grief - dt * 0.8);
@@ -1130,6 +1195,9 @@ function feelings(u, v) {
   return f.slice(0, 6);
 }
 function activity(u) {
+  if (u.soldier && u.state === 'fight') return '⚔ Fighting!';
+  if (u.soldier && u.state === 'walk' && u.goal === 'war') return 'Marching to war';
+  if (u.soldier && u.state === 'guard') return 'Standing guard';
   if (u.state === 'held') return 'Dangling from your Hand!';
   if (u.state === 'fly') return 'Flying through the air!';
   if (u.state === 'swim') return 'Swimming back to shore';
@@ -1197,6 +1265,46 @@ function spawnHerds(n) {
   }
 }
 let breedT = 40;
+function declareWar(g, T) {
+  const W = gods[g].war; W.target = T;
+  const army = SOLDIERS.filter(s => s.vOwner === g);
+  for (const u of army) if (u.state === 'guard' || u.state === 'idle' || u.state === 'walk') { u.state = 'idle'; u.t = 0; }
+  S.horn();
+  if (g === 'p') {
+    gods.p.morality = clamp(gods.p.morality - 0.06, -1, 1);
+    pushAlert('war-' + T.name, `⚔ Your army of <b>${army.length}</b> marches on ${T.name}`, { action: '👁 Follow', onAction: () => centerOnPx(T.x, T.y) });
+    advise('war');
+  } else {
+    pushAlert('war-' + T.name, `⚔ ${RIVAL_C}'s army of <b>${army.length}</b> marches on <b>${T.name}</b>!`, { bad: true, action: '👁 Show', onAction: () => centerOnPx(T.x, T.y) });
+    advise('enemyArmy', { v: T.name });
+  }
+}
+function conquer(T, g) {
+  const prev = T.owner, other = g === 'p' ? 'r' : 'p';
+  T.owner = g; T.belief[g] = 72; T.belief[other] = 10; T.siege = null; T.grace = 30; gods[g].war.target = null;
+  S.horn(); influenceDirty = true; miniDirty = true;
+  if (g === 'p') { gods.p.morality = clamp(gods.p.morality - 0.05, -1, 1); S.convert(); pushAlert('conq-' + T.name, `🏴 You conquered <b>${T.name}</b>!`, { good: true, ttl: 8000 }); advise('conquer'); msg(`${T.name} has fallen to your army`, 'good'); }
+  else if (prev === 'p') { S.lost(); pushAlert('conq-' + T.name, `🏴 ${RIVAL_C} conquered <b>${T.name}</b>`, { bad: true, ttl: 8000 }); msg(`${T.name} has fallen to ${RIVAL}`, 'bad'); }
+}
+function updWar(dt) {
+  SOLDIERS = [];
+  for (const v of villages) for (const u of v.villagers) if (u.soldier && u.state !== 'dead') { u.vOwner = v.owner; SOLDIERS.push(u); }
+  for (const g of ['p', 'r']) {
+    const W = gods[g].war, T = W.target; if (!T) continue;
+    if (T.owner === g || !villages.includes(T)) { W.target = null; continue; }
+    const mine = SOLDIERS.filter(s => s.vOwner === g);
+    if (!mine.length) { W.target = null; if (g === 'p') pushAlert('army-lost', '⚔ Your army has been destroyed', { bad: true }); else pushAlert('army-won', `⚔ ${RIVAL_C}'s army was destroyed!`, { good: true }); continue; }
+    const atk = mine.filter(s => dist(s.x, s.y, T.x, T.y) < PLAZA + 70).length;
+    const def = SOLDIERS.filter(s => s.vOwner && s.vOwner !== g && dist(s.x, s.y, T.x, T.y) < PLAZA + 140).length;
+    if (atk >= 2 && def === 0) {
+      // holding the plaza: the village's faith crumbles and its people cower
+      T.siege = { g, t: (T.siege && T.siege.g === g ? T.siege.t : 0) + dt };
+      if (T.owner) T.belief[T.owner] = Math.max(0, T.belief[T.owner] - 1.2 * dt);
+      for (const u of T.villagers) if (!u.soldier) u.fear = 2;
+      if (T.siege.t >= 18) conquer(T, g);
+    } else if (T.siege && T.siege.g === g) T.siege.t = Math.max(0, T.siege.t - dt * 0.5);
+  }
+}
 function updAnimals(dt) {
   for (const a of animals) {
     const A = ANIMAL[a.kind];
@@ -1321,6 +1429,7 @@ function update(dt) {
   logs = logs.filter(l => l.state !== 'done');
   updFire(dt); updClouds(dt); updFireballs(dt); updSpirit(dt); updAnimals(dt);
   migT -= dt; if (migT <= 0) { migT = 9; migrationTick(); }
+  updWar(dt);
   rivalT -= dt; if (rivalT <= 0) { rivalT = rand(3, 5); rivalThink(); }
   for (const g of ['p', 'r']) gods[g].mana = Math.min(manaCap(g), gods[g].mana);
   let nearFire = null;
@@ -1483,6 +1592,11 @@ const S = {
   shieldHit(px, py) { const o = sfxOut(px, py, 0.9); if (!o) return; const t = AU.ctx.currentTime; send(o, 0.6);
     tone('sine', 1200, t, 0.5, envG(t, 0.005, 0.35, 0.5, o), 700); tone('sine', 1800, t, 0.4, envG(t, 0.005, 0.2, 0.4, o), 1100);
     noiseSrc(t, 0.3, filt('highpass', 3000, 0, envG(t, 0.005, 0.25, 0.25, o))); },
+  clash(px, py) { const o = sfxOut(px, py, 0.55); if (!o) return; const t = AU.ctx.currentTime;
+    const f = rand(1600, 2400); tone('sine', f, t, 0.18, envG(t, 0.002, 0.3, 0.18, o), f * 0.8); tone('sine', f * 1.47, t, 0.12, envG(t, 0.002, 0.15, 0.12, o));
+    noiseSrc(t, 0.05, filt('highpass', 4000, 0, envG(t, 0.002, 0.3, 0.04, o))); },
+  horn() { const o = sfxOut(undefined, undefined, 0.5); if (!o) return; const t = AU.ctx.currentTime; send(o, 0.6);
+    for (const [f, d] of [[110, 0], [165, 0.02]]) { const g = envG(t + d, 0.25, 0.4, 1.6, o); tone('sawtooth', f, t + d, 1.9, filt('lowpass', 900, 1, g), f * 1.06); } },
   rumble(px, py) { const o = sfxOut(px, py, 0.7); if (!o) return; const t = AU.ctx.currentTime;
     noiseSrc(t, 0.6, filt('lowpass', 220, 0.8, envG(t, 0.05, 0.7, 0.5, o))); tone('sine', 60, t, 0.5, envG(t, 0.03, 0.4, 0.45, o), 40); },
   alert() { const o = sfxOut(undefined, undefined, 0.45); if (!o) return; const t = AU.ctx.currentTime; send(o, 0.4);
@@ -1600,6 +1714,9 @@ const ADVICE = {
   turnEvil:    ['The land darkens... is this who you want to be?', "At last! Now you're a real god."],
   turnGood:    ['Your light shines over the whole island.', 'Boring. Everyone loves you. Yawn.'],
   phoenixGood: ['Ember glows gold — it has become the Benevolent Guardian.', 'Ugh. A golden chicken.'],
+  war:         ['War brings grief to both sides. Is there no other way?', 'Yes! Crush them and take their village!'],
+  conquer:     ['The village is yours — now win their hearts as well.', 'Conquered! Let them learn to love the spear.'],
+  enemyArmy:   ['An army marches on {v}! Raise a shield and call your soldiers home.', 'Let them come. We will bury them.'],
   phoenixEvil: ["Ember's feathers turn black... it mirrors your heart.", 'Behold — the Harbinger of Destruction!'],
   tipBuild:    ['Tip: pick a building, place a site, and villagers will bring the wood. You can even throw logs to them!', 'Or burn the forest and call it a miracle.'],
   tipMana:     ['Every believer adds to your mana. Grow your villages — more people, more power.', 'Or frighten more people into praying.'],
@@ -1754,6 +1871,18 @@ const camera = new THREE.PerspectiveCamera(45, 1, 0.3, 600);
 const camS = { tx: 0, tz: 0, dist: 42, yaw: 0.35, tilt: 0 };
 
 const hemi = new THREE.HemisphereLight(0xcfe6ff, 0x4a3a28, 0.9); scene.add(hemi);
+// physically based sky dome (atmospheric scattering) that also lights the scene through a PMREM environment map
+const skyDome = new Sky(); skyDome.scale.setScalar(480); scene.add(skyDome);
+const skyU = skyDome.material.uniforms;
+skyU.turbidity.value = 5.5; skyU.rayleigh.value = 1.4; skyU.mieCoefficient.value = 0.004; skyU.mieDirectionalG.value = 0.82;
+const envScene = new THREE.Scene(), envSky = new Sky(); envSky.material = skyDome.material; envSky.scale.setScalar(50); envScene.add(envSky);
+const pmrem = new THREE.PMREMGenerator(renderer);
+let envRT = null, envT = 0;
+function refreshEnvironment() {
+  const rt = pmrem.fromScene(envScene, 0, 0.1, 100); if (envRT) envRT.dispose(); envRT = rt; scene.environment = rt.texture;
+  // the sky light is a subtle fill, not the main light: keep reflections from washing colours out
+  scene.traverse(o => { const m = o.material; if (m && m.isMeshStandardMaterial && !m.userData.envSet) { m.envMapIntensity = Math.min(m.envMapIntensity, 0.3); m.userData.envSet = true; } });
+}
 const sun = new THREE.DirectionalLight(0xfff1d6, 2.6);
 sun.castShadow = true;
 sun.shadow.mapSize.set(2048, 2048);
@@ -1766,6 +1895,22 @@ composer.addPass(new RenderPass(scene, camera));
 const bloom = new UnrealBloomPass(new THREE.Vector2(256, 256), 0.42, 0.4, 0.9);
 composer.addPass(bloom);
 composer.addPass(new OutputPass());
+// final colour grade: gentle desaturation, warmth, contrast, vignette and film grain
+const gradePass = new ShaderPass({
+  uniforms: { tDiffuse: { value: null }, uTime: { value: 0 } },
+  vertexShader: `varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+  fragmentShader: `uniform sampler2D tDiffuse; uniform float uTime; varying vec2 vUv;
+    float h(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
+    void main() {
+      vec4 c = texture2D(tDiffuse, vUv); vec3 col = c.rgb;
+      float l = dot(col, vec3(0.299, 0.587, 0.114)); col = mix(vec3(l), col, 0.88);
+      col = (col - 0.5) * 1.07 + 0.5; col *= vec3(1.03, 1.0, 0.95);
+      float d = distance(vUv, vec2(0.5)); col *= mix(1.0, 0.68, smoothstep(0.32, 0.88, d));
+      col += (h(vUv * vec2(1931.0, 1087.0) + fract(uTime)) - 0.5) * 0.022;
+      gl_FragColor = vec4(col, c.a);
+    }`,
+});
+composer.addPass(gradePass);
 
 // ---------- terrain (with trodden dirt plazas and paths in villages)
 const SUB = 2;
@@ -1777,8 +1922,8 @@ function computeTileColor(i) {
   switch (t) {
     case T.WATER: _c.set(0x9c8c62); break;
     case T.SAND: _c.setHSL(0.12, 0.42 + s * 0.1, 0.66 + s * 0.05); break;
-    case T.GRASS: _c.setHSL(0.24 + s * 0.04, 0.42 + s * 0.12, 0.33 + s * 0.05); if (h > 4) _c.lerp(DRY, clamp((h - 4) / 4, 0, 0.6)); break;
-    case T.FOREST: _c.setHSL(0.27 + s * 0.03, 0.45, 0.22 + s * 0.04); break;
+    case T.GRASS: _c.setHSL(0.22 + s * 0.05, 0.3 + s * 0.1, 0.29 + s * 0.05); if (h > 4) _c.lerp(DRY, clamp((h - 4) / 4, 0, 0.6)); break;
+    case T.FOREST: _c.setHSL(0.2 + s * 0.03, 0.3, 0.17 + s * 0.04); break;
     case T.ROCK: _c.setHSL(0.08, 0.08, 0.38 + s * 0.12); break;
     case T.BURNT: _c.setHSL(0.07, 0.15, 0.1 + s * 0.05); break;
   }
@@ -1793,7 +1938,25 @@ function buildTerrain() {
   terrainGeo.setAttribute('color', new THREE.BufferAttribute(new Float32Array(pos.count * 3), 3));
   terrainGeo.computeVertexNormals();
   dirtV = new Float32Array(pos.count);
-  const mesh = new THREE.Mesh(terrainGeo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.93, metalness: 0 }));
+  const tmat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.95, metalness: 0, envMapIntensity: 0.6 });
+  tmat.onBeforeCompile = sh => {
+    sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vWPos; varying vec3 vWNorm;')
+      .replace('#include <begin_vertex>', '#include <begin_vertex>\nvWPos = (modelMatrix * vec4(transformed, 1.0)).xyz;')
+      .replace('#include <beginnormal_vertex>', '#include <beginnormal_vertex>\nvWNorm = normalize(mat3(modelMatrix) * objectNormal);');
+    sh.fragmentShader = sh.fragmentShader.replace('#include <common>', `#include <common>
+      varying vec3 vWPos; varying vec3 vWNorm;
+      float hsh(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+      float vnoise(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
+        return mix(mix(hsh(i), hsh(i + vec2(1, 0)), f.x), mix(hsh(i + vec2(0, 1)), hsh(i + vec2(1, 1)), f.x), f.y); }`)
+      .replace('#include <color_fragment>', `#include <color_fragment>
+        float n1 = vnoise(vWPos.xz * 1.6), n2 = vnoise(vWPos.xz * 6.5), n3 = vnoise(vWPos.xz * 0.3);
+        diffuseColor.rgb *= 0.8 + 0.3 * n1 + 0.14 * (n2 - 0.5);
+        diffuseColor.rgb *= mix(vec3(1.0), vec3(1.06, 1.0, 0.86), n3 * 0.7);
+        float slope = 1.0 - clamp(vWNorm.y, 0.0, 1.0);
+        vec3 rock = vec3(0.36, 0.34, 0.31) * (0.75 + 0.5 * n2);
+        diffuseColor.rgb = mix(diffuseColor.rgb, rock, smoothstep(0.28, 0.55, slope) * smoothstep(0.1, 0.6, vWPos.y));`);
+  };
+  const mesh = new THREE.Mesh(terrainGeo, tmat);
   mesh.receiveShadow = true; scene.add(mesh);
   const bed = new THREE.Mesh(new THREE.PlaneGeometry(600, 600), new THREE.MeshStandardMaterial({ color: 0x1b3f5c, roughness: 1 }));
   bed.rotation.x = -Math.PI / 2; bed.position.y = -5.6; scene.add(bed);
@@ -1895,6 +2058,7 @@ function buildWater() {
 }
 
 // ---------- instanced scatter (trees, rocks)
+const windU = { value: 0 };
 const ZERO = new THREE.Matrix4().makeScale(0, 0, 0), _tm = new THREE.Matrix4(), _sm = new THREE.Matrix4();
 class Scatter {
   constructor(geom, mat, cap, shadow = true) {
@@ -1943,15 +2107,23 @@ function mergeGeos(list) {
 }
 function buildScatter() {
   const trunkGeo = new THREE.CylinderGeometry(0.05, 0.08, 0.5, 5); trunkGeo.translate(0, 0.25, 0);
-  const pineA = new THREE.ConeGeometry(0.42, 1.2, 7); pineA.translate(0, 1.05, 0);
-  const pineB = new THREE.ConeGeometry(0.32, 0.8, 7); pineB.translate(0, 1.55, 0);
-  const broadA = new THREE.IcosahedronGeometry(0.48, 1); broadA.translate(0, 0.85, 0);
-  const broadB = new THREE.IcosahedronGeometry(0.32, 1); broadB.translate(0.22, 1.15, 0.1);
+  // lumpy, irregular foliage instead of perfect geometric shapes
+  const lumpy = (g, amt) => { const p = g.attributes.position; for (let k = 0; k < p.count; k++) { const x = p.getX(k), y = p.getY(k), z = p.getZ(k), n = 1 + (Math.sin(x * 13.1 + y * 7.3) * Math.cos(z * 11.7 - y * 5.1)) * amt; p.setXYZ(k, x * n, y * (1 + (n - 1) * 0.5), z * n); } g.computeVertexNormals(); return g; };
+  const tier = (r, h, y) => { const g = lumpy(new THREE.ConeGeometry(r, h, 10, 2), 0.12); g.translate(0, y, 0); return g; };
+  const pineA = mergeGeos([tier(0.46, 0.8, 0.75), tier(0.37, 0.7, 1.15)]), pineB = mergeGeos([tier(0.27, 0.6, 1.5), tier(0.16, 0.45, 1.82)]);
+  const blob = (r, x, y, z) => { const g = lumpy(new THREE.IcosahedronGeometry(r, 2), 0.16); g.translate(x, y, z); return g; };
+  const broadA = mergeGeos([blob(0.4, 0, 0.85, 0), blob(0.3, 0.24, 1.0, 0.08), blob(0.28, -0.2, 1.02, -0.1)]), broadB = mergeGeos([blob(0.26, 0.04, 1.28, 0.12), blob(0.22, -0.1, 0.72, 0.26)]);
   const rockGeo = new THREE.DodecahedronGeometry(0.5, 0);
   const cap = MW * MH * 2;
   trunks = new Scatter(trunkGeo, new THREE.MeshStandardMaterial({ color: 0x5a3a22, roughness: 1 }), cap);
-  pines = new Scatter(mergeGeos([pineA, pineB]), new THREE.MeshStandardMaterial({ roughness: 0.85, flatShading: true }), cap);
-  broads = new Scatter(mergeGeos([broadA, broadB]), new THREE.MeshStandardMaterial({ roughness: 0.8, flatShading: true }), cap);
+  const windy = m => { m.onBeforeCompile = sh => { sh.uniforms.uTime = windU; sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nuniform float uTime;')
+      .replace('#include <begin_vertex>', `#include <begin_vertex>
+        vec4 ip = instanceMatrix * vec4(0.0, 0.0, 0.0, 1.0);
+        float sway = max(0.0, position.y - 0.5);
+        transformed.x += (sin(uTime * 1.3 + ip.x * 0.6 + ip.z * 0.4) * 0.035 + sin(uTime * 2.7 + ip.z) * 0.012) * sway;
+        transformed.z += sin(uTime * 1.1 + ip.z * 0.5) * 0.025 * sway;`); }; return m; };
+  pines = new Scatter(mergeGeos([pineA, pineB]), windy(new THREE.MeshStandardMaterial({ roughness: 0.9 })), cap);
+  broads = new Scatter(mergeGeos([broadA, broadB]), windy(new THREE.MeshStandardMaterial({ roughness: 0.88 })), cap);
   trunks.scaled = pines.scaled = broads.scaled = true;
   rocks = new Scatter(rockGeo, new THREE.MeshStandardMaterial({ color: 0x8a857c, roughness: 0.95, flatShading: true }), MW * MH * 2);
   const m = new THREE.Matrix4(), q = new THREE.Quaternion(), e = new THREE.Euler(), p = new THREE.Vector3(), s = new THREE.Vector3(), c = new THREE.Color();
@@ -1975,7 +2147,7 @@ function buildScatter() {
       if (vis) { treeG[i] = treeDrawn[i] = rand(0.85, 1.15); _tm.copy(m).multiply(_sm.makeScale(treeG[i], treeG[i], treeG[i])); }
       trunks.add(i, m, null, false); if (vis) trunks.mesh.setMatrixAt(trunks.mesh.count - 1, _tm);
       const fol = pine ? pines : broads;
-      fol.add(i, m, pine ? c.setHSL(0.3 + rand(-0.02, 0.03), 0.45, 0.2 + rand(0, 0.06)) : c.setHSL(0.24 + rand(-0.03, 0.04), 0.5, 0.27 + rand(0, 0.08)), false);
+      fol.add(i, m, pine ? c.setHSL(0.31 + rand(-0.02, 0.03), 0.3, 0.13 + rand(0, 0.05)) : c.setHSL(0.24 + rand(-0.03, 0.04), 0.36, 0.18 + rand(0, 0.07)), false);
       if (vis) fol.mesh.setMatrixAt(fol.mesh.count - 1, _tm);
     }
   }
@@ -1991,7 +2163,7 @@ function addTreeSlots(i) {
     p.set(gx - MW / 2, hGrid(gx, gz) - 0.05, gz - MH / 2); q.setFromEuler(new THREE.Euler(0, rand(0, 6.28), 0)); s.set(sc, sc, sc); m.compose(p, q, s);
     const pine = shade[i] > 0.55 || hGrid(gx, gz) > 4;
     trunks.add(i, m, null, false);
-    (pine ? pines : broads).add(i, m, pine ? c.setHSL(0.3 + rand(-0.02, 0.03), 0.45, 0.2 + rand(0, 0.06)) : c.setHSL(0.24 + rand(-0.03, 0.04), 0.5, 0.27 + rand(0, 0.08)), false);
+    (pine ? pines : broads).add(i, m, pine ? c.setHSL(0.31 + rand(-0.02, 0.03), 0.3, 0.13 + rand(0, 0.05)) : c.setHSL(0.24 + rand(-0.03, 0.04), 0.36, 0.18 + rand(0, 0.07)), false);
   }
   for (const sc of [trunks, pines, broads]) { sc.mesh.instanceMatrix.needsUpdate = true; if (sc.mesh.instanceColor) sc.mesh.instanceColor.needsUpdate = true; }
   return true;
@@ -2372,6 +2544,9 @@ function makePlaza(v) {
 // ---------- villagers: articulated, instanced bodies
 const VCAP = 1500;
 const VG = {
+  helm: (() => { const g = new THREE.SphereGeometry(0.09, 12, 6, 0, Math.PI * 2, 0, Math.PI * 0.55); return g; })(),
+  shield: (() => { const g = new THREE.CylinderGeometry(0.11, 0.11, 0.02, 16); g.rotateZ(Math.PI / 2); return g; })(),
+  spear: (() => { const a = new THREE.CylinderGeometry(0.011, 0.011, 0.82, 5); a.translate(0, 0.12, 0); const b = new THREE.ConeGeometry(0.024, 0.1, 6); b.translate(0, 0.58, 0); return mergeGeos([a, b]); })(),
   torso: (() => { const g = new THREE.CylinderGeometry(0.085, 0.105, 0.3, 8); g.translate(0, 0.15, 0); return g; })(),
   head: new THREE.SphereGeometry(0.075, 12, 9),
   hair: new THREE.SphereGeometry(0.082, 12, 8, 0, Math.PI * 2, 0, Math.PI * 0.58),
@@ -2381,11 +2556,12 @@ const VG = {
   load: new THREE.BoxGeometry(0.22, 0.09, 0.12),
 };
 const vMesh = {};
-for (const [k, n] of [['torso', 1], ['head', 1], ['hair', 1], ['arm', 2], ['leg', 2], ['skirt', 1], ['load', 1]]) {
+for (const [k, n] of [['torso', 1], ['head', 1], ['hair', 1], ['arm', 2], ['leg', 2], ['skirt', 1], ['load', 1], ['helm', 1], ['shield', 1], ['spear', 1]]) {
   const m = new THREE.InstancedMesh(VG[k], new THREE.MeshStandardMaterial({ roughness: 0.75 }), VCAP * n);
   m.castShadow = true; m.frustumCulled = false; m.count = 0; scene.add(m); vMesh[k] = m;
 }
 const VC = { p: new THREE.Color(0xc89038), r: new THREE.Color(0x7a4ac8), n: new THREE.Color(0xa89878), hurt: new THREE.Color(0xd03a3a), wood: new THREE.Color(0x7a4a20), food: new THREE.Color(0xe8c040), meat: new THREE.Color(0x8a2a22) };
+const _H2 = new THREE.Matrix4(), HELM_COL = new THREE.Color(0x8c8c94), SPEAR_COL = new THREE.Color(0x6a4a2a);
 const _B = new THREE.Matrix4(), _H = new THREE.Matrix4(), _U = new THREE.Matrix4(), _Mx = new THREE.Matrix4(), _T = new THREE.Matrix4(), _R = new THREE.Matrix4();
 const _col = new THREE.Color(), _col2 = new THREE.Color(), CHAR_COL = new THREE.Color(0x15110e);
 function local(parent, tx, ty, tz, rx, rz, out) {
@@ -2395,6 +2571,18 @@ function local(parent, tx, ty, tz, rx, rz, out) {
   return out;
 }
 function pose(u) {
+  const P = poseBase(u);
+  if (u.soldier && !['dead', 'zap', 'held', 'fly', 'swim'].includes(u.state)) {
+    if (u.state === 'fight') {
+      const f = time * 9 + u.phase;
+      P.aR = -1.0 - 0.7 * Math.max(0, Math.sin(f)); P.aL = -1.0; P.bow = 0.12;
+      if (u.moving) { const s = Math.sin(time * 14 + u.phase); P.lL = s * 0.6; P.lR = -s * 0.6; }
+    } else if (u.state === 'guard') { P.aR = -0.15; P.aL = -0.55; }
+    else if (u.state === 'walk' && !u.carry) { P.aR = -0.25; P.aL = -0.55; }
+  }
+  return P;
+}
+function poseBase(u) {
   const P = { hipY: 0.3, bow: 0, aL: 0.06 * Math.sin(time * 1.3 + u.phase), aR: -0.06 * Math.sin(time * 1.3 + u.phase), lL: 0, lR: 0, y: 0, spin: 0, sway: 0 };
   const swim = u.state === 'swim' || (u.state === 'walk' && groundPx(u.x, u.y) < -0.1);
   if (u.state === 'zap') {
@@ -2451,7 +2639,12 @@ function syncVillagers() {
     vMesh.leg.setMatrixAt(2 * n + 1, local(_H, 0.05, 0, 0, P.lR, 0, _Mx));
     vMesh.skirt.setMatrixAt(n, u.look.female && !isChild(u) ? local(_H, 0, 0.06, 0, 0, 0, _Mx) : ZERO);
     vMesh.load.setMatrixAt(n, u.carry ? local(_U, 0, 0.53, 0, 0, 0, _Mx) : ZERO);
-    _col.copy(VC[v.owner || 'n']).offsetHSL(u.look.dh, 0, u.look.dl);
+    if (u.soldier && u.state !== 'dead') {
+      vMesh.helm.setMatrixAt(n, local(_U, 0, 0.392, -0.004, 0, 0, _Mx));
+      local(_U, -0.115, 0.28, 0, P.aL, 0.12, _H2); vMesh.shield.setMatrixAt(n, local(_H2, -0.04, -0.16, 0.02, 0, 0, _Mx));
+      local(_U, 0.115, 0.28, 0, P.aR, -0.12, _H2); vMesh.spear.setMatrixAt(n, local(_H2, 0.015, -0.24, 0, 0, 0, _Mx));
+    } else { vMesh.helm.setMatrixAt(n, ZERO); vMesh.shield.setMatrixAt(n, ZERO); vMesh.spear.setMatrixAt(n, ZERO); }
+    _col.set(u.look.cloth || 0x6a5a44).lerp(VC[v.owner || 'n'], u.soldier ? 0.55 : 0.3).offsetHSL(u.look.dh, 0, u.look.dl * 0.5);
     if (u.hp < 50) _col.lerp(VC.hurt, 0.5);
     const flash = u.state === 'zap' && Math.random() < 0.55, charK = u.char > 0 ? clamp(u.char / 4, 0, 0.92) : 0;
     if (flash) _col.setRGB(0.8, 0.92, 1); else if (charK) _col.lerp(CHAR_COL, charK);
@@ -2461,6 +2654,7 @@ function syncVillagers() {
     _col2.set(u.look.female ? u.look.skin : u.look.pants);
     vMesh.leg.setColorAt(2 * n, _col2); vMesh.leg.setColorAt(2 * n + 1, _col2);
     vMesh.load.setColorAt(n, VC[u.carry] || VC.wood);
+    vMesh.helm.setColorAt(n, HELM_COL); vMesh.spear.setColorAt(n, SPEAR_COL); vMesh.shield.setColorAt(n, _col2.copy(VC[v.owner || 'n']).multiplyScalar(0.7));
     n++;
   }
   for (const k in vMesh) {
@@ -2802,7 +2996,67 @@ function syncShields() {
     u.uT.value = time; u.uOp.value = Math.min(1, v.shield / 3) * (0.55 + 0.1 * Math.sin(time * 3)) + Math.max(0, v.shieldHit) * 1.2;
   }
 }
+const GRASS_N = 36000, GRASS_R = 26;
+const grassMesh = (() => {
+  const g = new THREE.BufferGeometry(), H = 0.24, W = 0.045, pos = [], nor = [];
+  const ys = [0, 0.4, 0.75, 1], ws = [1, 0.75, 0.45, 0];
+  for (let k = 0; k < 3; k++) {
+    const y0 = ys[k] * H, y1 = ys[k + 1] * H, w0 = ws[k] * W / 2, w1 = ws[k + 1] * W / 2, b0 = ys[k] * ys[k] * 0.06, b1 = ys[k + 1] * ys[k + 1] * 0.06;
+    pos.push(-w0, y0, b0, w0, y0, b0, w1, y1, b1, -w0, y0, b0, w1, y1, b1, -w1, y1, b1);
+  }
+  for (let k = 0; k < pos.length / 3; k++) nor.push(0, 1, 0);
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3));
+  const m = new THREE.MeshStandardMaterial({ side: THREE.DoubleSide, roughness: 0.9, envMapIntensity: 0.5 });
+  m.onBeforeCompile = sh => {
+    sh.uniforms.uTime = windU;
+    sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nuniform float uTime; varying float vGH;')
+      .replace('#include <begin_vertex>', `#include <begin_vertex>
+        float gh = position.y / 0.24; vGH = gh;
+        vec4 ip = instanceMatrix * vec4(0.0, 0.0, 0.0, 1.0);
+        float w = sin(uTime * 1.7 + ip.x * 0.35 + ip.z * 0.27) * 0.6 + sin(uTime * 3.3 + ip.x * 1.7) * 0.25;
+        transformed.x += w * 0.1 * gh * gh; transformed.z += w * 0.05 * gh * gh;`);
+    sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nvarying float vGH;')
+      .replace('#include <color_fragment>', '#include <color_fragment>\ndiffuseColor.rgb *= mix(0.4, 1.12, vGH);');
+  };
+  const mesh = new THREE.InstancedMesh(g, m, GRASS_N); mesh.frustumCulled = false; mesh.receiveShadow = true; mesh.count = 0; scene.add(mesh);
+  return mesh;
+})();
+const grassState = { cx: 1e9, cz: 1e9, dirtyT: 0 };
+function rebuildGrass() {
+  const cx = camS.tx, cz = camS.tz; grassState.cx = cx; grassState.cz = cz;
+  const near = [];
+  for (const v of villages) {
+    if (Math.hypot(WX(v.x) - cx, WZ(v.y) - cz) < GRASS_R + 14) near.push([v.x, v.y, PLAZA + 12]);
+    for (const h of v.houses) if (Math.hypot(WX(h.x) - cx, WZ(h.y) - cz) < GRASS_R + 3) near.push([h.x, h.y, h.type === 'field' ? 30 : 17]);
+    for (const st of v.sites) if (Math.hypot(WX(st.x) - cx, WZ(st.y) - cz) < GRASS_R + 3) near.push([st.x, st.y, 20]);
+  }
+  const m = new THREE.Matrix4(), q = new THREE.Quaternion(), p = new THREE.Vector3(), sc = new THREE.Vector3(), c = new THREE.Color(), e = new THREE.Euler();
+  let n = 0;
+  for (let k = 0; k < GRASS_N * 1.6 && n < GRASS_N; k++) {
+    const a = Math.random() * Math.PI * 2, r = Math.sqrt(Math.random()) * GRASS_R, wx = cx + Math.cos(a) * r, wz = cz + Math.sin(a) * r;
+    const px = (wx + MW / 2) * TILE, py = (wz + MH / 2) * TILE, i = tIdx(px, py);
+    if (i < 0) continue;
+    const t = tiles[i]; if (t !== T.GRASS && t !== T.FOREST) continue;
+    const gy = groundPx(px, py); if (gy < 0.18) continue;
+    let blocked = false; for (const [bx, by, br] of near) if (Math.abs(bx - px) < br && Math.abs(by - py) < br && Math.hypot(bx - px, by - py) < br) { blocked = true; break; }
+    if (blocked) continue;
+    const hs = rand(0.55, 1.2) * (t === T.FOREST ? 0.7 : 1);
+    p.set(wx, gy - 0.01, wz); e.set(rand(-0.15, 0.15), rand(0, 6.28), rand(-0.15, 0.15)); q.setFromEuler(e); sc.set(rand(0.8, 1.3), hs, 1);
+    grassMesh.setMatrixAt(n, m.compose(p, q, sc));
+    grassMesh.setColorAt(n, c.setHSL(0.19 + rand(0, 0.07), 0.3 + rand(0, 0.14), 0.2 + rand(0, 0.1) + (shade[i] - 0.5) * 0.04));
+    n++;
+  }
+  grassMesh.count = n; grassMesh.instanceMatrix.needsUpdate = true; if (grassMesh.instanceColor) grassMesh.instanceColor.needsUpdate = true;
+}
+function syncGrass(dt) {
+  windU.value = performance.now() / 1000;
+  grassMesh.visible = camS.dist < 60;
+  if (!grassMesh.visible) return;
+  grassState.dirtyT -= dt;
+  if (Math.hypot(camS.tx - grassState.cx, camS.tz - grassState.cz) > 7 || (grassState.dirtyT <= 0 && (terrainDirty || layoutDirty))) { grassState.dirtyT = 2; rebuildGrass(); }
+}
 function syncPhoenix(dt) {
+  syncGrass(dt);
   syncShields();
   const P = pxPalette();
   pxMain.color.copy(P.main); pxMain.emissive.copy(P.emi); pxMain.emissiveIntensity = P.ei;
@@ -2842,6 +3096,12 @@ function syncCursor() {
     ghostMat.color.set(ok ? 0x7aff9a : 0xff5a5a);
     return;
   }
+  if (selected === 'attack') {
+    const tv = nearestVillage(mouse.wx, mouse.wy, 220);
+    if (tv) { const R = (PLAZA + 40) / TILE, okA = tv.owner !== 'p'; cursorRing.material.color.set(okA ? 0xff3a2a : 0x9a9a9a); cursorDisc.material.color.set(okA ? 0xff3a2a : 0x9a9a9a);
+      cursorRing.position.set(WX(tv.x), surfPx(tv.x, tv.y) + 0.3, WZ(tv.y)); cursorRing.scale.setScalar(R); cursorDisc.position.copy(cursorRing.position); cursorDisc.scale.setScalar(R); cursorRing.visible = cursorDisc.visible = true; }
+    return;
+  }
   if (TMY[selected]) {
     const R = (selected === 'plant' || selected === 'water' ? 2.6 : TERRA_R) * TILE, okT = inInfluence('p', mouse.wx, mouse.wy) && (selected === 'plant' || !terraBlocked(mouse.wx, mouse.wy, TERRA_R * TILE));
     const cc = okT ? new THREE.Color(TCOL[selected]).getHex() : 0xff5050;
@@ -2878,7 +3138,9 @@ function updateLighting() {
   sun.color.set(0xfff1d6).lerp(new THREE.Color(0xff9a5a), duskK);
   if (el < 0) sun.color.lerp(new THREE.Color(0x7a9aff), clamp(-el * 2, 0, 1));
   sun.intensity = 0.55 + 2.2 * dayK;
-  hemi.intensity = 0.45 + 0.6 * dayK;
+  hemi.intensity = 0.4 + 0.45 * dayK;
+  skyU.sunPosition.value.set(Math.sin(ang) * 0.9, el, 0.45);
+  skyDome.position.copy(camera.position);
   winMat.emissiveIntensity = (1 - dayK) * 1.8;
   const sky = SKY_NIGHT.clone().lerp(SKY_DAY, dayK).lerp(SKY_DUSK, duskK * 0.6);
   const mor = gods.p.morality;
@@ -2888,7 +3150,9 @@ function updateLighting() {
   hemi.color.copy(sky).lerp(new THREE.Color(0xffffff), 0.4);
   waterMat.uniforms.uSun.value.copy(dir); waterMat.uniforms.uSunCol.value.copy(sun.color).multiplyScalar(dayK + 0.2);
   waterMat.uniforms.uSky.value.copy(sky);
-  renderer.toneMappingExposure = 0.85 + 0.3 * dayK;
+  renderer.toneMappingExposure = 0.72 + 0.3 * dayK;
+  envT -= 1 / 60; if (envT <= 0) { envT = 8; refreshEnvironment(); }
+  gradePass.uniforms.uTime.value = performance.now() / 1000;
 }
 
 // ============================================================ camera & picking
@@ -2903,7 +3167,7 @@ function updateCamera() {
   const minY = surfW(camera.position.x, camera.position.z) + 1.2;
   if (camera.position.y < minY) camera.position.y = minY;
   camera.lookAt(camS.tx, ty, camS.tz);
-  scene.fog.near = camS.dist * 1.1; scene.fog.far = camS.dist * 3.2 + 40;
+  scene.fog.near = camS.dist * 1.7; scene.fog.far = camS.dist * 4.6 + 60;
 }
 const raycaster = new THREE.Raycaster(), _ndc = new THREE.Vector2();
 const surfW = (x, z) => Math.max(0, hGrid(x + MW / 2, z + MH / 2));
@@ -3063,7 +3327,10 @@ function msg(text, cls = 'info') {
   logEl.prepend(d); while (logEl.children.length > 9) logEl.lastChild.remove();
   setTimeout(() => d.style.opacity = 0.45, 9000);
 }
-function select(id) { selected = id; aim = null; fbHold = null; terra.active = false; S.ui(); if (held && id !== 'hand') release(); setTab(MBY[id] ? 'miracles' : BMY[id] ? 'build' : TMY[id] ? 'terra' : dockTab); updDock(); }
+function select(id) {
+  if (id === 'recall') { if (gods.p.war.target) { msg(`Your army is coming home from ${gods.p.war.target.name}`, 'info'); gods.p.war.target = null; for (const u of SOLDIERS) if (u.vOwner === 'p') { u.state = 'idle'; u.t = 0; } } else msg('Your army is already home', 'info'); S.ui(); return; }
+  const keepWar = dockTab === 'war' && (id === 'barracks' || id === 'attack');
+  selected = id; aim = null; fbHold = null; terra.active = false; S.ui(); if (held && id !== 'hand') release(); setTab(keepWar ? 'war' : id === 'attack' ? 'war' : MBY[id] ? 'miracles' : BMY[id] ? 'build' : TMY[id] ? 'terra' : dockTab); updDock(); }
 function pushAlert(key, html, opts = {}) {
   const box = $('alerts'); if (box.querySelector(`[data-key="${key}"]`)) return;
   const d = document.createElement('div'); d.className = 'alert' + (opts.bad ? ' bad' : opts.good ? ' good' : ''); d.dataset.key = key;
@@ -3075,8 +3342,10 @@ function pushAlert(key, html, opts = {}) {
   S.alert();
 }
 let dockTab = 'miracles';
-const TABS = [['miracles', '✨ Miracles', '1-9'], ['build', '🔨 Build', 'B'], ['terra', '🌿 Land & Nature', 'T']];
+const TABS = [['miracles', '✨ Miracles', '1-9'], ['build', '🔨 Build', 'B'], ['terra', '🌿 Land & Nature', 'T'], ['war', '⚔ War', 'K']];
 function toolInfo(id) {
+  if (id === 'attack') return { icon: '🗡', name: 'Attack', desc: 'Click a village of the Tidewraith to send your whole army against it. Hold its plaza with no defenders left to conquer it.', cost: `⚔ ${SOLDIERS.filter(s => s.vOwner === 'p').length} soldiers` };
+  if (id === 'recall') return { icon: '🏳', name: 'Recall', desc: 'Call your army home to guard your villages.', cost: gods.p.war.target ? `now attacking ${gods.p.war.target.name}` : 'army at home' };
   if (id === 'hand') return { icon: '✋', name: 'Hand', desc: 'Click a villager or building for details. Press and drag to lift and throw villagers and trees. Right click lets go.', cost: 'free' };
   if (MBY[id]) return { icon: MBY[id].icon, name: MBY[id].name, desc: MBY[id].desc, cost: `${costOf('p', id)} ✦ mana` };
   if (BMY[id]) return { icon: BMY[id].icon, name: BMY[id].name, desc: BMY[id].desc, cost: `🪵 ${BMY[id].wood} wood (brought by villagers)` };
@@ -3088,6 +3357,7 @@ function renderDock() {
   let html = tile('hand', 'G') + '<div class="tray-sep"></div>';
   if (dockTab === 'miracles') html += MIRACLES.map((m, k) => tile(m.id, String(k + 1))).join('');
   else if (dockTab === 'build') html += '<span class="tray-grp">HOMES</span>' + BUILDS.filter(b => b.cat === 'house').map(b => tile(b.id)).join('') + '<div class="tray-sep"></div><span class="tray-grp">FACILITIES</span>' + BUILDS.filter(b => b.cat === 'fac').map(b => tile(b.id)).join('');
+  else if (dockTab === 'war') html += tile('barracks') + '<div class="tray-sep"></div>' + tile('attack') + tile('recall');
   else html += TERRA.map(t => tile(t.id)).join('');
   $('tray').innerHTML = html;
   updDock();
@@ -3101,6 +3371,8 @@ function updDock() {
     if (MBY[id]) { const k = costOf('p', id); b.classList.toggle('off', gods.p.mana < k); c.textContent = `${k}✦`; }
     else if (BMY[id]) c.textContent = `🪵${BMY[id].wood}`;
     else if (TMY[id]) { b.classList.toggle('off', gods.p.mana < TMY[id].cost); c.textContent = `${TMY[id].cost}✦`; }
+    else if (id === 'attack') c.textContent = `⚔${SOLDIERS.filter(s => s.vOwner === 'p').length}`;
+    else if (id === 'recall') c.textContent = gods.p.war.target ? 'war' : 'home';
     else c.textContent = held ? 'holding' : 'free';
   }
 }
@@ -3139,7 +3411,7 @@ function renderInfo() {
     const home = u.home ? `${BMY[u.home.type].name} in ${v.name}` : (isChild(u) ? `with family in ${v.name}` : 'Homeless');
     const mates = u.home ? (u.home.residents || []).filter(o => o !== u) : [];
     html = `<div class="ih"><b>${u.name}</b><span class="x" data-close>✕</span></div>
-      <div class="sub">${isChild(u) ? (u.look.female ? 'Girl' : 'Boy') : (u.look.female ? 'Woman' : 'Man')} · ${yearsOf(u)} years old · ${u.trait.name}</div>
+      <div class="sub">${isChild(u) ? (u.look.female ? 'Girl' : 'Boy') : (u.look.female ? 'Woman' : 'Man')} · ${yearsOf(u)} years old · ${u.trait.name}${u.soldier ? ' · ⚔ Soldier' : ''}</div>
       <div class="row2">🏘 ${v.name} — ${v.owner === 'p' ? 'believes in you' : v.owner === 'r' ? 'worships the Tidewraith' : 'undecided'}</div>
       <div class="row2">🏠 ${home}${mates.length ? ` · lives with ${mates.map(o => `<span class="res" data-ref="${ref(o)}">${o.name}</span>`).join(', ')}` : ''}</div>
       <div class="row2">🛠 ${activity(u)}</div>
@@ -3185,6 +3457,7 @@ function updHUD() {
   $('moralMark').style.left = `calc(${(1 + P.morality) * 50}% - 2px)`;
   $('vCount').textContent = `${owned('p').length}/${goalCount()}`;
   $('popCount').textContent = believers('p');
+  $('armyCount').textContent = SOLDIERS.filter(s => s.vOwner === 'p').length;
   $('rCount').textContent = owned('r').length;
   const phase = ((time / DAY_LEN) + 0.1) % 1;
   $('clock').textContent = (phase > 0.25 && phase < 0.75 ? '🌙' : '☀') + ' ' + Math.floor(time / 60) + ':' + String(Math.floor(time % 60)).padStart(2, '0');
@@ -3198,7 +3471,7 @@ function updHUD() {
     title.style.color = v.owner ? COLORS[v.owner] : '#ddd';
     const bars = L.querySelectorAll('.bb i'); bars[0].style.width = v.belief.p + '%'; bars[1].style.width = v.belief.r + '%';
     const mood = v.festival > 0 ? '🎉' : v.happy > 70 ? '😄' : v.happy > 45 ? '🙂' : v.happy > 25 ? '😐' : '😢';
-    L.querySelector('.res').textContent = `${v.shield > 0 ? `🛡${Math.ceil(v.shield)}s · ` : ''}${mood} · 🪵${Math.floor(v.wood)} · 🌾${Math.floor(v.food)} · 🏠${v.villagers.length}/${v.cap}${v.sites.length ? ` · 🔨${v.sites.length}` : ''}`;
+    L.querySelector('.res').textContent = `${v.siege && v.siege.t > 0 ? `⚔ SIEGE ${Math.floor(v.siege.t / 18 * 100)}% · ` : ''}${v.shield > 0 ? `🛡${Math.ceil(v.shield)}s · ` : ''}${v.villagers.some(u => u.soldier) ? `⚔${v.villagers.filter(u => u.soldier).length} · ` : ''}${mood} · 🪵${Math.floor(v.wood)} · 🌾${Math.floor(v.food)} · 🏠${v.villagers.length}/${v.cap}${v.sites.length ? ` · 🔨${v.sites.length}` : ''}`;
     L.querySelector('.h').style.display = v.food < v.villagers.length * 1.5 ? 'block' : 'none';
   }
   if (lastActDirty) {
@@ -3251,7 +3524,7 @@ function placeLabels() {
   hn.style.display = tip ? 'block' : 'none';
   if (tip) { hn.textContent = tip; hn.style.left = mouse.x + 'px'; hn.style.top = mouse.y + 'px'; }
   const ci = $('cursorIcon');
-  ci.textContent = selected === 'hand' ? (held ? '✊' : hover ? '🖐' : '✋') : (MBY[selected] || BMY[selected] || TMY[selected]).icon;
+  ci.textContent = selected === 'hand' ? (held ? '✊' : hover ? '🖐' : '✋') : (MBY[selected] || BMY[selected] || TMY[selected] || toolInfo(selected)).icon;
   ci.style.left = mouse.x + 'px'; ci.style.top = mouse.y + 'px';
   ci.style.display = mouse.valid && started && !ended ? 'block' : 'none';
 }
@@ -3290,6 +3563,14 @@ canvas.addEventListener('mousedown', e => {
   else if (BMY[selected]) { if (mouse.valid) tryPlace(selected, mouse.wx, mouse.wy); }
   else if (TMY[selected]) { if (mouse.valid) { terra.warned = false; applyTerra(selected, mouse.wx, mouse.wy); terra.active = TMY[selected].hold; terra.t = 0.2; } }
   else if (selected === 'fireball') { if (mouse.valid) startFireballHold(); }
+  else if (selected === 'attack') {
+    if (!mouse.valid) return;
+    const tv = nearestVillage(mouse.wx, mouse.wy, 220);
+    if (!tv) msg('Click on a village to attack it', 'info');
+    else if (tv.owner === 'p') msg(`${tv.name} already believes in you`, 'info');
+    else if (!SOLDIERS.some(s => s.vOwner === 'p')) msg('You have no soldiers — build a ⚔ Barracks first', 'info');
+    else { declareWar('p', tv); select('hand'); }
+  }
   else if (mouse.valid) playerCast(mouse.wx, mouse.wy);
 });
 addEventListener('mouseup', e => {
@@ -3309,6 +3590,7 @@ addEventListener('keydown', e => {
   if (e.code === 'KeyN') toggleSfx();
   if (e.code === 'KeyB') setTab('build');
   if (e.code === 'KeyT') setTab('terra');
+  if (e.code === 'KeyK') setTab('war');
   if (e.code === 'KeyV') toggleVoice();
   if (e.code === 'Space' && started && !ended) { paused = !paused; $('pauseTag').style.display = paused ? 'block' : 'none'; e.preventDefault(); }
 });
@@ -3433,7 +3715,7 @@ $('startBtn').onclick = () => {
   advise('start');
 };
 window.__ready = true;
-window.__game = { animals: () => animals, migrationTick, terra, treeG, tiles, fbHold: () => fbHold, shieldAt, applyTerra, pushAlert, setTab, hc: () => hc, selectThing, sel: () => sel, pickBuilding, cancelAction, holdBeam, holdGlow, villages: () => villages, gods, spirit, cast, castFireball, update, owned, reachPoint, costOf, ctxAt, spiritLearn, time: () => time, camS, screenOf, surfPx,
+window.__game = { declareWar, soldiers: () => SOLDIERS, animals: () => animals, migrationTick, terra, treeG, tiles, fbHold: () => fbHold, shieldAt, applyTerra, pushAlert, setTab, hc: () => hc, selectThing, sel: () => sel, pickBuilding, cancelAction, holdBeam, holdGlow, villages: () => villages, gods, spirit, cast, castFireball, update, owned, reachPoint, costOf, ctxAt, spiritLearn, time: () => time, camS, screenOf, surfPx,
   tryPlace, canPlace, held: () => held, logs: () => logs, fireballs: () => fireballs, AU, select: id => select(id) };
 requestAnimationFrame(frame);
 </script>

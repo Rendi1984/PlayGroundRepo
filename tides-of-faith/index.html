@@ -94,6 +94,11 @@
   .slbl { position: absolute; transform: translate(-50%, -100%); background: rgba(8,10,16,.72); border: 1px solid rgba(255,210,120,.45); border-radius: 7px; padding: 2px 7px 4px; font-size: 11px; white-space: nowrap; text-align: center; }
   .slbl .pb { width: 96px; height: 6px; background: #333; border-radius: 3px; overflow: hidden; margin: 2px auto 0; }
   .slbl .pb i { display: block; height: 100%; background: linear-gradient(90deg, #c9862b, #ffd36b); }
+  #voicePanel { top: 62px; left: 50%; transform: translateX(-50%); width: 320px; font-size: 13px; display: none; z-index: 7; line-height: 1.5; }
+  #voicePanel > div, #voicePanel label { display: block; margin-top: 7px; }
+  #voicePanel select { width: 240px; background: #1c2233; color: #eee; border: 1px solid #456; border-radius: 6px; padding: 3px; }
+  #voicePanel button { padding: 2px 8px; }
+  #voicePanel .sub { color: #9ab; font-size: 12px; }
   #hoverName { position: absolute; pointer-events: none; font-size: 12px; background: rgba(8,10,16,.8); padding: 2px 7px; border-radius: 6px; transform: translate(14px, 10px); display: none; white-space: nowrap; }
   #dock { bottom: 12px; left: 50%; transform: translateX(-50%); padding: 6px 12px 8px; border-radius: 18px; background: linear-gradient(180deg, rgba(30,34,52,.88), rgba(10,12,20,.9)); }
   #tabs { display: flex; gap: 4px; justify-content: center; margin-bottom: 7px; }
@@ -147,7 +152,7 @@
   <span id="clock">☀</span>
   <button id="musBtn" title="Music (M)">🎵</button>
   <button id="sfxBtn" title="Sound (N)">🔊</button>
-  <button id="voiceBtn" title="Advisor voices (V)">🗣</button>
+  <button id="voiceBtn" title="Advisor voices — choose and test (V toggles)">🗣</button>
 </div>
 
 <div id="spirit" class="panel">
@@ -178,6 +183,7 @@
 <div id="pauseTag">⏸ Paused</div>
 <div id="info" class="panel"></div>
 <div id="hoverName"></div>
+<div id="voicePanel" class="panel"></div>
 
 <div id="overlay">
   <div class="box" id="ovBox">
@@ -191,6 +197,7 @@
       <li><b>Miracles:</b> Rain (it also makes forests grow), Bounty, Heal, <b>Fertility</b> (more babies) and <b>Joy</b> (a festival) inspire love. Fire, Lightning and Fireball inspire fear.</li>
       <li><b>⛰ Shape Land:</b> raise hills and mountains, dig ponds and lakes, flatten ground, grow forests.</li>
       <li><b>🔨 Build:</b> four house styles, granary, well, garden and shrine — and found <b>new settlements</b>. Villagers haul the wood and build it themselves.</li>
+      <li><b>Wildlife &amp; migration:</b> villagers hunt deer and boar for meat; people move to whichever god's village offers the better life.</li>
       <li><b>Happiness &amp; children:</b> happy, well-fed villages have children; children grow up; more people means more mana and wider influence.</li>
       <li><b>Ember, your Phoenix,</b> learns from what you do — and its form follows your soul: Benevolent Guardian, Awakening, or Harbinger of Destruction. Two advisors, <b>Aurel</b> and <b>Cinder</b>, whisper opposite counsel.</li>
       <li><b>Win:</b> the Tidewraith has no village left, or 70% of all villages believe in you. <b>Lose:</b> no village believes in you for 40 seconds.</li>
@@ -296,7 +303,7 @@ const fire = new Float32Array(MW * MH), burnVis = new Uint8Array(MW * MH);
 const treeG = new Float32Array(MW * MH), treeDrawn = new Float32Array(MW * MH);   // tree size per tile: saplings ~0.25, mature ~1, rain-fed up to 1.5
 const treeVis = i => clamp(treeG[i], 0.15, 1.5);
 const CW = MW + 1, CH = MH + 1, hc = new Float32Array(CW * CH);
-let homeV = null, villages = [], clouds = [], parts = [], bolts = [], rings = [], logs = [], fireballs = [], pendingMoves = [];
+let animals = [], homeV = null, villages = [], clouds = [], parts = [], bolts = [], rings = [], logs = [], fireballs = [], pendingMoves = [];
 const gods = { p: { mana: 60, morality: 0, rate: 0 }, r: { mana: 60, morality: -0.4, rate: 0 } };
 let selected = 'hand', time = 0, paused = false, started = false, ended = false, shake = 0, held = null, hover = null, aim = null, newNameIdx = 0;
 const mouse = { x: 0, y: 0, wx: 0, wy: 0, rdrag: false, mdrag: false, lx: 0, ly: 0, valid: false };
@@ -333,6 +340,7 @@ function generate() {
   buildHeights();
   villages = spots.map(([, , own, pop], k) => makeVillageAt(VNAMES[k], sites[k].tx * TILE + TILE / 2, sites[k].ty * TILE + TILE / 2, own, pop));
   homeV = villages[0];
+  spawnHerds(9);
 }
 function prepareSite(nx, ny) {
   const tx = Math.round(nx * MW), ty = Math.round(ny * MH);
@@ -544,6 +552,9 @@ function cast(g, id, x, y, power = 1, bySpirit = false) {
       for (const u of v.villagers) { const d = dist(u.x, u.y, x, y); if (d < 24 * power + 6) zapVillager(u, 150); else if (d < 55) zapVillager(u, 25); }
       for (const h of v.houses) if (dist(h.x, h.y, x, y) < 30) h.hp -= 100 * power;
     }
+    for (const a of animals) if (a.state !== 'dead' && dist(a.x, a.y, x, y) < 35) { a.hp = 0; a.state = 'dead'; a.dead = 0; }
+    {
+    }
     ignite(tIdx(x, y), 5);
     for (let k = 0; k < 40; k++) spawn(x, y, gy + 0.2, rand(-4, 4), rand(1, 5), rand(-4, 4), 0.7, 0xcfe0ff, rand(0.15, 0.3), true, -9);
     impress(g, x, y, 14 * power, false); S.thunder(x, y);
@@ -578,6 +589,7 @@ function explode(f) {
   if (groundPx(x, y) > 0) igniteArea(x, y, 2.6 * p);
   for (const v of villages) {
     for (const u of v.villagers) if (dist(u.x, u.y, x, y) < 38) { u.hp -= 75 * p; u.fear = 4; }
+    for (const a of animals) if (a.state !== 'dead' && dist(a.x, a.y, x, y) < 45) { a.hp = 0; a.state = 'dead'; a.dead = 0; }
     for (const h of v.houses) if (dist(h.x, h.y, x, y) < 55) h.hp -= (h.type === 'stone' ? 20 : 45) * p;
   }
   impress(f.g, x, y, 11 * p, false);
@@ -780,7 +792,12 @@ function updVillager(u, v, dt) {
     u.x += dx / d * 16 * dt; u.y += dy / d * 16 * dt; u.dir = Math.atan2(dx, dy);
     if (groundPx(u.x, u.y) > 0.05) { u.state = 'idle'; u.t = 0.6; }
   } else if (u.state === 'walk') {
-    const dx = u.tx - u.x, dy = u.ty - u.y, d = Math.hypot(dx, dy), s = (u.fear > 0 ? 55 : isChild(u) ? 34 : 28) * dt;
+    if (u.task === 'hunt') {   // chase the prey wherever it runs
+      const a = u.prey;
+      if (!a || a.taken || (a.state === 'dead' && a.hunter !== u) || dist(u.x, u.y, v.x, v.y) > 900) { if (a && a.hunter === u) a.hunter = null; u.task = null; u.prey = null; walkTo(u, ...ringPoint(v, 20, 70), 'home'); }
+      else { u.tx = a.x; u.ty = a.y; }
+    }
+    const dx = u.tx - u.x, dy = u.ty - u.y, d = Math.hypot(dx, dy), s = (u.task === 'hunt' && u.goal === 'work' ? 46 : u.fear > 0 ? 55 : isChild(u) ? 34 : 28) * dt;
     if (d <= s) { u.x = u.tx; u.y = u.ty; arrive(u, v); } else { u.x += dx / d * s; u.y += dy / d * s; u.dir = Math.atan2(dx, dy); }
   } else {
     u.t -= dt;
@@ -808,6 +825,11 @@ function chooseTask(u, v) {
   if (hungry && Math.random() < (starving ? 0.95 : 0.7)) {
     if (v.fields.length) { const f = pick(v.fields); u.task = 'food'; u.field = f; return walkTo(u, f.x + rand(-14, 14), f.y + rand(-10, 10), 'work'); }
     for (let k = 0; k < 12; k++) { const [x, y] = ringPoint(v, PLAZA, PLAZA + 90), t = tileAt(x, y); if (t === T.GRASS || t === T.BURNT) { u.task = 'food'; u.field = null; return walkTo(u, x, y, 'work'); } }
+  }
+  if (v.food < v.villagers.length * 4 && Math.random() < 0.22) {
+    let prey = null, pd = 520;
+    for (const a of animals) { if (a.state === 'dead' || a.hunter) continue; const d = dist(a.x, a.y, v.x, v.y); if (d < pd) { pd = d; prey = a; } }
+    if (prey) { prey.hunter = u; u.task = 'hunt'; u.prey = prey; return walkTo(u, prey.x, prey.y, 'work'); }
   }
   const gl = logs.find(l => l.state === 'ground' && time - (l.claimed || -99) > 25 && dist(l.x, l.y, v.x, v.y) < 300);
   if (gl && Math.random() < 0.5) { gl.claimed = time; u.task = 'log'; u.log = gl; return walkTo(u, gl.x, gl.y, 'work'); }
@@ -840,6 +862,7 @@ function arrive(u, v) {
   else {
     if (u.carry === 'food') v.food += 2.2 * (v.fert > 0 ? 2 : 1) * (1 + 0.25 * v.nGranary) * (u.foodMul || 1);
     else if (u.carry === 'wood') v.wood += u.woodAmt || 1.5;
+    else if (u.carry === 'meat') v.food += u.meatAmt || 10;
     u.carry = null; u.state = 'idle'; u.t = rand(0.3, 1.5);
   }
 }
@@ -862,6 +885,15 @@ function finishWork(u, v) {
       }
     }
     u.field = null;
+  } else if (u.task === 'hunt') {
+    const a = u.prey;
+    if (a && !a.taken && dist(a.x, a.y, u.x, u.y) < 22) {
+      if (a.state !== 'dead') { a.hp -= 45; S.chop(u.x, u.y); spawn(a.x, a.y, surfPx(a.x, a.y) + 0.3, rand(-.5, .5), rand(0.5, 1.2), rand(-.5, .5), 0.6, 0x8a1a1a, 0.15, false, -6); if (a.hp <= 0) { a.state = 'dead'; a.dead = 0; } }
+      if (a.state === 'dead') { a.taken = true; u.carry = 'meat'; u.meatAmt = ANIMAL[a.kind].meat * a.size; u.task = null; u.prey = null; if (v.owner === 'p' && Math.random() < 0.3) msg(`🏹 ${u.name} brought down a ${a.kind}`, 'good'); return walkTo(u, ...ringPoint(v, 20, 70), 'home'); }
+      u.state = 'work'; u.t = 0.9; return;   // keep striking
+    }
+    if (a && !a.taken && a.state !== 'dead') return walkTo(u, a.x, a.y, 'work');   // it got away — keep chasing
+    if (a && a.hunter === u) a.hunter = null; u.task = null; u.prey = null;
   } else if (u.task === 'log') {
     const lg = u.log;
     if (lg && lg.state === 'ground' && dist(lg.x, lg.y, u.x, u.y) < 30) { lg.state = 'done'; u.carry = 'wood'; u.woodAmt = 6; }
@@ -1104,6 +1136,8 @@ function activity(u) {
   if (u.state === 'pray') return 'Praying at the statue';
   if (u.state === 'dance') return 'Dancing at the festival';
   if (isChild(u)) return 'Playing';
+  if (u.task === 'hunt') return u.prey ? `Hunting a ${u.prey.kind}` : 'Hunting';
+  if (u.carry === 'meat') return 'Bringing meat home';
   if (u.state === 'work') return u.task === 'food' ? 'Farming the fields' : u.task === 'wood' ? 'Chopping wood' : u.task === 'build' ? 'Building' + (u.site ? ' a ' + BMY[u.site.type].name.toLowerCase() : '') : 'Working';
   if (u.state === 'walk') {
     if (u.carry) return `Carrying ${u.carry} home`;
@@ -1111,6 +1145,99 @@ function activity(u) {
     return u.goal === 'pray' ? 'Going to pray' : u.goal === 'dance' ? 'Joining the dance' : 'Walking home';
   }
   return 'Resting';
+}
+// ---------- migration: families leave for a village of another god when life there is clearly better
+let migT = 30;
+function lifeScore(v) {
+  const pop = v.villagers.length || 1;
+  return v.happy + clamp(v.food / pop, 0, 6) * 3 + (v.festival > 0 ? 8 : 0) - v.grief * 0.5 + (v.shield > 0 ? 4 : 0);
+}
+function migrationTick() {
+  for (const from of villages) {
+    if (from.villagers.length < 5 || from.grace > 0) continue;
+    const homeless = from.villagers.filter(u => !u.home && !isChild(u) && u.state !== 'dead').length;
+    let best = null, bestGain = 0;
+    for (const to of villages) {
+      if (to === from || !to.owner || to.owner === from.owner || to.cap - to.villagers.length < 2) continue;
+      if (dist(from.x, from.y, to.x, to.y) > 2400) continue;
+      const gain = lifeScore(to) - lifeScore(from) + homeless * 4;
+      if (gain > bestGain) { bestGain = gain; best = to; }
+    }
+    if (!best || bestGain < 20 || Math.random() > 0.4) continue;
+    const room = best.cap - best.villagers.length;
+    const movers = from.villagers.filter(u => !isChild(u) && (u.state === 'idle' || u.state === 'walk' || u.state === 'work')).slice(0, Math.min(room, Math.random() < 0.4 ? 2 : 1));
+    if (!movers.length) continue;
+    // a parent may take a child along
+    const kid = from.villagers.find(u => isChild(u) && u.state !== 'dead');
+    if (kid && room > movers.length && Math.random() < 0.5) movers.push(kid);
+    for (const u of movers) pendingMoves.push([u, from, best]);
+    const who = movers.length === 1 ? `${movers[0].name}` : `${movers.length} people`;
+    if (best.owner === 'p') pushAlert('mig-' + time, `👪 ${who} left ${from.name} to live in <b>${best.name}</b> — life is better with you!`, { good: true, ttl: 8000 });
+    else if (from.owner === 'p') pushAlert('mig-' + time, `🚶 ${who} left <b>${from.name}</b> for ${best.name} — they think life is better there`, { bad: true, ttl: 8000, action: '👁 Show', onAction: () => centerOnPx(from.x, from.y) });
+  }
+}
+// ---------- wildlife: herds of deer and boar roam; villagers hunt them for meat
+const ANIMAL = { deer: { speed: 22, flee: 75, hp: 60, meat: 10, col: 0x8a5a32 }, boar: { speed: 18, flee: 40, hp: 90, meat: 14, col: 0x3e3028 } };
+let herdSeq = 0;
+function wildSpot(minDist = 260) {
+  for (let k = 0; k < 200; k++) {
+    const x = rand(80, WW - 80), y = rand(80, WH - 80), t = tileAt(x, y);
+    if ((t === T.GRASS || t === T.FOREST) && groundPx(x, y) > 0.3 && !villages.some(v => dist(v.x, v.y, x, y) < minDist)) return { x, y };
+  }
+  return null;
+}
+function addAnimal(kind, x, y, herd, young) {
+  animals.push({ kind, x, y, dir: rand(0, 6.28), state: 'graze', t: rand(1, 5), tx: x, ty: y, hp: ANIMAL[kind].hp, phase: rand(0, 6), herd, stag: kind === 'deer' && Math.random() < 0.35, size: young ? 0.6 : rand(0.9, 1.1), dead: 0 });
+}
+function spawnHerds(n) {
+  for (let k = 0; k < n; k++) {
+    const sp = wildSpot(); if (!sp) continue;
+    const kind = Math.random() < 0.65 ? 'deer' : 'boar', herd = ++herdSeq, m = 2 + ((Math.random() * 3) | 0);
+    for (let q = 0; q < m; q++) addAnimal(kind, sp.x + rand(-30, 30), sp.y + rand(-30, 30), herd);
+  }
+}
+let breedT = 40;
+function updAnimals(dt) {
+  for (const a of animals) {
+    const A = ANIMAL[a.kind];
+    if (a.state === 'dead') { a.dead += dt; continue; }
+    if (a.size < 1) a.size = Math.min(1, a.size + dt / 90);
+    // flee from people who come close (hunters especially)
+    let threat = null, td = a.kind === 'deer' ? 95 : 45;
+    for (const v of villages) for (const u of v.villagers) { if (u.state === 'dead' || isChild(u)) continue; const d = dist(u.x, u.y, a.x, a.y); if (d < td) { td = d; threat = u; } }
+    if (threat && a.state !== 'flee' && (a.kind === 'deer' || threat.task === 'hunt')) {
+      const ang = Math.atan2(a.y - threat.y, a.x - threat.x) + rand(-0.5, 0.5);
+      a.tx = a.x + Math.cos(ang) * 140; a.ty = a.y + Math.sin(ang) * 140; a.state = 'flee'; a.t = 2.2;
+    }
+    if (a.state === 'graze') { a.t -= dt; if (a.t <= 0) {
+      const mates = animals.filter(b => b.herd === a.herd && b.state !== 'dead');
+      const cx = mates.reduce((s, b) => s + b.x, 0) / mates.length, cy = mates.reduce((s, b) => s + b.y, 0) / mates.length;
+      for (let k = 0; k < 8; k++) { const x = cx + rand(-110, 110), y = cy + rand(-110, 110); if (groundPx(x, y) > 0.25 && x > 20 && y > 20 && x < WW - 20 && y < WH - 20) { a.tx = x; a.ty = y; a.state = 'walk'; break; } }
+      a.t = rand(3, 7);
+    } }
+    if (a.state === 'walk' || a.state === 'flee') {
+      const sp = (a.state === 'flee' ? A.flee : A.speed) * dt, dx = a.tx - a.x, dy = a.ty - a.y, d = Math.hypot(dx, dy);
+      if (a.state === 'flee') a.t -= dt;
+      const nx = a.x + dx / (d || 1) * Math.min(sp, d), ny = a.y + dy / (d || 1) * Math.min(sp, d);
+      if (groundPx(nx, ny) > 0.1) { a.x = nx; a.y = ny; } else a.t = 0;
+      if (d > 0.5) a.dir = Math.atan2(dx, dy);
+      if (d <= sp || (a.state === 'flee' && a.t <= 0)) { a.state = 'graze'; a.t = rand(2, 6); }
+    }
+    const i = tIdx(a.x, a.y); if (i >= 0 && fire[i] > 0) a.hp -= 40 * dt;
+    if (a.hp <= 0) { a.state = 'dead'; a.dead = 0; }
+  }
+  // carcasses nobody collects disappear; herds slowly grow back
+  animals = animals.filter(a => !(a.state === 'dead' && a.dead > 40) && !a.taken);
+  breedT -= dt;
+  if (breedT <= 0) {
+    breedT = 35;
+    const live = animals.filter(a => a.state !== 'dead');
+    if (live.length < 70) {
+      const herds = [...new Set(live.map(a => a.herd))].filter(h => live.filter(a => a.herd === h).length >= 2);
+      if (herds.length) { const h = pick(herds), mum = live.find(a => a.herd === h); addAnimal(mum.kind, mum.x + rand(-10, 10), mum.y + rand(-10, 10), h, true); }
+      if (live.length < 12) spawnHerds(1);
+    }
+  }
 }
 function adviseOnce(v, ev, gap) { if ((v.warnT[ev] || -1e9) + gap < time) { v.warnT[ev] = time; advise(ev, { v: v.name }); } }
 
@@ -1192,7 +1319,8 @@ function update(dt) {
   for (const lg of logs) if (lg.state === 'fly') { lg.spin += dt * 6; if (flyStep(lg, dt)) { lg.state = 'done'; landLog(lg); } }
   for (const lg of logs) if (lg.state === 'ground') lg.h = surfPx(lg.x, lg.y);
   logs = logs.filter(l => l.state !== 'done');
-  updFire(dt); updClouds(dt); updFireballs(dt); updSpirit(dt);
+  updFire(dt); updClouds(dt); updFireballs(dt); updSpirit(dt); updAnimals(dt);
+  migT -= dt; if (migT <= 0) { migT = 9; migrationTick(); }
   rivalT -= dt; if (rivalT <= 0) { rivalT = rand(3, 5); rivalThink(); }
   for (const g of ['p', 'r']) gods[g].mana = Math.min(manaCap(g), gods[g].mana);
   let nearFire = null;
@@ -1491,13 +1619,30 @@ let advT = 0;
 const VOICE = { on: true, ok: 'speechSynthesis' in window, speaking: false, good: null, evil: null, failed: 0 };
 const GOOD_PREF = [/aria/i, /jenny/i, /libby/i, /sonia/i, /samantha/i, /google uk english female/i, /google us english/i, /zira/i, /female/i, /karen/i, /moira/i, /tessa/i];
 const EVIL_PREF = [/guy/i, /ryan/i, /davis/i, /google uk english male/i, /daniel/i, /david/i, /alex/i, /fred/i, /male/i, /arthur/i];
+// rank installed voices: neural/"natural" voices sound far more human than the classic robotic ones
+function voiceQuality(v) {
+  let q = 0;
+  if (/natural|neural/i.test(v.name)) q += 12;
+  if (/premium|enhanced/i.test(v.name)) q += 9;
+  if (/online/i.test(v.name)) q += 5;
+  if (/google/i.test(v.name)) q += 4;
+  if (/^en-(gb|us)/i.test(v.lang)) q += 1;
+  if (/espeak|compact|novelty|whisper|zarvox|bells|bubbles|trinoids|bad news|boing/i.test(v.name)) q -= 20;
+  return q;
+}
 function pickVoices() {
   if (!VOICE.ok) return;
-  const all = speechSynthesis.getVoices().filter(v => /^en(-|_|$)/i.test(v.lang));
-  if (!all.length) return;
-  const find = prefs => { for (const re of prefs) { const v = all.find(x => re.test(x.name)); if (v) return v; } return null; };
-  VOICE.good = find(GOOD_PREF) || all[0];
-  VOICE.evil = find(EVIL_PREF) || all.find(v => v !== VOICE.good) || all[0];
+  VOICE.all = speechSynthesis.getVoices().filter(v => /^en(-|_|$)/i.test(v.lang)).sort((a, b) => voiceQuality(b) - voiceQuality(a));
+  const all = VOICE.all; if (!all.length) return;
+  const best = (prefs, avoid) => {
+    let pick = null, score = -1e9;
+    for (const v of all) { if (v === avoid) continue; const k = prefs.findIndex(re => re.test(v.name)); const sc = voiceQuality(v) * 2 + (k >= 0 ? 12 - k * 0.5 : 0); if (sc > score) { score = sc; pick = v; } }
+    return pick;
+  };
+  const saved = (() => { try { return JSON.parse(localStorage.getItem('tof-voices') || '{}'); } catch (e) { return {}; } })();
+  VOICE.good = all.find(v => v.name === saved.good) || best(GOOD_PREF);
+  VOICE.evil = all.find(v => v.name === saved.evil) || best(EVIL_PREF, VOICE.good) || VOICE.good;
+  fillVoicePanel();
 }
 if (VOICE.ok) { pickVoices(); speechSynthesis.onvoiceschanged = pickVoices; }
 function duck(on) {
@@ -1509,16 +1654,25 @@ function duck(on) {
 // returns false when real speech is unavailable, so the caller can fall back to the babble
 function speakAdvisor(good, text, done) {
   if (!VOICE.ok || !VOICE.on || VOICE.failed > 2 || !(good ? VOICE.good : VOICE.evil)) return false;
-  const u = new SpeechSynthesisUtterance(text);
-  u.voice = good ? VOICE.good : VOICE.evil; u.lang = u.voice.lang;
-  u.pitch = good ? 1.25 : 0.55; u.rate = good ? 1.02 : 0.88; u.volume = 1;
-  let finished = false;
+  const voice = good ? VOICE.good : VOICE.evil, same = VOICE.good === VOICE.evil;
+  // keep pitch close to natural; only push it apart when both advisors must share one voice
+  const pitch = good ? (same ? 1.12 : 1.03) : (same ? 0.8 : 0.9), rate = good ? 0.98 : 0.9;
+  // speak sentence by sentence, so there are natural breaths between them
+  const parts = text.replace(/—/g, ',').match(/[^.!?…]+[.!?…]*/g) || [text];
+  let finished = false, idx = 0;
   const end = () => { if (finished) return; finished = true; VOICE.speaking = false; duck(false); done(); };
-  u.onend = end;
-  u.onerror = e => { if (e.error !== 'interrupted' && e.error !== 'canceled') VOICE.failed++; end(); };
-  setTimeout(end, 2500 + text.length * 90);   // safety net: some browsers never fire onend
+  const next = () => {
+    if (finished) return;
+    if (idx >= parts.length) return end();
+    const u = new SpeechSynthesisUtterance(parts[idx++].trim());
+    u.voice = voice; u.lang = voice.lang; u.pitch = pitch; u.rate = rate; u.volume = 1;
+    u.onend = () => setTimeout(next, 260);
+    u.onerror = e => { if (e.error !== 'interrupted' && e.error !== 'canceled') VOICE.failed++; end(); };
+    speechSynthesis.speak(u);
+  };
+  setTimeout(end, 3000 + text.length * 95);   // safety net: some browsers never fire onend
   VOICE.speaking = true; duck(true);
-  speechSynthesis.cancel(); speechSynthesis.speak(u);
+  speechSynthesis.cancel(); next();
   return true;
 }
 function updAdvisors(dt) {
@@ -1536,8 +1690,24 @@ function updAdvisors(dt) {
   S.advisor(good, 4 + Math.min(8, (text.length / 8) | 0));
   advT = 3.2;
 }
+function fillVoicePanel() {
+  const el = document.getElementById('voicePanel'); if (!el || !VOICE.all) return;
+  const opts = sel => VOICE.all.map(v => `<option ${v === sel ? 'selected' : ''}>${v.name}</option>`).join('');
+  const natural = VOICE.all.some(v => voiceQuality(v) >= 9);
+  el.innerHTML = `<b>🗣 Advisor voices</b>
+    <label><input type="checkbox" id="vOn" ${VOICE.on ? 'checked' : ''}> Voices on <kbd>V</kbd></label>
+    <div>Aurel (light)<br><select id="vGood">${opts(VOICE.good)}</select> <button data-test="g">▶</button></div>
+    <div>Cinder (shadow)<br><select id="vEvil">${opts(VOICE.evil)}</select> <button data-test="e">▶</button></div>
+    <div class="sub">${natural ? 'Voices marked “Natural”, “Neural” or “Enhanced” sound the most human.' : 'No high-quality voice found on this device. Microsoft Edge (its “Natural” voices) or Chrome sound much more human; on a Mac, download an “Enhanced” voice in System Settings → Accessibility → Spoken Content.'}</div>`;
+  const save = () => { try { localStorage.setItem('tof-voices', JSON.stringify({ good: VOICE.good.name, evil: VOICE.evil.name })); } catch (e) {} };
+  el.querySelector('#vGood').onchange = e => { VOICE.good = VOICE.all.find(v => v.name === e.target.value); save(); };
+  el.querySelector('#vEvil').onchange = e => { VOICE.evil = VOICE.all.find(v => v.name === e.target.value); save(); };
+  el.querySelector('#vOn').onchange = () => toggleVoice();
+  el.querySelectorAll('[data-test]').forEach(b => b.onclick = () => { const good = b.dataset.test === 'g'; VOICE.failed = 0; speakAdvisor(good, good ? ADVICE.start[0] : ADVICE.start[1], () => {}); });
+}
 function toggleVoice() {
   VOICE.on = !VOICE.on; document.getElementById('voiceBtn').classList.toggle('off', !VOICE.on);
+  const cb = document.getElementById('vOn'); if (cb) cb.checked = VOICE.on;
   if (!VOICE.on && VOICE.ok) { speechSynthesis.cancel(); VOICE.speaking = false; duck(false); }
 }
 // portraits: the player's own art from assets/, falling back to small original SVG portraits
@@ -2215,7 +2385,7 @@ for (const [k, n] of [['torso', 1], ['head', 1], ['hair', 1], ['arm', 2], ['leg'
   const m = new THREE.InstancedMesh(VG[k], new THREE.MeshStandardMaterial({ roughness: 0.75 }), VCAP * n);
   m.castShadow = true; m.frustumCulled = false; m.count = 0; scene.add(m); vMesh[k] = m;
 }
-const VC = { p: new THREE.Color(0xc89038), r: new THREE.Color(0x7a4ac8), n: new THREE.Color(0xa89878), hurt: new THREE.Color(0xd03a3a), wood: new THREE.Color(0x7a4a20), food: new THREE.Color(0xe8c040) };
+const VC = { p: new THREE.Color(0xc89038), r: new THREE.Color(0x7a4ac8), n: new THREE.Color(0xa89878), hurt: new THREE.Color(0xd03a3a), wood: new THREE.Color(0x7a4a20), food: new THREE.Color(0xe8c040), meat: new THREE.Color(0x8a2a22) };
 const _B = new THREE.Matrix4(), _H = new THREE.Matrix4(), _U = new THREE.Matrix4(), _Mx = new THREE.Matrix4(), _T = new THREE.Matrix4(), _R = new THREE.Matrix4();
 const _col = new THREE.Color(), _col2 = new THREE.Color(), CHAR_COL = new THREE.Color(0x15110e);
 function local(parent, tx, ty, tz, rx, rz, out) {
@@ -2298,6 +2468,53 @@ function syncVillagers() {
     m.count = n * mult; m.instanceMatrix.needsUpdate = true; if (m.instanceColor) m.instanceColor.needsUpdate = true;
   }
 }
+const AN_CAP = 120, aMesh = {};
+{
+  const body = new THREE.SphereGeometry(0.2, 12, 9); body.scale(0.75, 0.7, 1.35);
+  const head = new THREE.SphereGeometry(0.09, 10, 8); head.scale(0.8, 0.85, 1.35);
+  const neck = new THREE.CylinderGeometry(0.05, 0.07, 0.22, 7); neck.translate(0, 0.11, 0);
+  const leg = new THREE.CylinderGeometry(0.026, 0.02, 0.34, 6); leg.translate(0, -0.17, 0);
+  const antler = new THREE.ConeGeometry(0.018, 0.2, 5); antler.translate(0, 0.1, 0);
+  const tusk = new THREE.ConeGeometry(0.012, 0.07, 5); tusk.rotateX(-1.2);
+  for (const [k, g, n] of [['body', body, 1], ['neck', neck, 1], ['head', head, 1], ['leg', leg, 4], ['antler', antler, 2], ['tusk', tusk, 2]]) {
+    const m = new THREE.InstancedMesh(g, new THREE.MeshStandardMaterial({ roughness: 0.85 }), AN_CAP * n);
+    m.castShadow = true; m.frustumCulled = false; m.count = 0; scene.add(m); aMesh[k] = m;
+  }
+}
+const _ac = new THREE.Color(), _ac2 = new THREE.Color();
+function syncAnimals() {
+  let n = 0;
+  for (const a of animals) {
+    if (n >= AN_CAP) break;
+    const boar = a.kind === 'boar', moving = a.state === 'walk' || a.state === 'flee', dead = a.state === 'dead';
+    const f = time * (a.state === 'flee' ? 16 : 8) + a.phase, sw = moving ? Math.sin(f) * (a.state === 'flee' ? 0.8 : 0.45) : 0;
+    const sc = a.size * (boar ? 0.95 : 1.05);
+    _v3.set(WX(a.x), surfPx(a.x, a.y) + (dead ? 0.02 : moving ? Math.abs(Math.cos(f)) * 0.03 : 0), WZ(a.y));
+    _e.set(0, a.dir, dead ? 1.45 : 0, 'YXZ'); _q.setFromEuler(_e); _s.set(sc, sc, sc); _B.compose(_v3, _q, _s);
+    const legY = boar ? 0.26 : 0.34, bodyY = legY + (boar ? 0.1 : 0.06);
+    aMesh.body.setMatrixAt(n, local(_B, 0, bodyY, 0, 0, 0, _Mx));
+    const graze = a.state === 'graze' && !dead && Math.sin(time * 0.7 + a.phase) > -0.2;
+    const neckRx = boar ? 1.2 : graze ? 1.9 : 0.35;
+    local(_B, 0, bodyY + 0.05, boar ? 0.22 : 0.2, neckRx, 0, _H);
+    aMesh.neck.setMatrixAt(n, _H);
+    const hm = local(_H, 0, boar ? 0.12 : 0.22, 0, 0, 0, _U); _R.makeRotationX(boar ? -1.2 : graze ? -1.4 : -0.3); hm.multiply(_R); _T.makeTranslation(0, 0, 0.06); hm.multiply(_T);
+    aMesh.head.setMatrixAt(n, hm);
+    for (let k = 0; k < 2; k++) {
+      aMesh.antler.setMatrixAt(2 * n + k, !boar && a.stag && a.size > 0.8 ? local(_U, k ? 0.04 : -0.04, 0.05, -0.04, -0.3, k ? -0.5 : 0.5, _Mx) : ZERO);
+      aMesh.tusk.setMatrixAt(2 * n + k, boar ? local(_U, k ? 0.04 : -0.04, -0.03, 0.1, 0, 0, _Mx) : ZERO);
+    }
+    const legs = [[-0.08, 0.15, sw], [0.08, 0.15, -sw], [-0.08, -0.15, -sw], [0.08, -0.15, sw]];
+    legs.forEach(([lx, lz, r], k) => { const m = local(_B, lx, legY, lz, dead ? 0.2 : r, 0, _Mx); if (boar) { _sm.makeScale(1, 0.8, 1); m.multiply(_sm); } aMesh.leg.setMatrixAt(4 * n + k, m); });
+    _ac.set(ANIMAL[a.kind].col).offsetHSL(0, 0, (a.phase / 6 - 0.5) * 0.06); if (dead) _ac.multiplyScalar(0.7);
+    _ac2.copy(_ac).multiplyScalar(0.75);
+    aMesh.body.setColorAt(n, _ac); aMesh.neck.setColorAt(n, _ac); aMesh.head.setColorAt(n, _ac2);
+    for (let k = 0; k < 4; k++) aMesh.leg.setColorAt(4 * n + k, _ac2);
+    for (let k = 0; k < 2; k++) { aMesh.antler.setColorAt(2 * n + k, ANTLER_COL); aMesh.tusk.setColorAt(2 * n + k, TUSK_COL); }
+    n++;
+  }
+  for (const k in aMesh) { const m = aMesh[k], mult = k === 'leg' ? 4 : (k === 'antler' || k === 'tusk') ? 2 : 1; m.count = n * mult; m.instanceMatrix.needsUpdate = true; if (m.instanceColor) m.instanceColor.needsUpdate = true; }
+}
+const ANTLER_COL = new THREE.Color(0xd8c8a8), TUSK_COL = new THREE.Color(0xf0eadc);
 const logMesh = new THREE.InstancedMesh((() => { const g = new THREE.CylinderGeometry(0.09, 0.1, 1.0, 7); g.rotateZ(Math.PI / 2); return g; })(), M(0x6a4428), 40);
 logMesh.castShadow = true; logMesh.frustumCulled = false; logMesh.count = 0; scene.add(logMesh);
 
@@ -2491,6 +2708,7 @@ function syncWorld(dt) {
     for (const [k, c] of v.plaza.userData.banners.entries()) { c.material = bannerMats[v.owner || 'n']; c.rotation.y = Math.sin(time * 2 + k) * 0.35; }
   }
   syncVillagers();
+  syncAnimals();
   let ln = 0;
   for (const lg of logs) {
     if (ln >= 40) break;
@@ -2506,7 +2724,7 @@ function syncWorld(dt) {
   fbHeldMesh.visible = !!fbHold;
   if (fbHold) { fbHeldMesh.position.set(WX(fbHold.x), fbHold.h, WZ(fbHold.y)); fbHeldMesh.scale.setScalar(1.1 + Math.sin(time * 20) * 0.08); fbHeldLight.position.copy(fbHeldMesh.position); }
   fbHeldLight.intensity = fbHold ? 30 : 0;
-  waterOrb.visible = terra.water > 0.05 && mouse.valid;
+  waterOrb.visible = terra.water > 0.05 && mouse.valid && selected === 'water';
   if (waterOrb.visible) { waterOrb.position.set(WX(mouse.wx), surfPx(mouse.wx, mouse.wy) + 2.6, WZ(mouse.wy)); waterOrb.scale.setScalar(0.4 + Math.sqrt(terra.water / WATER_CAP) * 1.2); waterOrb.rotation.y += dt; }
   fireballs.forEach((f, k) => {
     if (!f.mesh) { f.mesh = new THREE.Mesh(fbGeo, fbMat); scene.add(f.mesh); }
@@ -2767,6 +2985,11 @@ function pickBuilding(px, py) {
 function cancelAction() {
   if (held) { const o = held.u || held.o; o.vx = o.vy = 0; o.vh = 0; o.state = 'fly'; o.spin = 0; held = null; S.ui(); return; }
   if (fbHold) { fbHold = null; S.ui(); msg('Fireball cancelled', 'info'); return; }
+  if (selected === 'water' && terra.water > 0.05) {
+    terra.water = 0; terra.active = false;
+    if (mouse.valid) { S.splash(mouse.wx, mouse.wy); for (let k = 0; k < 30; k++) spawn(mouse.wx + rand(-20, 20), mouse.wy + rand(-20, 20), surfPx(mouse.wx, mouse.wy) + 2.5, rand(-1, 1), -rand(2, 5), rand(-1, 1), 0.7, 0xbfe4ff, rand(0.12, 0.22), false, -8); }
+    msg('You let the water go', 'info'); return;
+  }
   if (selected !== 'hand') { select('hand'); return; }
   if (sel) selectThing(null);
 }
@@ -3044,7 +3267,8 @@ $('praise').onclick = () => praise(true);
 $('scold').onclick = () => praise(false);
 function toggleMusic() { AU.musicOn = !AU.musicOn; $('musBtn').classList.toggle('off', !AU.musicOn); if (AU.ctx) AU.music.gain.setTargetAtTime(AU.musicOn ? 0.38 : 0, AU.ctx.currentTime, 0.3); }
 function toggleSfx() { if (AU.sfxOn && VOICE.ok) { speechSynthesis.cancel(); VOICE.speaking = false; } AU.sfxOn = !AU.sfxOn; $('sfxBtn').classList.toggle('off', !AU.sfxOn); if (AU.ctx) { AU.amb.gain.setTargetAtTime(AU.sfxOn ? 0.55 : 0, AU.ctx.currentTime, 0.3); AU.voice.gain.setTargetAtTime(AU.sfxOn ? 0.9 : 0, AU.ctx.currentTime, 0.3); } }
-$('voiceBtn').onclick = toggleVoice;
+$('voiceBtn').onclick = () => { const el = $('voicePanel'); el.style.display = el.style.display === 'block' ? 'none' : 'block'; if (VOICE.ok) pickVoices(); if (!VOICE.ok || !VOICE.all || !VOICE.all.length) el.innerHTML = '<b>🗣 Advisor voices</b><div class="sub">This browser has no speech voices, so the advisors use their sound-effect babble.</div>'; };
+$('voicePanel').addEventListener('mousedown', e => e.stopPropagation());
 $('musBtn').onclick = toggleMusic; $('sfxBtn').onclick = toggleSfx;
 
 // ============================================================ input
@@ -3209,7 +3433,7 @@ $('startBtn').onclick = () => {
   advise('start');
 };
 window.__ready = true;
-window.__game = { terra, treeG, tiles, fbHold: () => fbHold, shieldAt, applyTerra, pushAlert, setTab, hc: () => hc, selectThing, sel: () => sel, pickBuilding, cancelAction, holdBeam, holdGlow, villages: () => villages, gods, spirit, cast, castFireball, update, owned, reachPoint, costOf, ctxAt, spiritLearn, time: () => time, camS, screenOf, surfPx,
+window.__game = { animals: () => animals, migrationTick, terra, treeG, tiles, fbHold: () => fbHold, shieldAt, applyTerra, pushAlert, setTab, hc: () => hc, selectThing, sel: () => sel, pickBuilding, cancelAction, holdBeam, holdGlow, villages: () => villages, gods, spirit, cast, castFireball, update, owned, reachPoint, costOf, ctxAt, spiritLearn, time: () => time, camS, screenOf, surfPx,
   tryPlace, canPlace, held: () => held, logs: () => logs, fireballs: () => fireballs, AU, select: id => select(id) };
 requestAnimationFrame(frame);
 </script>

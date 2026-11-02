@@ -25,6 +25,9 @@ An original 3D god game in a single HTML file. Open `index.html` in a modern bro
 - Alerts for homeless villagers, hunger, lost villages and incoming fireballs.
 - Lightning electrocutes; the dead collapse before fading. Advisors speak with the browser's speech voices (V to toggle).
 - Textured stone, plaster, timber, thatch and slate buildings.
+- Wildlife: deer and boar herds that graze, flee and breed; hungry villages send hunters for meat.
+- Migration: people move to another god's village when life there is clearly better (in both directions).
+- Advisor voices prefer the most natural speech voices on the device; pick and test them with the 🗣 button.
 
 ## Your artwork
 Drop these files into `assets/` and the game uses them automatically (otherwise built-in placeholder portraits are drawn):

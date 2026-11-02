@@ -58,7 +58,7 @@
   .lbl .bb i { display: block; height: 100%; }
   .lbl .res { display: block; font-size: 11px; color: #cbd; margin-top: 2px; }
   .lbl .h { color: #ff8a5a; font-weight: bold; display: none; }
-  #cursorIcon { position: absolute; pointer-events: none; font-size: 22px; transform: translate(-50%, -150%); text-shadow: 0 0 8px #000; }
+  #cursorIcon { position: absolute; pointer-events: none; font-size: 22px; transform: translate(-35%, -45%); text-shadow: 0 0 8px #000; }
   #advisors { position: absolute; right: 10px; top: 300px; display: flex; flex-direction: column; gap: 12px; pointer-events: none; align-items: flex-end; }
   .adv { display: flex; flex-direction: row-reverse; align-items: center; gap: 8px; }
   .adv .face { width: 80px; height: 80px; flex: none; border-radius: 50%; background-color: #555; background-repeat: no-repeat; border: 3px solid; transition: transform .25s, opacity .4s, width .5s, height .5s; opacity: 0.75; }
@@ -95,6 +95,35 @@
   .slbl .pb { width: 96px; height: 6px; background: #333; border-radius: 3px; overflow: hidden; margin: 2px auto 0; }
   .slbl .pb i { display: block; height: 100%; background: linear-gradient(90deg, #c9862b, #ffd36b); }
   #hoverName { position: absolute; pointer-events: none; font-size: 12px; background: rgba(8,10,16,.8); padding: 2px 7px; border-radius: 6px; transform: translate(14px, 10px); display: none; white-space: nowrap; }
+  #dock { bottom: 12px; left: 50%; transform: translateX(-50%); padding: 6px 12px 8px; border-radius: 18px; background: linear-gradient(180deg, rgba(30,34,52,.88), rgba(10,12,20,.9)); }
+  #tabs { display: flex; gap: 4px; justify-content: center; margin-bottom: 7px; }
+  #tabs button { background: transparent; border: 1px solid transparent; border-radius: 20px; padding: 3px 14px; font-size: 12px; color: #bcd; }
+  #tabs button:hover { background: rgba(255,255,255,.08); }
+  #tabs button.on { background: rgba(255,211,107,.16); border-color: rgba(255,211,107,.55); color: #ffe7a8; }
+  #tabs kbd { font-size: 10px; margin-left: 4px; }
+  #tray { display: flex; gap: 9px; align-items: flex-end; justify-content: center; min-height: 74px; }
+  .tile { position: relative; width: 62px; text-align: center; cursor: pointer; font-size: 11px; color: #dde; transition: transform .15s; }
+  .tile:hover { transform: translateY(-4px); }
+  .tile .orb { width: 48px; height: 48px; margin: 0 auto 3px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 25px;
+    background: radial-gradient(circle at 34% 28%, color-mix(in srgb, var(--c) 55%, white), var(--c) 52%, color-mix(in srgb, var(--c) 45%, black));
+    box-shadow: inset 0 -5px 9px rgba(0,0,0,.35), 0 4px 10px rgba(0,0,0,.5); border: 2px solid rgba(255,255,255,.22); transition: box-shadow .2s, filter .2s; }
+  .tile.sel .orb { border-color: #fff; box-shadow: 0 0 0 3px var(--c), 0 0 22px var(--c), inset 0 -5px 9px rgba(0,0,0,.35); }
+  .tile.off .orb { filter: grayscale(.85) brightness(.55); }
+  .tile .cost { position: absolute; top: -5px; right: -2px; background: rgba(10,12,20,.92); border: 1px solid rgba(255,255,255,.22); border-radius: 9px; padding: 0 5px; font-size: 10px; }
+  .tile .key { position: absolute; top: -5px; left: 0; background: rgba(10,12,20,.92); border-radius: 5px; padding: 0 4px; font-size: 10px; color: #9ab; }
+  .tile .nm { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tray-sep { width: 1px; align-self: stretch; background: rgba(255,255,255,.15); margin: 0 2px; }
+  .tray-grp { font-size: 10px; color: #9ab; writing-mode: vertical-rl; transform: rotate(180deg); align-self: center; letter-spacing: 1px; }
+  #tip { position: absolute; pointer-events: none; display: none; width: 230px; background: rgba(12,14,22,.96); border: 1px solid rgba(255,255,255,.2); border-radius: 10px; padding: 8px 11px; font-size: 12px; line-height: 1.4; transform: translate(-50%, -100%); z-index: 6; box-shadow: 0 8px 22px rgba(0,0,0,.5); }
+  #tip b { color: #ffd36b; font-size: 13px; }
+  #tip .tc { color: #9fd8ff; margin-top: 3px; }
+  #alerts { position: absolute; top: 62px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; gap: 6px; align-items: center; z-index: 4; }
+  .alert { display: flex; gap: 10px; align-items: center; background: linear-gradient(90deg, rgba(74,44,12,.96), rgba(30,22,14,.96)); border: 1px solid #ffb04a; border-left: 5px solid #ffb04a; border-radius: 10px; padding: 7px 12px; font-size: 13px; box-shadow: 0 6px 20px rgba(0,0,0,.5); animation: pop .35s ease-out; white-space: nowrap; }
+  .alert.bad { border-color: #ff6a6a; background: linear-gradient(90deg, rgba(84,18,18,.96), rgba(30,14,14,.96)); }
+  .alert.good { border-color: #7ae08a; background: linear-gradient(90deg, rgba(18,60,26,.96), rgba(14,28,18,.96)); }
+  .alert button { font-size: 12px; padding: 3px 10px; background: #b8862b; border-color: #e0b050; }
+  .alert .x { cursor: pointer; opacity: .7; }
+  @keyframes pop { from { transform: translateY(-14px) scale(.92); opacity: 0; } to { transform: none; opacity: 1; } }
   kbd { background: #2a2f40; border-radius: 4px; padding: 0 5px; font-size: 12px; border: 1px solid #445; }
 </style>
 <script type="importmap">
@@ -118,6 +147,7 @@
   <span id="clock">☀</span>
   <button id="musBtn" title="Music (M)">🎵</button>
   <button id="sfxBtn" title="Sound (N)">🔊</button>
+  <button id="voiceBtn" title="Advisor voices (V)">🗣</button>
 </div>
 
 <div id="spirit" class="panel">
@@ -141,8 +171,9 @@
 </div>
 
 <div id="log" class="panel"></div>
-<div id="builds" class="panel"></div>
-<div id="tools" class="panel"></div>
+<div id="dock" class="panel"><div id="tabs"></div><div id="tray"></div></div>
+<div id="tip"></div>
+<div id="alerts"></div>
 <div id="miniWrap" class="panel"><canvas id="mini" width="200" height="138"></canvas></div>
 <div id="pauseTag">⏸ Paused</div>
 <div id="info" class="panel"></div>
@@ -152,21 +183,22 @@
   <div class="box" id="ovBox">
     <h1>Tides of Faith</h1>
     <h2>An original god game</h2>
-    <p>You are a young god on an island of seven villages. A rival god, <b style="color:#c9a0ff">the Tidewraith</b>, competes for the hearts of mortals.
+    <p>You are a young god with a single village on a wide island. Far across it, a rival god, <b style="color:#c9a0ff">the Tidewraith</b>, has a village of its own — and both of you will spread by founding new settlements.
        Every village that believes in you prays — and <b>the more believers you have, the more mana flows to you</b>. Miracles can only be cast inside your influence.</p>
     <ul>
       <li><b>✋ Hand of Light:</b> lift villagers and trees and throw them. Set a villager down gently in another village and they move in; a hard throw hurts — and frightens.</li>
-      <li><b>☄️ Fireball:</b> press inside your influence, drag to any target and release — strike villages far beyond your borders.</li>
-      <li><b>Miracles:</b> Rain, Bounty, Heal, <b>Fertility</b> (more babies) and <b>Joy</b> (a festival) inspire love. Fire, Lightning and Fireball inspire fear.</li>
+      <li><b>☄️ Fireball:</b> press inside your influence to conjure it, then <b>fling it with the mouse</b> — a hard throw reaches villages far beyond your borders. <b>🛡 Shield</b> protects a village from fire, lightning and fireballs.</li>
+      <li><b>Miracles:</b> Rain (it also makes forests grow), Bounty, Heal, <b>Fertility</b> (more babies) and <b>Joy</b> (a festival) inspire love. Fire, Lightning and Fireball inspire fear.</li>
+      <li><b>⛰ Shape Land:</b> raise hills and mountains, dig ponds and lakes, flatten ground, grow forests.</li>
       <li><b>🔨 Build:</b> four house styles, granary, well, garden and shrine — and found <b>new settlements</b>. Villagers haul the wood and build it themselves.</li>
       <li><b>Happiness &amp; children:</b> happy, well-fed villages have children; children grow up; more people means more mana and wider influence.</li>
       <li><b>Ember, your Phoenix,</b> learns from what you do — and its form follows your soul: Benevolent Guardian, Awakening, or Harbinger of Destruction. Two advisors, <b>Aurel</b> and <b>Cinder</b>, whisper opposite counsel.</li>
-      <li><b>Win:</b> 5 of the 7 villages believe in you (or the Tidewraith has none left). <b>Lose:</b> no village believes in you for 40 seconds.</li>
+      <li><b>Win:</b> the Tidewraith has no village left, or 70% of all villages believe in you. <b>Lose:</b> no village believes in you for 40 seconds.</li>
     </ul>
     <p style="color:#9ab;font-size:13px">
-      <kbd>G</kbd> Hand · <kbd>1</kbd>–<kbd>8</kbd> miracles · Left click: act · Right drag / <kbd>WASD</kbd>: pan ·
+      <kbd>G</kbd> Hand · <kbd>1</kbd>–<kbd>9</kbd> miracles · <kbd>B</kbd> build · <kbd>T</kbd> shape land · Left click: act · Right drag / <kbd>WASD</kbd>: pan ·
       Middle drag / <kbd>Q</kbd><kbd>E</kbd> rotate · <kbd>R</kbd><kbd>F</kbd> tilt · Wheel: zoom · Click a villager or building for details · <b>Right click</b>: let go / cancel · <kbd>Z</kbd>/<kbd>X</kbd> praise/scold ·
-      <kbd>M</kbd>/<kbd>N</kbd> music/sound · <kbd>Space</kbd> pause · <kbd>Esc</kbd> back to Hand
+      <kbd>M</kbd>/<kbd>N</kbd>/<kbd>V</kbd> music/sound/voices · <kbd>Space</kbd> pause · <kbd>Esc</kbd> back to Hand
     </p>
     <button class="go" id="startBtn" disabled>Loading world…</button>
   </div>
@@ -195,9 +227,10 @@ const MIRACLES = [
   { id: 'heal',     name: 'Heal',      icon: '✨', cost: 20, good: true,  radius: 90,  desc: 'Heals villagers' },
   { id: 'fert',     name: 'Fertility', icon: '💞', cost: 40, good: true,  radius: 140, desc: 'The village has children much faster' },
   { id: 'joy',      name: 'Joy',       icon: '🎉', cost: 30, good: true,  radius: 140, desc: 'A festival — happier villagers pray more' },
+  { id: 'shield',   name: 'Shield',    icon: '🛡', cost: 45, good: true,  radius: 140, desc: 'A dome of light over a village: blocks fire, lightning and fireballs for 45 seconds' },
   { id: 'fire',     name: 'Fire',      icon: '🔥', cost: 30, good: false, radius: 45,  desc: 'Sets the land ablaze — sows fear' },
   { id: 'bolt',     name: 'Lightning', icon: '⚡', cost: 45, good: false, radius: 30,  desc: 'A devastating strike — deep fear' },
-  { id: 'fireball', name: 'Fireball',  icon: '☄️', cost: 35, good: false, radius: 50,  desc: 'Press inside your influence, drag to a target anywhere, release' },
+  { id: 'fireball', name: 'Fireball',  icon: '☄️', cost: 35, good: false, radius: 50,  desc: 'Press inside your influence to conjure it, then fling it with the mouse — the harder you throw, the farther it flies' },
 ];
 const MBY = Object.fromEntries(MIRACLES.map(m => [m.id, m]));
 const BUILDS = [
@@ -207,11 +240,23 @@ const BUILDS = [
   { id: 'manor',   cat: 'house', name: 'Townhouse', icon: '🏘', wood: 26, cap: 7, desc: 'Two-storey timber house — houses 7' },
   { id: 'granary', cat: 'fac',   name: 'Granary',   icon: '🧺', wood: 20, desc: 'Stores more food, better harvests' },
   { id: 'well',    cat: 'fac',   name: 'Well',      icon: '⛲', wood: 14, desc: 'Happiness, and douses nearby fires' },
+  { id: 'field',   cat: 'fac',   name: 'Field',     icon: '🌽', wood: 6,  desc: 'A tilled crop field: farmers here bring double food, and ripe crops give a big harvest. Rain speeds the crops.' },
   { id: 'garden',  cat: 'fac',   name: 'Garden',    icon: '🌷', wood: 10, desc: 'A flower garden — happiness' },
   { id: 'shrine',  cat: 'fac',   name: 'Shrine',    icon: '🗿', wood: 30, desc: 'Widens your influence and boosts prayer' },
   { id: 'settle',  cat: 'fac',   name: 'Settlement',icon: '🏛', wood: 40, desc: 'Found a new village; villagers move there' },
 ];
 const BMY = Object.fromEntries(BUILDS.map(b => [b.id, b]));
+const TERRA = [
+  { id: 'raise',   name: 'Raise Land',  icon: '⛰', cost: 4,  hold: true, desc: 'Hold the mouse to lift the earth into hills and mountains.' },
+  { id: 'lower',   name: 'Dig a Pond',  icon: '💧', cost: 4,  hold: true, desc: 'Hold to sink the ground — dig below sea level and water fills it.' },
+  { id: 'flatten', name: 'Flatten',     icon: '🟫', cost: 3,  hold: true, desc: 'Hold to smooth the land level, ready for building.' },
+  { id: 'water',   name: 'Move Water',  icon: '🪣', cost: 2,  hold: true, desc: 'Hold over a lake or the sea to scoop up water (the spot drains to land). Then hold over land to dig a hole and pour the water in — a new pond.' },
+  { id: 'plant',   name: 'Plant Trees', icon: '🌱', cost: 6,  hold: false, desc: 'Click to plant saplings. They grow over time — rain makes them grow much faster and spread.' },
+];
+const TMY = Object.fromEntries(TERRA.map(t => [t.id, t]));
+const TCOL = { shield: '#e0c050', plant: '#3aa850', hand: '#5fc8f0', rain: '#3a98f0', bounty: '#e0a828', heal: '#2fc890', fert: '#f0609e', joy: '#9a68f0', fire: '#f0601e', bolt: '#6aa8f0', fireball: '#d8301a',
+  hut: '#b98a52', cottage: '#c4904e', stone: '#8e8e9a', manor: '#9a6a40', granary: '#c9a040', well: '#3a88c0', garden: '#d86898', field: '#a8a830', water: '#2a8ad8', shrine: '#7a8270', settle: '#c8a850',
+  raise: '#9a7a52', lower: '#2a90d0', flatten: '#b89a68' };
 const CTXS = {
   fire: 'a fire', hungry: 'your hungry village', wounded: 'your wounded', own: 'your thriving village',
   neutral: 'a neutral village', rival: 'a rival village', wild: 'the wilds',
@@ -248,6 +293,8 @@ function segDist(px, py, ax, ay, bx, by) {
 // ============================================================ world state
 const tiles = new Uint8Array(MW * MH), elev = new Float32Array(MW * MH), shade = new Float32Array(MW * MH);
 const fire = new Float32Array(MW * MH), burnVis = new Uint8Array(MW * MH);
+const treeG = new Float32Array(MW * MH), treeDrawn = new Float32Array(MW * MH);   // tree size per tile: saplings ~0.25, mature ~1, rain-fed up to 1.5
+const treeVis = i => clamp(treeG[i], 0.15, 1.5);
 const CW = MW + 1, CH = MH + 1, hc = new Float32Array(CW * CH);
 let homeV = null, villages = [], clouds = [], parts = [], bolts = [], rings = [], logs = [], fireballs = [], pendingMoves = [];
 const gods = { p: { mana: 60, morality: 0, rate: 0 }, r: { mana: 60, morality: -0.4, rate: 0 } };
@@ -281,8 +328,7 @@ function generate() {
     else if (nf(x, y) > 0.58) t = T.FOREST;
     tiles[i] = t;
   }
-  const spots = [[0.22, 0.7, 'p', 10], [0.78, 0.3, 'r', 9], [0.5, 0.5, null, 6], [0.24, 0.26, null, 5],
-                 [0.76, 0.74, null, 5], [0.52, 0.17, null, 6], [0.48, 0.84, null, 6]];
+  const spots = [[0.2, 0.7, 'p', 10], [0.8, 0.3, 'r', 10]];
   const sites = spots.map(([nx, ny]) => prepareSite(nx, ny));
   buildHeights();
   villages = spots.map(([, , own, pop], k) => makeVillageAt(VNAMES[k], sites[k].tx * TILE + TILE / 2, sites[k].ty * TILE + TILE / 2, own, pop));
@@ -329,12 +375,13 @@ function makeVillageAt(name, x, y, owner, pop) {
   return v;
 }
 function recount(v) {
-  v.cap = 0; v.nGranary = v.nShrine = v.nWell = v.nGarden = 0;
+  v.cap = 0; v.nGranary = v.nShrine = v.nWell = v.nGarden = 0; v.fields = [];
   for (const h of v.houses) {
     const b = BMY[h.type];
     if (b.cat === 'house') v.cap += b.cap;
     else if (h.type === 'granary') v.nGranary++; else if (h.type === 'shrine') v.nShrine++;
     else if (h.type === 'well') v.nWell++; else if (h.type === 'garden') v.nGarden++;
+    else if (h.type === 'field') { v.fields.push(h); if (h.g === undefined) h.g = 0.3; }
   }
   layoutDirty = true;
 }
@@ -474,11 +521,18 @@ function cast(g, id, x, y, power = 1, bySpirit = false) {
       v.festival = 28 * power; v.happy = Math.min(100, v.happy + 25 * power); impress(g, v.x, v.y, 9 * power, true); S.festival(v.x, v.y);
       if (g === 'p' && !bySpirit) advise('festival', { v: v.name });
     }
+  } else if (id === 'shield') {
+    const v = nearestVillage(x, y, 180); if (!v) { if (g === 'p' && !bySpirit) msg('The shield needs a village nearby', 'info'); return false; }
+    v.shield = 45 * power; v.shieldHit = 1; impress(g, v.x, v.y, 4 * power, true); S.shieldUp(v.x, v.y);
   } else if (id === 'heal') {
     let n = 0;
-    for (const v of villages) for (const u of v.villagers) if (dist(u.x, u.y, x, y) < m.radius) { if (u.hp < 100) n++; u.hp = 100; }
+    for (const v of villages) for (const u of v.villagers) if (u.state !== 'dead' && dist(u.x, u.y, x, y) < m.radius) { if (u.hp < 100) n++; u.hp = 100; u.char = 0; }
     impress(g, x, y, (4 + n * 0.7) * power, true); S.heal(x, y);
     for (let k = 0; k < 80; k++) { const a = rand(0, 7), r = rand(0, m.radius), px = x + Math.cos(a) * r, py = y + Math.sin(a) * r; spawn(px, py, surfPx(px, py) + 0.1, 0, rand(1, 2.6), 0, 1.6, 0xa8ffd8, rand(0.15, 0.3), true); }
+  } else if ((id === 'fire' || id === 'bolt') && shieldAt(x, y)) {
+    shieldBlock(shieldAt(x, y), x, y);
+    if (g === 'r') msg(`${RIVAL_C}'s ${m.name} broke against the shield of ${shieldAt(x, y).name}`, 'good');
+    return true;
   } else if (id === 'fire') {
     igniteArea(x, y, 2.3 * power + 0.2);
     for (const v of villages) for (const h of v.houses) if (dist(h.x, h.y, x, y) < m.radius) h.hp -= (h.type === 'stone' ? 12 : 30) * power;
@@ -487,7 +541,7 @@ function cast(g, id, x, y, power = 1, bySpirit = false) {
   } else if (id === 'bolt') {
     bolts.push({ x, y, life: 0.55, mesh: null }); shake = 0.4;
     for (const v of villages) {
-      for (const u of v.villagers) if (dist(u.x, u.y, x, y) < 24 * power + 6) u.hp -= 150;
+      for (const u of v.villagers) { const d = dist(u.x, u.y, x, y); if (d < 24 * power + 6) zapVillager(u, 150); else if (d < 55) zapVillager(u, 25); }
       for (const h of v.houses) if (dist(h.x, h.y, x, y) < 30) h.hp -= 100 * power;
     }
     ignite(tIdx(x, y), 5);
@@ -507,8 +561,18 @@ function castFireball(g, ax, ay, bx, by, power = 1, bySpirit = false) {
   afterCast(g, MBY.fireball, bx, by, bySpirit);
   return true;
 }
+const SHIELD_R = PLAZA + 115;
+const shieldAt = (x, y) => villages.find(v => v.shield > 0 && dist(v.x, v.y, x, y) < SHIELD_R);
+function shieldBlock(v, x, y) {
+  v.shieldHit = 1; S.shieldHit(x, y);
+  const gy = surfPx(x, y);
+  for (let k = 0; k < 60; k++) spawn(x, y, gy + rand(1, 4), rand(-4, 4), rand(-1, 4), rand(-4, 4), 0.8, pick([0xfff0b0, 0xffd36b, 0xffffff]), rand(0.2, 0.4), true, -6);
+}
 function explode(f) {
   const x = f.bx, y = f.by, gy = surfPx(x, y), p = f.power;
+  const sh = shieldAt(x, y);
+  if (sh) { shieldBlock(sh, x, y); S.boom(x, y); if (f.g === 'r') msg(`A fireball broke against the shield of ${sh.name}!`, 'good'); return; }
+  if (f.ballistic && f.g === 'p') { const c = ctxAt(x, y); if (c !== 'wild') spiritLearn(c, 'fireball', 1); afterCast('p', MBY.fireball, x, y, false); }
   S.boom(x, y);
   if (dist(WX(x), WZ(y), camS.tx, camS.tz) < camS.dist * 1.2) shake = Math.max(shake, 0.35);
   if (groundPx(x, y) > 0) igniteArea(x, y, 2.6 * p);
@@ -643,6 +707,19 @@ function updSpirit(dt) {
 let rivalT = 6;
 function rivalThink() {
   const R = gods.r, mine = owned('r'); if (!mine.length) return;
+  // the Tidewraith grows its realm by founding settlements of its own
+  if (time > 60 && time - (R.lastSettle ?? -999) > 75 && mine.length < 6) {
+    const base = mine.filter(v => v.villagers.length >= 9 && !v.sites.some(s => s.type === 'settle')).sort((a, b) => b.villagers.length - a.villagers.length)[0];
+    if (base) for (let k = 0; k < 40; k++) {
+      const a = rand(0, 7), r = rand(360, 520), x = base.x + Math.cos(a) * r, y = base.y + Math.sin(a) * r;
+      if (x < 80 || y < 80 || x > WW - 80 || y > WH - 80 || dist(base.x, base.y, x, y) > infR(base) + 60) continue;
+      if (villages.some(o => dist(o.x, o.y, x, y) < 330) || !freeSpot(x, y, 40)) continue;
+      base.sites.push({ type: 'settle', x, y, v: base, need: BMY.settle.wood, progress: 0, mesh: null });
+      R.lastSettle = time; layoutDirty = true;
+      msg(`${RIVAL_C}'s followers have begun building a new settlement`, 'bad');
+      break;
+    }
+  }
   const can = id => R.mana >= costOf('r', id);
   const doCast = (id, x, y) => { if (cast('r', id, x, y)) R.mana -= costOf('r', id); };
   for (const v of mine) { const f = fireNear(v.x, v.y, 110); if (f && can('rain')) return doCast('rain', f.x, f.y); }
@@ -656,10 +733,10 @@ function rivalThink() {
     return doCast(Math.random() < 0.5 ? 'bolt' : 'fire', tgt.x, tgt.y);
   }
   // long-range: hurl a fireball at a player village beyond its borders
-  if (!pv && Math.random() < aggression * 0.6 && R.mana > 80 && time > 150) {
+  if (!pv && Math.random() < aggression * 0.6 && R.mana > 80 && time > 180 && time - (R.lastFb ?? -99) > 45) {
     for (const v of owned('p')) {
       const lp = reachPoint('r', v, FB_RANGE - 80);
-      if (lp && !lp.inside) { R.mana -= costOf('r', 'fireball'); castFireball('r', lp.x, lp.y, v.x + rand(-40, 40), v.y + rand(-40, 40)); msg(`${RIVAL_C} hurls a fireball at ${v.name}!`, 'bad'); advise('rivalAttack', { v: v.name }); return; }
+      if (lp && !lp.inside) { R.mana -= costOf('r', 'fireball'); R.lastFb = time; castFireball('r', lp.x, lp.y, v.x + rand(-40, 40), v.y + rand(-40, 40)); pushAlert('fb-' + time, `☄️ ${RIVAL_C} hurls a fireball at <b>${v.name}</b>! A 🛡 Shield would stop it.`, { bad: true, ttl: 6000 }); return; }
     }
   }
   if (!targets.length) return;
@@ -673,7 +750,27 @@ function rivalThink() {
 }
 
 // ============================================================ villagers
+function zapVillager(u, dmg) {
+  if (u.state === 'dead' || u.state === 'zap') return;
+  if (held && held.u === u) held = null;
+  u.state = 'zap'; u.zap = 1.3 + Math.random() * 0.5; u.zapDmg = dmg; u.fear = 6; u.h = surfPx(u.x, u.y);
+  S.zap(u.x, u.y, u.zap); if (dmg > 50) S.scream(u.x, u.y, u.look.female);
+}
 function updVillager(u, v, dt) {
+  if (u.state === 'dead') { u.deadT -= dt; if (Math.random() < 2 * dt && u.char > 0) spawn(u.x, u.y, surfPx(u.x, u.y) + 0.2, rand(-.1, .1), rand(0.5, 1), rand(-.1, .1), 2, 0x3a3634, 0.3, false); return; }
+  if (u.state === 'zap') {
+    // convulsing in the current: sparks crawl over the body
+    u.zap -= dt;
+    const gy = surfPx(u.x, u.y);
+    for (let q = 0; q < 5; q++) spawn(u.x + rand(-7, 7), u.y + rand(-7, 7), gy + rand(0.05, 0.75), rand(-3, 3), rand(-1, 3), rand(-3, 3), rand(0.06, 0.14), pick([0xcfe8ff, 0x8ac8ff, 0xffffff]), rand(0.06, 0.16), true);
+    if (u.zap <= 0) {
+      u.hp -= u.zapDmg; u.char = 10;
+      for (let q = 0; q < 12; q++) spawn(u.x, u.y, gy + 0.4, rand(-.4, .4), rand(0.6, 1.4), rand(-.4, .4), 2, 0x3a3634, rand(0.25, 0.45), false);
+      u.state = 'idle'; u.t = 2.5; u.zap = 0;   // if the shock killed them, the death check right after takes over
+    }
+    return;
+  }
+  if (u.char > 0) u.char -= dt * 0.5;
   if (u.state === 'held') return;
   if (u.state === 'fly') { u.spin += dt * 9; if (flyStep(u, dt)) landVillager(u, v); return; }
   u.age += dt;
@@ -709,8 +806,11 @@ function chooseTask(u, v) {
   if (!starving && v.festival > 0 && Math.random() < (hungry ? 0.2 : 0.55)) return walkTo(u, ...ringPoint(v, 45, 90), 'dance');
   if (v.owner && Math.random() < (starving ? 0.03 : hungry ? 0.1 : 0.22)) return walkTo(u, ...ringPoint(v, 42, 88), 'pray');
   if (hungry && Math.random() < (starving ? 0.95 : 0.7)) {
-    for (let k = 0; k < 12; k++) { const [x, y] = ringPoint(v, PLAZA, PLAZA + 90), t = tileAt(x, y); if (t === T.GRASS || t === T.BURNT) { u.task = 'food'; return walkTo(u, x, y, 'work'); } }
+    if (v.fields.length) { const f = pick(v.fields); u.task = 'food'; u.field = f; return walkTo(u, f.x + rand(-14, 14), f.y + rand(-10, 10), 'work'); }
+    for (let k = 0; k < 12; k++) { const [x, y] = ringPoint(v, PLAZA, PLAZA + 90), t = tileAt(x, y); if (t === T.GRASS || t === T.BURNT) { u.task = 'food'; u.field = null; return walkTo(u, x, y, 'work'); } }
   }
+  const gl = logs.find(l => l.state === 'ground' && time - (l.claimed || -99) > 25 && dist(l.x, l.y, v.x, v.y) < 300);
+  if (gl && Math.random() < 0.5) { gl.claimed = time; u.task = 'log'; u.log = gl; return walkTo(u, gl.x, gl.y, 'work'); }
   const site = v.sites.find(s => s.progress < s.need);
   if (site && v.wood >= 2 && Math.random() < 0.5) {
     v.wood -= 2; u.carry = 'wood'; u.task = 'build'; u.site = site;
@@ -723,22 +823,23 @@ function chooseTask(u, v) {
       if (i >= 0 && tiles[i] === T.FOREST && fire[i] <= 0) { u.task = 'wood'; return walkTo(u, Math.floor(x / TILE) * TILE + 10, Math.floor(y / TILE) * TILE + 10, 'work'); }
     }
   }
+  if (v.fields.length && Math.random() < 0.75) { const f = pick(v.fields); u.task = 'food'; u.field = f; return walkTo(u, f.x + rand(-14, 14), f.y + rand(-10, 10), 'work'); }
   for (let k = 0; k < 12; k++) {
     const [x, y] = ringPoint(v, PLAZA, PLAZA + 90), t = tileAt(x, y);
-    if (t === T.GRASS || t === T.BURNT) { u.task = 'food'; return walkTo(u, x, y, 'work'); }
+    if (t === T.GRASS || t === T.BURNT) { u.task = 'food'; u.field = null; return walkTo(u, x, y, 'work'); }
   }
   u.task = null; walkTo(u, ...ringPoint(v, 20, 80), 'home');
 }
 function arrive(u, v) {
   if (u.goal === 'work') {
-    u.state = 'work'; u.t = u.task === 'build' ? 3 : rand(2, 4); u.hitT = rand(0.2, 0.6);
+    u.state = 'work'; u.t = u.task === 'build' ? 3 : u.task === 'log' ? 1 : rand(2, 4); u.hitT = rand(0.2, 0.6);
     if (u.task === 'build' && u.site) u.dir = Math.atan2(u.site.x - u.x, u.site.y - u.y);
   } else if (u.goal === 'pray') { u.state = 'pray'; u.t = rand(5, 9); u.dir = Math.atan2(v.x - u.x, v.y - u.y); }
   else if (u.goal === 'dance') { u.state = 'dance'; u.t = rand(4, 7); }
   else if (u.goal === 'play') { u.state = 'idle'; u.t = rand(0.2, 1.5); }
   else {
-    if (u.carry === 'food') v.food += 2.2 * (v.fert > 0 ? 2 : 1) * (1 + 0.25 * v.nGranary);
-    else if (u.carry === 'wood') v.wood += 1.5;
+    if (u.carry === 'food') v.food += 2.2 * (v.fert > 0 ? 2 : 1) * (1 + 0.25 * v.nGranary) * (u.foodMul || 1);
+    else if (u.carry === 'wood') v.wood += u.woodAmt || 1.5;
     u.carry = null; u.state = 'idle'; u.t = rand(0.3, 1.5);
   }
 }
@@ -748,8 +849,24 @@ function finishWork(u, v) {
     const s = u.site;
     if (s && v.sites.includes(s)) { s.progress += 2; u.carry = null; if (s.progress >= s.need) completeSite(s); }
     u.site = null;
-  } else if (u.task === 'wood') { if (i >= 0 && tiles[i] === T.FOREST) { u.carry = 'wood'; if (Math.random() < 0.18) setTile(i, T.GRASS); } }
-  else if (u.task === 'food') u.carry = 'food';
+  } else if (u.task === 'wood') { if (i >= 0 && tiles[i] === T.FOREST) { u.carry = 'wood'; u.woodAmt = 0.8 + treeG[i]; treeG[i] -= 0.22; if (treeG[i] < 0.2) setTile(i, T.GRASS); else growTree(i, 0); } }
+  else if (u.task === 'food') {
+    u.carry = 'food'; u.foodMul = 1;
+    const f = u.field;
+    if (f && v.houses.includes(f)) {
+      u.foodMul = 2;
+      if (f.g >= 1) {   // the crop is ripe: harvest time
+        v.food += 18; f.g = 0.1; S.bounty(f.x, f.y);
+        for (let k = 0; k < 30; k++) spawn(f.x + rand(-18, 18), f.y + rand(-12, 12), surfPx(f.x, f.y) + 0.3, rand(-.4, .4), rand(1, 2.2), rand(-.4, .4), 1.4, pick([0xe8c040, 0xf0d870, 0xc8a030]), rand(0.15, 0.3), true);
+        if (v.owner === 'p') msg(`🌽 Harvest in ${v.name}: +18 food`, 'good');
+      }
+    }
+    u.field = null;
+  } else if (u.task === 'log') {
+    const lg = u.log;
+    if (lg && lg.state === 'ground' && dist(lg.x, lg.y, u.x, u.y) < 30) { lg.state = 'done'; u.carry = 'wood'; u.woodAmt = 6; }
+    u.log = null;
+  }
   walkTo(u, ...ringPoint(v, 20, 70), 'home');
 }
 
@@ -790,7 +907,8 @@ function landLog(lg) {
   for (const v of villages) for (const s of v.sites) { const d = dist(s.x, s.y, lg.x, lg.y); if (d < bd && s.progress < s.need) { bd = d; best = s; } }
   if (best) { best.progress += 6; S.hammer(lg.x, lg.y); if (best.progress >= best.need) completeSite(best); return; }
   const v = nearestVillage(lg.x, lg.y, 170);
-  if (v) { v.wood += 6; if (v.owner === 'p') msg(`+6 wood for ${v.name}`, 'good'); }
+  if (v) { v.wood += 6; if (v.owner === 'p') msg(`+6 wood added to the woodpile of ${v.name}`, 'good'); return; }
+  lg.state = 'ground'; lg.spin = 0; lg.h = surfPx(lg.x, lg.y);   // stays where it fell; villagers will fetch it
 }
 
 // ---------- building sites
@@ -855,14 +973,21 @@ function updVillage(v, dt) {
   v.homeT = (v.homeT || 0) - dt; if (v.homeT <= 0) { v.homeT = 1; assignHomes(v); }
   for (let k = v.villagers.length - 1; k >= 0; k--) {
     const u = v.villagers[k];
-    if (u.hp <= 0) {
-      v.villagers.splice(k, 1); v.grief = Math.min(60, v.grief + 8);
-      if (held && held.u === u) held = null;
-      for (let q = 0; q < 10; q++) spawn(u.x, u.y, surfPx(u.x, u.y) + 0.3, rand(-.5, .5), rand(0.5, 1.5), rand(-.5, .5), 1.2, 0x9a9a9a, 0.25, false);
+    if (u.hp <= 0 && u.state !== 'zap') {
+      if (u.state !== 'dead') {
+        u.state = 'dead'; u.deadT = 4; u.h = surfPx(u.x, u.y); v.grief = Math.min(60, v.grief + 8);
+        const ti = tIdx(u.x, u.y); if (ti >= 0 && fire[ti] > 0) u.char = 10;
+        if (held && held.u === u) held = null;
+        S.ouch(u.x, u.y, u.look.female);
+      } else if (u.deadT <= 0) {
+        v.villagers.splice(k, 1);
+        for (let q = 0; q < 10; q++) spawn(u.x, u.y, surfPx(u.x, u.y) + 0.3, rand(-.5, .5), rand(0.5, 1.5), rand(-.5, .5), 1.2, 0x9a9a9a, 0.25, false);
+      }
     }
   }
   v.food = clamp(v.food - eaters * 0.06 * dt, 0, 60 + pop * 8 + 80 * v.nGranary);
-  for (const k of ['fert', 'flash', 'boost', 'festival', 'grace']) if (v[k] > 0) v[k] -= dt * (k === 'flash' ? 2 : 1);
+  for (const f of v.fields) f.g = Math.min(1, f.g + dt / 70 * (v.fert > 0 ? 2.5 : 1));
+  for (const k of ['fert', 'flash', 'boost', 'festival', 'grace', 'shield', 'shieldHit']) if (v[k] > 0) v[k] -= dt * (k === 'flash' ? 2 : 1);
   v.grief = Math.max(0, v.grief - dt * 0.8);
   const crowded = pop >= v.cap;
   let target = 52 + (v.food > pop * 2 ? 14 : v.food <= 0 ? -35 : -8) + (crowded ? -10 : 4)
@@ -912,14 +1037,23 @@ function updVillage(v, dt) {
   }
   if (v.owner && v.belief[v.owner] < 35) v.owner = null;
   if (prev !== v.owner) {
-    if (v.owner === 'p') { msg(`${v.name} now believes in you! ✦`, 'good'); S.convert(); advise('converted', { v: v.name }); }
-    else if (prev === 'p') { msg(v.owner === 'r' ? `${v.name} now worships ${RIVAL}` : `${v.name} has lost its faith`, 'bad'); S.lost(); advise('lost', { v: v.name }); }
+    if (v.owner === 'p') { msg(`${v.name} now believes in you! ✦`, 'good'); S.convert(); advise('converted', { v: v.name }); pushAlert('conv-' + v.name, `✦ <b>${v.name}</b> now believes in you!`, { good: true, ttl: 7000 }); }
+    else if (prev === 'p') { pushAlert('lost-' + v.name, `💔 <b>${v.name}</b> has turned away from you`, { bad: true, action: '👁 Show', onAction: () => centerOnPx(v.x, v.y) }); msg(v.owner === 'r' ? `${v.name} now worships ${RIVAL}` : `${v.name} has lost its faith`, 'bad'); S.lost(); advise('lost', { v: v.name }); }
     else if (v.owner === 'r') msg(`${v.name} now worships ${RIVAL}`, 'bad');
     miniDirty = true; influenceDirty = true;
   }
   for (const u of v.villagers) if (u.state === 'pray' && Math.random() < 0.9 * dt) spawn(u.x, u.y, surfPx(u.x, u.y) + 0.6, rand(-.1, .1), rand(1.2, 2), rand(-.1, .1), 2.2, COLORS[v.owner || 'n'], 0.2, true);
   if (v.festival > 0 && Math.random() < 6 * dt) spawn(v.x + rand(-80, 80), v.y + rand(-80, 80), surfPx(v.x, v.y) + 1, rand(-.2, .2), rand(0.8, 1.6), rand(-.2, .2), 4, pick([0xff6a5a, 0xffd36b, 0x7affc0, 0x8ab8ff, 0xff8ae0]), 0.22, true);
   if (v.owner === 'p' && started) {
+    const homeless = v.villagers.filter(u => !u.home && !isChild(u)).length;
+    if (homeless >= 2 && (v.warnT.homeless || -1e9) + 60 < time) {
+      v.warnT.homeless = time;
+      pushAlert('home-' + v.name, `🏚 <b>${homeless}</b> people in ${v.name} have no home`, { action: '🏠 Build a home', onAction: () => { select('cottage'); centerOnPx(v.x, v.y); } });
+    }
+    if (v.food < pop * 1.2 && pop > 0 && (v.warnT.foodA || -1e9) + 45 < time) {
+      v.warnT.foodA = time;
+      pushAlert('food-' + v.name, `🌾 ${v.name} is running out of food`, { bad: true, action: '🌾 Cast Bounty', onAction: () => { select('bounty'); centerOnPx(v.x, v.y); } });
+    }
     if (v.food < pop * 1.2 && pop > 0) adviseOnce(v, 'hungry', 40);
     else if (crowded && v.cap > 0 && pop > 4) adviseOnce(v, 'crowded', 70);
     else if (v.happy < 28 && pop > 0) adviseOnce(v, 'unhappy', 60);
@@ -992,10 +1126,11 @@ function updFire(dt) {
       if (burning < 350) for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
         if (!inMap(x + dx, y + dy)) continue;
         const j = (y + dy) * MW + x + dx, t = tiles[j];
-        if (fire[j] <= 0 && ((t === T.FOREST && Math.random() < 0.16) || (t === T.GRASS && Math.random() < 0.035))) { fire[j] = t === T.FOREST ? 7 : 3; burning++; }
+        if (fire[j] <= 0 && !(villages.some(v => v.shield > 0) && shieldAt((x + dx) * TILE + 10, (y + dy) * TILE + 10)) && ((t === T.FOREST && Math.random() < 0.16) || (t === T.GRASS && Math.random() < 0.035))) { fire[j] = t === T.FOREST ? 7 : 3; burning++; }
       }
       if (fire[i] <= 0) { fire[i] = 0; setTile(i, T.BURNT); }
     } else if (tiles[i] === T.BURNT && Math.random() < 0.0012) setTile(i, T.GRASS);
+    else if (tiles[i] === T.FOREST && treeG[i] < 1) growTree(i, 0.004 * st);
     const b = fire[i] > 0 && tiles[i] === T.FOREST ? 1 : 0;
     if (b !== burnVis[i]) { burnVis[i] = b; treeBurn(i, b); }
   }
@@ -1009,7 +1144,10 @@ function updClouds(dt) {
       const i = ty * MW + tx;
       fire[i] = 0;
       if (tiles[i] === T.BURNT && Math.random() < 0.4 * dt) setTile(i, T.GRASS);
-      else if (tiles[i] === T.GRASS && Math.random() < 0.006 * dt && elev[i] > 0.56 && !villages.some(v => dist(v.x, v.y, tx * TILE, ty * TILE) < 190)) setTile(i, T.FOREST);
+      else if (tiles[i] === T.FOREST) growTree(i, 0.3 * dt);
+      else if (tiles[i] === T.GRASS && Math.random() < 0.09 * dt && groundPx(tx * TILE + 10, ty * TILE + 10) > 0.3
+               && [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([a, b]) => inMap(tx + a, ty + b) && tiles[(ty + b) * MW + tx + a] === T.FOREST)
+               && !villages.some(v => dist(v.x, v.y, tx * TILE, ty * TILE) < PLAZA + 70 || v.houses.some(h => dist(h.x, h.y, tx * TILE + 10, ty * TILE + 10) < 26))) setTile(i, T.FOREST);
     }
     for (const v of villages) if (dist(v.x, v.y, c.x, c.y) < c.r + 80) v.fert = 25;
     if (c.t > 0.6) {
@@ -1021,6 +1159,14 @@ function updClouds(dt) {
 }
 function updFireballs(dt) {
   for (const f of fireballs) {
+    if (f.ballistic) {
+      f.x += f.vx * dt; f.y += f.vy * dt; f.h += f.vh * dt; f.vh -= 18 * dt;
+      for (let q = 0; q < 3; q++) spawn(f.x + rand(-4, 4), f.y + rand(-4, 4), f.h + rand(-0.2, 0.2), rand(-.5, .5), rand(-.2, .6), rand(-.5, .5), rand(0.3, 0.6), pick([0xff7a1a, 0xffc04a, 0xff4a1a]), rand(0.35, 0.6), true);
+      if (Math.random() < 0.5) spawn(f.x, f.y, f.h, 0, 0.4, 0, 1.4, 0x2a2420, 0.6, false);
+      const out = f.x < 0 || f.y < 0 || f.x > WW || f.y > WH;
+      if (out || f.h <= surfPx(f.x, f.y)) { f.bx = clamp(f.x, 0, WW); f.by = clamp(f.y, 0, WH); f.done = true; if (!out) explode(f); }
+      continue;
+    }
     f.t += dt;
     const k = Math.min(1, f.t / f.T);
     f.x = f.ax + (f.bx - f.ax) * k; f.y = f.ay + (f.by - f.ay) * k;
@@ -1044,6 +1190,7 @@ function update(dt) {
   }
   pendingMoves = [];
   for (const lg of logs) if (lg.state === 'fly') { lg.spin += dt * 6; if (flyStep(lg, dt)) { lg.state = 'done'; landLog(lg); } }
+  for (const lg of logs) if (lg.state === 'ground') lg.h = surfPx(lg.x, lg.y);
   logs = logs.filter(l => l.state !== 'done');
   updFire(dt); updClouds(dt); updFireballs(dt); updSpirit(dt);
   rivalT -= dt; if (rivalT <= 0) { rivalT = rand(3, 5); rivalThink(); }
@@ -1174,6 +1321,11 @@ const S = {
     tone('sine', 950, t, 0.06, envG(t, 0.002, 0.3, 0.06, o)); noiseSrc(t, 0.04, filt('bandpass', 2800, 1, envG(t, 0.002, 0.25, 0.03, o))); },
   chop(px, py) { const o = sfxOut(px, py, 0.45); if (!o) return; const t = AU.ctx.currentTime;
     tone('triangle', 420, t, 0.09, envG(t, 0.002, 0.35, 0.08, o), 300); noiseSrc(t, 0.05, filt('bandpass', 1400, 1, envG(t, 0.002, 0.3, 0.05, o))); },
+  zap(px, py, dur) { const o = sfxOut(px, py, 0.8); if (!o) return; const t = AU.ctx.currentTime;
+    const g = envG(t, 0.01, 0.35, dur, o), am = AU.ctx.createGain(); am.gain.value = 0.5; am.connect(g);
+    const lfo = AU.ctx.createOscillator(); lfo.frequency.value = 28; const lg = AU.ctx.createGain(); lg.gain.value = 0.5; lfo.connect(lg); lg.connect(am.gain); lfo.start(t); lfo.stop(t + dur + 0.1);
+    tone('sawtooth', 58, t, dur, filt('bandpass', 1400, 1.5, am)); tone('square', 117, t, dur, filt('bandpass', 2600, 2, am));
+    for (let k = 0; k < 18; k++) S._click(o, t + rand(0, dur)); },
   crash(px, py) { const o = sfxOut(px, py, 0.9); if (!o) return; const t = AU.ctx.currentTime;
     noiseSrc(t, 1.3, filt('lowpass', 1400, 0, envG(t, 0.01, 0.8, 1.2, o))); tone('sine', 120, t, 0.4, envG(t, 0.005, 0.9, 0.4, o), 40);
     for (let k = 0; k < 8; k++) S._click(o, t + rand(0.05, 0.6)); },
@@ -1197,6 +1349,16 @@ const S = {
     const base = form === 'good' ? 1500 : form === 'evil' ? 650 : 1000;
     tone(form === 'evil' ? 'sawtooth' : 'triangle', base, t, 0.5, filt('lowpass', 4000, 0, envG(t, 0.02, 0.3, 0.5, o)), base * 1.6);
     tone(form === 'evil' ? 'sawtooth' : 'triangle', base * 1.5, t + 0.35, 0.7, filt('lowpass', 4000, 0, envG(t + 0.35, 0.02, 0.25, 0.7, o)), base * 0.8); },
+  shieldUp(px, py) { const o = sfxOut(px, py, 0.8); if (!o) return; const t = AU.ctx.currentTime; send(o, 0.7);
+    [0, 7, 12, 19].forEach((n, k) => tone('sine', mtof(64 + n), t + k * 0.06, 1.4, envG(t + k * 0.06, 0.2, 0.18, 1.2, o)));
+    tone('triangle', 220, t, 1.2, filt('lowpass', 900, 0, envG(t, 0.3, 0.2, 0.9, o)), 440); },
+  shieldHit(px, py) { const o = sfxOut(px, py, 0.9); if (!o) return; const t = AU.ctx.currentTime; send(o, 0.6);
+    tone('sine', 1200, t, 0.5, envG(t, 0.005, 0.35, 0.5, o), 700); tone('sine', 1800, t, 0.4, envG(t, 0.005, 0.2, 0.4, o), 1100);
+    noiseSrc(t, 0.3, filt('highpass', 3000, 0, envG(t, 0.005, 0.25, 0.25, o))); },
+  rumble(px, py) { const o = sfxOut(px, py, 0.7); if (!o) return; const t = AU.ctx.currentTime;
+    noiseSrc(t, 0.6, filt('lowpass', 220, 0.8, envG(t, 0.05, 0.7, 0.5, o))); tone('sine', 60, t, 0.5, envG(t, 0.03, 0.4, 0.45, o), 40); },
+  alert() { const o = sfxOut(undefined, undefined, 0.45); if (!o) return; const t = AU.ctx.currentTime; send(o, 0.4);
+    [0, 7].forEach((n, k) => tone('triangle', mtof(81 + n), t + k * 0.12, 0.35, envG(t + k * 0.12, 0.01, 0.3, 0.33, o))); },
   ui(vol = 1) { const o = sfxOut(undefined, undefined, 0.3 * vol); if (!o) return; const t = AU.ctx.currentTime; tone('sine', 1300, t, 0.05, envG(t, 0.002, 0.3, 0.05, o)); },
   praise() { const o = sfxOut(undefined, undefined, 0.5); if (!o) return; const t = AU.ctx.currentTime; [0, 4, 7].forEach((n, k) => tone('sine', mtof(76 + n), t + k * 0.08, 0.25, envG(t + k * 0.08, 0.01, 0.3, 0.22, o))); },
   scold() { const o = sfxOut(undefined, undefined, 0.5); if (!o) return; const t = AU.ctx.currentTime; [0, -5].forEach((n, k) => tone('square', mtof(62 + n), t + k * 0.15, 0.25, filt('lowpass', 1200, 0, envG(t + k * 0.15, 0.01, 0.2, 0.22, o)))); },
@@ -1325,16 +1487,58 @@ function advise(ev, vars = {}) {
   advState.queue.push(...(gods.p.morality < 0 ? [['evil', fill(e)], ['good', fill(g)]] : [['good', fill(g)], ['evil', fill(e)]]));
 }
 let advT = 0;
+// ---------- advisor voices: the browser's own speech synthesis, with the music ducked underneath
+const VOICE = { on: true, ok: 'speechSynthesis' in window, speaking: false, good: null, evil: null, failed: 0 };
+const GOOD_PREF = [/aria/i, /jenny/i, /libby/i, /sonia/i, /samantha/i, /google uk english female/i, /google us english/i, /zira/i, /female/i, /karen/i, /moira/i, /tessa/i];
+const EVIL_PREF = [/guy/i, /ryan/i, /davis/i, /google uk english male/i, /daniel/i, /david/i, /alex/i, /fred/i, /male/i, /arthur/i];
+function pickVoices() {
+  if (!VOICE.ok) return;
+  const all = speechSynthesis.getVoices().filter(v => /^en(-|_|$)/i.test(v.lang));
+  if (!all.length) return;
+  const find = prefs => { for (const re of prefs) { const v = all.find(x => re.test(x.name)); if (v) return v; } return null; };
+  VOICE.good = find(GOOD_PREF) || all[0];
+  VOICE.evil = find(EVIL_PREF) || all.find(v => v !== VOICE.good) || all[0];
+}
+if (VOICE.ok) { pickVoices(); speechSynthesis.onvoiceschanged = pickVoices; }
+function duck(on) {
+  if (!AU.ctx) return;
+  const t = AU.ctx.currentTime;
+  AU.music.gain.setTargetAtTime(AU.musicOn ? (on ? 0.12 : 0.38) : 0, t, on ? 0.15 : 0.6);
+  AU.amb.gain.setTargetAtTime(AU.sfxOn ? (on ? 0.25 : 0.55) : 0, t, on ? 0.15 : 0.6);
+}
+// returns false when real speech is unavailable, so the caller can fall back to the babble
+function speakAdvisor(good, text, done) {
+  if (!VOICE.ok || !VOICE.on || VOICE.failed > 2 || !(good ? VOICE.good : VOICE.evil)) return false;
+  const u = new SpeechSynthesisUtterance(text);
+  u.voice = good ? VOICE.good : VOICE.evil; u.lang = u.voice.lang;
+  u.pitch = good ? 1.25 : 0.55; u.rate = good ? 1.02 : 0.88; u.volume = 1;
+  let finished = false;
+  const end = () => { if (finished) return; finished = true; VOICE.speaking = false; duck(false); done(); };
+  u.onend = end;
+  u.onerror = e => { if (e.error !== 'interrupted' && e.error !== 'canceled') VOICE.failed++; end(); };
+  setTimeout(end, 2500 + text.length * 90);   // safety net: some browsers never fire onend
+  VOICE.speaking = true; duck(true);
+  speechSynthesis.cancel(); speechSynthesis.speak(u);
+  return true;
+}
 function updAdvisors(dt) {
   advT -= dt;
-  if (advT > 0 || !advState.queue.length) return;
+  if (advT > 0 || VOICE.speaking || !advState.queue.length) return;
   const [who, text] = advState.queue.shift();
   const el = document.getElementById(who === 'good' ? 'advGood' : 'advEvil');
   el.querySelector('.bubble span').textContent = text;
   el.classList.add('talk');
-  clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove('talk'), 5200);
-  S.advisor(who === 'good', 4 + Math.min(8, (text.length / 8) | 0));
+  clearTimeout(el._t);
+  const good = who === 'good';
+  const hide = () => { clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove('talk'), 1800); };
+  if (AU.sfxOn && speakAdvisor(good, text, () => { hide(); advT = 0.6; })) { advT = 0.2; return; }
+  el._t = setTimeout(() => el.classList.remove('talk'), 5200);
+  S.advisor(good, 4 + Math.min(8, (text.length / 8) | 0));
   advT = 3.2;
+}
+function toggleVoice() {
+  VOICE.on = !VOICE.on; document.getElementById('voiceBtn').classList.toggle('off', !VOICE.on);
+  if (!VOICE.on && VOICE.ok) { speechSynthesis.cancel(); VOICE.speaking = false; duck(false); }
 }
 // portraits: the player's own art from assets/, falling back to small original SVG portraits
 const SVG_GOOD = 'data:image/svg+xml,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><radialGradient id="b" cx="50%" cy="45%" r="60%"><stop offset="0" stop-color="#fff6d8"/><stop offset="1" stop-color="#c9a24a"/></radialGradient></defs><rect width="100" height="100" fill="url(#b)"/><ellipse cx="22" cy="62" rx="20" ry="12" fill="#fff" transform="rotate(-25 22 62)"/><ellipse cx="78" cy="62" rx="20" ry="12" fill="#fff" transform="rotate(25 78 62)"/><ellipse cx="50" cy="16" rx="18" ry="5" fill="none" stroke="#ffe27a" stroke-width="3"/><path d="M28 88 Q50 70 72 88 L72 100 L28 100Z" fill="#fbf7ee" stroke="#d9b45a" stroke-width="2"/><circle cx="50" cy="52" r="20" fill="#f6d2b4"/><g fill="#f0c574"><circle cx="34" cy="42" r="8"/><circle cx="42" cy="34" r="8"/><circle cx="52" cy="31" r="8"/><circle cx="62" cy="35" r="8"/><circle cx="67" cy="44" r="7"/><circle cx="31" cy="53" r="6"/><circle cx="69" cy="54" r="6"/></g><circle cx="43" cy="54" r="3" fill="#4a3220"/><circle cx="57" cy="54" r="3" fill="#4a3220"/><circle cx="44" cy="53" r="1" fill="#fff"/><circle cx="58" cy="53" r="1" fill="#fff"/><circle cx="39" cy="60" r="3" fill="#f3a3a0" opacity=".6"/><circle cx="61" cy="60" r="3" fill="#f3a3a0" opacity=".6"/><path d="M44 63 Q50 68 56 63" stroke="#a0524a" stroke-width="2" fill="none" stroke-linecap="round"/></svg>`);
@@ -1461,7 +1665,7 @@ function recolorTerrain() {
 }
 
 // ---------- water
-let waterMat;
+let waterMat, waterTex;
 function buildWater() {
   const data = new Uint8Array(CW * CH * 4);
   for (let k = 0; k < CW * CH; k++) { const v = clamp((hc[k] + 6) / 10, 0, 1) * 255; data[k * 4] = data[k * 4 + 1] = data[k * 4 + 2] = v; data[k * 4 + 3] = 255; }
@@ -1514,14 +1718,14 @@ function buildWater() {
         #include <fog_fragment>
       }`,
   });
-  waterMat.uniforms.uH.value = tex;
+  waterMat.uniforms.uH.value = tex; waterTex = tex;
   const water = new THREE.Mesh(new THREE.PlaneGeometry(600, 600, 200, 200), waterMat);
   water.rotation.x = -Math.PI / 2; water.position.y = 0.02;
   scene.add(water);
 }
 
 // ---------- instanced scatter (trees, rocks)
-const ZERO = new THREE.Matrix4().makeScale(0, 0, 0);
+const ZERO = new THREE.Matrix4().makeScale(0, 0, 0), _tm = new THREE.Matrix4(), _sm = new THREE.Matrix4();
 class Scatter {
   constructor(geom, mat, cap, shadow = true) {
     this.mesh = new THREE.InstancedMesh(geom, mat, cap); this.mesh.count = 0;
@@ -1535,9 +1739,15 @@ class Scatter {
     if (!this.byTile.has(tile)) this.byTile.set(tile, []);
     this.byTile.get(tile).push(k);
   }
+  put(k, on, sc = 1) {
+    if (!on) return this.mesh.setMatrixAt(k, ZERO);
+    if (sc === 1) return this.mesh.setMatrixAt(k, this.mats[k]);
+    _tm.copy(this.mats[k]).multiply(_sm.makeScale(sc, sc, sc)); this.mesh.setMatrixAt(k, _tm);
+  }
   show(tile, on) {
     const ks = this.byTile.get(tile); if (!ks) return;
-    for (const k of ks) this.mesh.setMatrixAt(k, on ? this.mats[k] : ZERO);
+    const sc = this.scaled ? treeVis(tile) : 1;
+    for (const k of ks) this.put(k, on, sc);
     this.mesh.instanceMatrix.needsUpdate = true;
   }
   tint(tile, color) {
@@ -1572,6 +1782,7 @@ function buildScatter() {
   trunks = new Scatter(trunkGeo, new THREE.MeshStandardMaterial({ color: 0x5a3a22, roughness: 1 }), cap);
   pines = new Scatter(mergeGeos([pineA, pineB]), new THREE.MeshStandardMaterial({ roughness: 0.85, flatShading: true }), cap);
   broads = new Scatter(mergeGeos([broadA, broadB]), new THREE.MeshStandardMaterial({ roughness: 0.8, flatShading: true }), cap);
+  trunks.scaled = pines.scaled = broads.scaled = true;
   rocks = new Scatter(rockGeo, new THREE.MeshStandardMaterial({ color: 0x8a857c, roughness: 0.95, flatShading: true }), MW * MH * 2);
   const m = new THREE.Matrix4(), q = new THREE.Quaternion(), e = new THREE.Euler(), p = new THREE.Vector3(), s = new THREE.Vector3(), c = new THREE.Color();
   for (let i = 0; i < MW * MH; i++) {
@@ -1591,27 +1802,188 @@ function buildScatter() {
       p.set(gx - MW / 2, hGrid(gx, gz) - 0.05, gz - MH / 2); e.set(0, rand(0, 6.28), 0); q.setFromEuler(e); s.set(sc, sc, sc);
       m.compose(p, q, s);
       const vis = t === T.FOREST, pine = shade[i] > 0.55 || hGrid(gx, gz) > 4;
-      trunks.add(i, m, null, vis);
-      if (pine) pines.add(i, m, c.setHSL(0.3 + rand(-0.02, 0.03), 0.45, 0.2 + rand(0, 0.06)), vis);
-      else broads.add(i, m, c.setHSL(0.24 + rand(-0.03, 0.04), 0.5, 0.27 + rand(0, 0.08)), vis);
+      if (vis) { treeG[i] = treeDrawn[i] = rand(0.85, 1.15); _tm.copy(m).multiply(_sm.makeScale(treeG[i], treeG[i], treeG[i])); }
+      trunks.add(i, m, null, false); if (vis) trunks.mesh.setMatrixAt(trunks.mesh.count - 1, _tm);
+      const fol = pine ? pines : broads;
+      fol.add(i, m, pine ? c.setHSL(0.3 + rand(-0.02, 0.03), 0.45, 0.2 + rand(0, 0.06)) : c.setHSL(0.24 + rand(-0.03, 0.04), 0.5, 0.27 + rand(0, 0.08)), false);
+      if (vis) fol.mesh.setMatrixAt(fol.mesh.count - 1, _tm);
     }
   }
   for (const sc of [trunks, pines, broads, rocks]) { sc.mesh.instanceMatrix.needsUpdate = true; if (sc.mesh.instanceColor) sc.mesh.instanceColor.needsUpdate = true; }
 }
+// a tile that never had trees gets tree slots the first time something grows there
+function addTreeSlots(i) {
+  if (trunks.mesh.count + 2 >= trunks.mesh.instanceMatrix.count) return false;
+  const tx = i % MW, tz = (i / MW) | 0, m = new THREE.Matrix4(), q = new THREE.Quaternion(), p = new THREE.Vector3(), s = new THREE.Vector3(), c = new THREE.Color();
+  const n = shade[i] > 0.4 ? 2 : 1;
+  for (let k = 0; k < n; k++) {
+    const gx = tx + rand(0.15, 0.85), gz = tz + rand(0.15, 0.85), sc = rand(0.75, 1.3);
+    p.set(gx - MW / 2, hGrid(gx, gz) - 0.05, gz - MH / 2); q.setFromEuler(new THREE.Euler(0, rand(0, 6.28), 0)); s.set(sc, sc, sc); m.compose(p, q, s);
+    const pine = shade[i] > 0.55 || hGrid(gx, gz) > 4;
+    trunks.add(i, m, null, false);
+    (pine ? pines : broads).add(i, m, pine ? c.setHSL(0.3 + rand(-0.02, 0.03), 0.45, 0.2 + rand(0, 0.06)) : c.setHSL(0.24 + rand(-0.03, 0.04), 0.5, 0.27 + rand(0, 0.08)), false);
+  }
+  for (const sc of [trunks, pines, broads]) { sc.mesh.instanceMatrix.needsUpdate = true; if (sc.mesh.instanceColor) sc.mesh.instanceColor.needsUpdate = true; }
+  return true;
+}
+function growTree(i, amt) {
+  treeG[i] = Math.min(1.5, treeG[i] + amt);
+  if (Math.abs(treeG[i] - treeDrawn[i]) > 0.04) { treeDrawn[i] = treeG[i]; trunks.show(i, true); pines.show(i, true); broads.show(i, true); }
+}
 function treeBurn(i, on) { if (pines) { pines.tint(i, on ? BURN_COL : null); broads.tint(i, on ? BURN_COL : null); } }
+// ---------- shaping the land
+const terra = { active: false, t: 0, warned: false, sndT: 0, water: 0 }, WATER_CAP = 60;
+const TERRA_R = 3.2;
+function terraBlocked(x, y, R) {
+  for (const v of villages) {
+    if (dist(v.x, v.y, x, y) < R + PLAZA + 15) return v.name;
+    for (const h of v.houses) if (dist(h.x, h.y, x, y) < R + 16) return v.name;
+    for (const s of v.sites) if (dist(s.x, s.y, x, y) < R + 16) return v.name;
+  }
+  return null;
+}
+function reheightTile(i) {
+  for (const sc of [trunks, pines, broads, rocks]) {
+    const ks = sc.byTile.get(i); if (!ks) continue;
+    const show = sc === rocks ? true : tiles[i] === T.FOREST;
+    for (const k of ks) {
+      const e = sc.mats[k].elements, gx = e[12] + MW / 2, gz = e[14] + MH / 2, h = hGrid(gx, gz);
+      e[13] = h + (sc === rocks ? 0.1 : -0.05);
+      sc.put(k, show && h > -0.3, sc.scaled ? treeVis(i) : 1);
+    }
+    sc.mesh.instanceMatrix.needsUpdate = true;
+  }
+}
+function applyTerra(id, x, y) {
+  const tool = TMY[id];
+  if (!inInfluence('p', x, y)) { if (!terra.warned) msg('Outside your influence', 'info'); terra.warned = true; return; }
+  if (gods.p.mana < tool.cost) { msg('Not enough mana — your villages need to pray more', 'info'); terra.active = false; return; }
+  if (id === 'plant') return plantTrees(x, y);
+  const blocked = terraBlocked(x, y, TERRA_R * TILE);
+  if (blocked) { msg(`Too close to ${blocked} — shape the land away from homes`, 'info'); terra.active = false; return; }
+  const scoop = id === 'water' && groundPx(x, y) < -0.02;
+  if (id === 'water' && !scoop && terra.water <= 0.05) { msg('Scoop up water from a lake or the sea first', 'info'); terra.active = false; return; }
+  if (id === 'water' && scoop && terra.water >= WATER_CAP) { if (!terra.warned) msg('Your Hand is full of water — pour it somewhere', 'info'); terra.warned = true; return; }
+  gods.p.mana -= tool.cost;
+  const gx = x / TILE, gz = y / TILE, target = hGrid(gx, gz), R = id === 'water' ? 2.6 : TERRA_R;
+  const x0 = Math.max(0, Math.floor(gx - R)), x1 = Math.min(CW - 1, Math.ceil(gx + R)), z0 = Math.max(0, Math.floor(gz - R)), z1 = Math.min(CH - 1, Math.ceil(gz + R));
+  for (let z = z0; z <= z1; z++) for (let xx = x0; xx <= x1; xx++) {
+    const d = Math.hypot(xx - gx, z - gz); if (d > R) continue;
+    const w0 = 1 - d / R, w = w0 * w0 * (3 - 2 * w0), k = z * CW + xx;
+    if (id === 'water') {
+      if (scoop) { if (hc[k] < 0.15 && terra.water < WATER_CAP) { const nv = Math.min(0.15, hc[k] + 0.7 * w); terra.water += nv - hc[k]; hc[k] = nv; } }
+      else { const dd = Math.min(0.6 * w, Math.max(0, hc[k] + 1.4), terra.water * 2); if (dd > 0) { hc[k] -= dd; terra.water = Math.max(0, terra.water - dd * 0.5); } }
+    } else if (id === 'raise') hc[k] = Math.min(12, hc[k] + 0.55 * w);
+    else if (id === 'lower') hc[k] = Math.max(-4.5, hc[k] - 0.55 * w);
+    else hc[k] += (target - hc[k]) * 0.4 * w;
+  }
+  for (let tz = z0; tz < z1; tz++) for (let tx = x0; tx < x1; tx++) {
+    if (!inMap(tx, tz)) continue;
+    const i = tz * MW + tx, h = (hc[tz * CW + tx] + hc[tz * CW + tx + 1] + hc[(tz + 1) * CW + tx] + hc[(tz + 1) * CW + tx + 1]) / 4;
+    elev[i] = h / HSCALE + 0.5;
+    let t = tiles[i];
+    if (h < -0.08) t = T.WATER; else if (t === T.WATER) t = h < 0.5 ? T.SAND : T.GRASS; else if (h > 7.2) t = T.ROCK; else if (t === T.ROCK) t = T.GRASS;
+    if (t === T.WATER) fire[i] = 0;
+    if (t !== tiles[i]) setTile(i, t); else computeTileColor(i);
+    reheightTile(i);
+  }
+  // reshape the terrain mesh and the water's depth map
+  const pos = terrainGeo.attributes.position;
+  for (let k = 0; k < pos.count; k++) {
+    const vx = pos.getX(k) + MW / 2, vz = pos.getZ(k) + MH / 2;
+    if (vx < x0 - 0.5 || vx > x1 + 0.5 || vz < z0 - 0.5 || vz > z1 + 0.5) continue;
+    pos.setY(k, hGrid(vx, vz));
+  }
+  pos.needsUpdate = true; terrainGeo.computeVertexNormals();
+  const data = waterTex.image.data;
+  for (let z = z0; z <= z1; z++) for (let xx = x0; xx <= x1; xx++) { const k = z * CW + xx, v = clamp((hc[k] + 6) / 10, 0, 1) * 255; data[k * 4] = data[k * 4 + 1] = data[k * 4 + 2] = v; }
+  waterTex.needsUpdate = true;
+  terrainDirty = true; miniDirty = true; influenceDirty = true;
+  const gy = surfPx(x, y);
+  for (let k = 0; k < 10; k++) spawn(x + rand(-50, 50), y + rand(-50, 50), gy + 0.1, rand(-.5, .5), rand(0.5, 1.6), rand(-.5, .5), 1.2, id === 'lower' && gy <= 0.05 ? 0xcfeaff : 0x9a8462, rand(0.3, 0.6), false);
+  if (id === 'water') for (let k = 0; k < 14; k++) spawn(x + rand(-30, 30), y + rand(-30, 30), scoop ? 0.1 : gy + 2.5, rand(-.3, .3), scoop ? rand(2, 4) : -rand(3, 6), rand(-.3, .3), 0.6, 0xbfe4ff, rand(0.12, 0.22), false, scoop ? 0 : -8);
+  terra.sndT -= 1; if (terra.sndT <= 0) { terra.sndT = 2; id === 'water' || (id === 'lower' && gy <= 0.05) ? S.splash(x, y) : S.rumble(x, y); }
+}
+function plantTrees(x, y) {
+  let n = 0;
+  const cx = Math.floor(x / TILE), cy = Math.floor(y / TILE);
+  for (let dy = -3; dy <= 3; dy++) for (let dx = -3; dx <= 3; dx++) {
+    const tx = cx + dx, ty = cy + dy; if (!inMap(tx, ty) || Math.hypot(dx, dy) > 2.6) continue;
+    const i = ty * MW + tx, px = tx * TILE + 10, py = ty * TILE + 10;
+    if ((tiles[i] === T.GRASS || tiles[i] === T.BURNT) && !terraBlocked(px, py, 4) && groundPx(px, py) > 0.2) { treeG[i] = 0.25; setTile(i, T.FOREST); reheightTile(i); n++; }
+  }
+  if (!n) { msg('Nothing can grow here — try open grassland away from homes', 'info'); return; }
+  msg(`🌱 Planted ${n} saplings — rain will make them grow faster`, 'good');
+  gods.p.mana -= TMY.plant.cost; gods.p.morality = clamp(gods.p.morality + 0.01, -1, 1);
+  const gy = surfPx(x, y);
+  for (let k = 0; k < 40; k++) spawn(x + rand(-50, 50), y + rand(-50, 50), gy + rand(0, 1), rand(-.3, .3), rand(0.6, 1.6), rand(-.3, .3), 1.6, pick([0x7ae08a, 0xb8f07a, 0x4ac060]), rand(0.2, 0.35), true);
+  S.heal(x, y);
+}
 function setTile(i, t) {
   if (tiles[i] === t) return;
   tiles[i] = t;
   if (!trunks) return;
   computeTileColor(i); terrainDirty = true; miniDirty = true;
   const vis = t === T.FOREST;
+  if (vis) { if (treeG[i] < 0.2) treeG[i] = 0.25; treeDrawn[i] = treeG[i]; if (!trunks.byTile.has(i)) addTreeSlots(i); } else treeG[i] = 0;
   trunks.show(i, vis); pines.show(i, vis); broads.show(i, vis);
 }
 
 // ---------- building models (stone & thatch cottages, timber townhouses, facilities)
 const M = (color, o = {}) => new THREE.MeshStandardMaterial({ color, roughness: 0.88, ...o });
-const wallMat = M(0xe2d5b8), stoneWallMat = M(0x8e8a80), roughStoneMat = M(0x9a9286, { flatShading: true }), timberMat = M(0x5a3a22), doorMat = M(0x4a3020, { roughness: 1 }), plankMat = M(0x9a7048);
-const slateMat = M(0x485564, { roughness: 0.7 }), thatchMat = M(0xb8955a, { roughness: 1, flatShading: true }), stoneMat = M(0xcfc6b4), mossStone = M(0x7b8572, { roughness: 0.95 });
+function canvasTex(size, draw, rep = 1) {
+  const c = document.createElement('canvas'); c.width = c.height = size; const g = c.getContext('2d'); draw(g, size);
+  const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(rep, rep); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4;
+  return t;
+}
+const noise = (g, n, w, a) => { for (let k = 0; k < n; k++) { g.fillStyle = `rgba(${Math.random() < 0.5 ? '0,0,0' : '255,255,255'},${Math.random() * a})`; g.fillRect(Math.random() * w, Math.random() * w, 1 + Math.random() * 2, 1 + Math.random() * 2); } };
+const TEX = {
+  stone: canvasTex(256, (g, w) => {          // irregular coursed fieldstone with dark mortar
+    g.fillStyle = '#4a453e'; g.fillRect(0, 0, w, w);
+    for (let y = 0; y < w;) { const rh = 18 + Math.random() * 14;
+      for (let x = -Math.random() * 30; x < w;) { const bw = 24 + Math.random() * 30, l = 42 + Math.random() * 20;
+        g.fillStyle = `hsl(${28 + Math.random() * 14},${6 + Math.random() * 8}%,${l}%)`;
+        g.beginPath(); g.roundRect(x + 2, y + 2, bw - 4, rh - 4, 5); g.fill();
+        g.fillStyle = 'rgba(255,255,255,0.07)'; g.fillRect(x + 4, y + 3, bw - 10, 3); x += bw; }
+      y += rh; }
+    noise(g, 9000, w, 0.12);
+  }),
+  plaster: canvasTex(256, (g, w) => {
+    g.fillStyle = '#d6ccb8'; g.fillRect(0, 0, w, w); noise(g, 12000, w, 0.06);
+    for (let k = 0; k < 7; k++) { const x = Math.random() * w, y = Math.random() * w, r = 20 + Math.random() * 50, gr = g.createRadialGradient(x, y, 0, x, y, r); gr.addColorStop(0, 'rgba(120,96,60,0.12)'); gr.addColorStop(1, 'rgba(120,96,60,0)'); g.fillStyle = gr; g.fillRect(0, 0, w, w); }
+  }),
+  planks: canvasTex(256, (g, w) => {
+    for (let x = 0; x < w; x += 21) { g.fillStyle = `hsl(${25 + Math.random() * 8},${30 + Math.random() * 12}%,${26 + Math.random() * 10}%)`; g.fillRect(x, 0, 21, w);
+      g.strokeStyle = 'rgba(0,0,0,0.18)'; for (let k = 0; k < 5; k++) { g.beginPath(); const ox = x + 3 + Math.random() * 15; g.moveTo(ox, 0); for (let y = 0; y < w; y += 16) g.lineTo(ox + Math.sin(y * 0.05 + k) * 1.5, y); g.stroke(); }
+      g.fillStyle = '#1c130c'; g.fillRect(x, 0, 2, w); }
+    noise(g, 4000, w, 0.08);
+  }),
+  soil: canvasTex(256, (g, w) => {
+    g.fillStyle = '#5a4128'; g.fillRect(0, 0, w, w);
+    for (let y = 0; y < w; y += 16) { g.fillStyle = 'rgba(30,20,10,0.55)'; g.fillRect(0, y, w, 5); g.fillStyle = 'rgba(140,105,70,0.25)'; g.fillRect(0, y + 7, w, 3); }
+    noise(g, 9000, w, 0.15);
+  }),
+  thatch: canvasTex(256, (g, w) => {          // layered straw in overlapping rows
+    g.fillStyle = '#6e5430'; g.fillRect(0, 0, w, w);
+    for (let row = 0; row < w; row += 22) {
+      for (let k = 0; k < 520; k++) { const x = Math.random() * w, y = row + Math.random() * 26, l = 8 + Math.random() * 14;
+        g.strokeStyle = `hsl(${36 + Math.random() * 10},${38 + Math.random() * 18}%,${34 + Math.random() * 26}%)`; g.lineWidth = 1 + Math.random();
+        g.beginPath(); g.moveTo(x, y); g.lineTo(x + (Math.random() - 0.5) * 3, y + l); g.stroke(); }
+      g.fillStyle = 'rgba(30,18,6,0.35)'; g.fillRect(0, row + 20, w, 3);
+    }
+  }, 2),
+  slate: canvasTex(256, (g, w) => {
+    g.fillStyle = '#20262e'; g.fillRect(0, 0, w, w);
+    for (let y = 0, r = 0; y < w; y += 20, r++) for (let x = (r % 2) * 16 - 16; x < w; x += 32) {
+      g.fillStyle = `hsl(${205 + Math.random() * 15},${6 + Math.random() * 8}%,${24 + Math.random() * 14}%)`; g.fillRect(x + 1, y + 1, 30, 21);
+      g.fillStyle = 'rgba(0,0,0,0.35)'; g.fillRect(x + 1, y + 19, 30, 3); }
+    noise(g, 5000, w, 0.08);
+  }, 2),
+  timber: canvasTex(128, (g, w) => { g.fillStyle = '#3e2a18'; g.fillRect(0, 0, w, w); g.strokeStyle = 'rgba(0,0,0,0.3)'; for (let k = 0; k < 14; k++) { g.beginPath(); const y = Math.random() * w; g.moveTo(0, y); g.bezierCurveTo(w / 3, y + 3, w * 2 / 3, y - 3, w, y); g.stroke(); } noise(g, 2000, w, 0.1); }),
+};
+const TM = (map, o = {}) => new THREE.MeshStandardMaterial({ map, bumpMap: map, bumpScale: o.bump ?? 1.2, roughness: o.rough ?? 0.92, color: o.color ?? 0xffffff, side: o.side ?? THREE.FrontSide });
+const wallMat = TM(TEX.plaster, { bump: 0.6 }), stoneWallMat = TM(TEX.stone, { color: 0xc8c4bc }), roughStoneMat = TM(TEX.stone), timberMat = TM(TEX.timber, { bump: 0.6 }), doorMat = TM(TEX.planks, { color: 0x8a6a50 }), plankMat = TM(TEX.planks);
+const slateMat = TM(TEX.slate, { rough: 0.75 }), thatchMat = TM(TEX.thatch, { bump: 2 }), stoneMat = TM(TEX.stone, { color: 0xe8e2d6 }), mossStone = TM(TEX.stone, { color: 0xa8b49a });
 const winMat = new THREE.MeshStandardMaterial({ color: 0x2a3550, emissive: 0xffb050, emissiveIntensity: 0, roughness: 0.4 });
 const waterMat2 = new THREE.MeshStandardMaterial({ color: 0x2f7fb0, roughness: 0.1, metalness: 0.2 });
 const roofMats = { p: M(0xb07040, { roughness: 0.7 }), r: M(0x5d3a8a, { roughness: 0.7 }), n: M(0x7a5a48) };
@@ -1625,6 +1997,12 @@ function gable(w, h, d) { const s = new THREE.Shape(); s.moveTo(-w / 2, 0); s.li
 const box = (w, h, d, x = 0, y = 0, z = 0) => { const g = new THREE.BoxGeometry(w, h, d); g.translate(x, y, z); return g; };
 const GEO = {
   cotWall: box(0.85, 0.85, 0.7, 0, 0.125, 0),
+  plinth: box(0.95, 0.14, 0.8, 0, -0.02, 0),
+  frame: box(0.2, 0.18, 0.025),
+  shutter: box(0.07, 0.15, 0.02),
+  doorFrame: box(0.25, 0.37, 0.03, 0, 0.17, 0.355),
+  brace: box(0.04, 0.5, 0.02),
+  ridge: box(0.06, 0.06, 0.98),
   cotRoof: (() => { const g = gable(1.12, 0.62, 0.92); g.translate(0, 0.5, 0); return g; })(),
   door: box(0.18, 0.32, 0.04, 0, 0.16, 0.37),
   win: new THREE.BoxGeometry(0.15, 0.13, 0.03),
@@ -1662,23 +2040,27 @@ function makeModel(type, owner, override) {
   const g = new THREE.Group();
   const mk = (geo, mat, x = 0, y = 0, z = 0, ry = 0) => { const m = new THREE.Mesh(geo, override || mat); m.position.set(x, y, z); m.rotation.y = ry; m.castShadow = !override; m.receiveShadow = !override; g.add(m); return m; };
   const roof = roofMats[owner || 'n'];
+  // a window with a timber frame, glass and a pair of shutters
+  const win = (x, y, z) => { if (override) return mk(GEO.win, override, x, y, z); mk(GEO.frame, timberMat, x, y, z - 0.004); mk(GEO.win, winMat, x, y, z); mk(GEO.shutter, plankMat, x - 0.12, y, z); mk(GEO.shutter, plankMat, x + 0.12, y, z); };
+  if (type === 'cottage' || type === 'stone' || type === 'manor') mk(GEO.plinth, roughStoneMat).scale.set(type === 'manor' ? 1.15 : 1, 1, type === 'manor' ? 1.1 : 1);
   if (type === 'cottage') {
-    mk(GEO.cotWall, roughStoneMat); g.userData.roof = mk(GEO.cotRoof, thatchMat); mk(GEO.door, doorMat); mk(GEO.chim, roughStoneMat);
-    mk(GEO.win, winMat, 0.27, 0.32, 0.36); mk(GEO.win, winMat, -0.27, 0.32, 0.36);
+    mk(GEO.cotWall, roughStoneMat); g.userData.roof = mk(GEO.cotRoof, thatchMat); mk(GEO.ridge, thatchMat, 0, 1.11, 0); mk(GEO.doorFrame, timberMat); mk(GEO.door, doorMat); mk(GEO.chim, roughStoneMat);
+    win(0.27, 0.32, 0.36); win(-0.27, 0.32, 0.36);
     g.scale.setScalar(1.3);
   } else if (type === 'hut') {
     mk(GEO.hutWall, plankMat); mk(GEO.hutRoof, thatchMat); mk(GEO.door, doorMat, 0, 0, 0.05);
     g.scale.setScalar(1.2);
   } else if (type === 'stone') {
-    mk(GEO.stoneWall, stoneWallMat); g.userData.roof = mk(GEO.slate, slateMat); mk(GEO.door, doorMat, 0, 0, 0.05); mk(GEO.chim, stoneWallMat, 0, 0.1, 0);
-    mk(GEO.win, winMat, 0.27, 0.36, 0.41); mk(GEO.win, winMat, -0.27, 0.36, 0.41);
+    mk(GEO.stoneWall, stoneWallMat); g.userData.roof = mk(GEO.slate, slateMat); mk(GEO.doorFrame, timberMat, 0, 0, 0.05); mk(GEO.door, doorMat, 0, 0, 0.05); mk(GEO.chim, stoneWallMat, 0, 0.1, 0);
+    win(0.27, 0.36, 0.41); win(-0.27, 0.36, 0.41);
     g.scale.setScalar(1.3);
   } else if (type === 'manor') {
     mk(GEO.manorBase, roughStoneMat); mk(GEO.manorUpper, wallMat); g.userData.roof = mk(GEO.manorRoof, slateMat); mk(GEO.door, doorMat, 0, -0.02, 0.06);
     for (const x of [-0.42, 0, 0.42]) mk(GEO.manorBeamV, timberMat, x, 0, 0);
     mk(GEO.manorBeamH, timberMat, 0, -0.32, 0); mk(GEO.manorBeamH, timberMat, 0, 0.33, 0);
-    for (const x of [-0.21, 0.21]) mk(GEO.win, winMat, x, 0.85, 0.49);
-    mk(GEO.win, winMat, -0.3, 0.3, 0.44); mk(GEO.win, winMat, 0.3, 0.3, 0.44); mk(GEO.chim, roughStoneMat, 0.05, 0.55, 0.05);
+    for (const [x, r] of [[-0.21, 0.6], [0.21, -0.6]]) mk(GEO.brace, timberMat, x, 0.8, 0.488).rotation.z = r;
+    for (const x of [-0.21, 0.21]) win(x, 0.85, 0.49);
+    win(-0.3, 0.3, 0.44); win(0.3, 0.3, 0.44); mk(GEO.doorFrame, timberMat, 0, -0.02, 0.06); mk(GEO.chim, roughStoneMat, 0.05, 0.55, 0.05);
     g.scale.setScalar(1.3);
   } else if (type === 'granary') {
     mk(GEO.granBody, plankMat); mk(GEO.granBand, timberMat, 0, 0.2, 0); mk(GEO.granBand, timberMat, 0, 0.6, 0); mk(GEO.granRoof, thatchMat);
@@ -1687,9 +2069,19 @@ function makeModel(type, owner, override) {
     mk(GEO.wellRing, roughStoneMat); mk(GEO.wellRim, stoneMat); mk(GEO.wellWater, waterMat2);
     mk(GEO.post, timberMat, -0.3, 0, 0); mk(GEO.post, timberMat, 0.3, 0, 0); mk(GEO.wellRoof, thatchMat);
     g.scale.setScalar(1.3);
+  } else if (type === 'field') {
+    mk(new THREE.BoxGeometry(1.5, 0.06, 1.0), override || TM(TEX.soil, { bump: 2 }), 0, 0.0, 0);
+    if (!override) {
+      const parts = [];
+      for (let r = 0; r < 6; r++) for (let c = 0; c < 9; c++) { const cg = new THREE.ConeGeometry(0.05, 0.32, 5); cg.translate(-0.64 + c * 0.16 + rand(-0.02, 0.02), 0.16, -0.4 + r * 0.16); parts.push(cg); }
+      const cm = new THREE.MeshStandardMaterial({ color: 0x5a9a3a, roughness: 0.8 });
+      const crops = new THREE.Mesh(mergeGeos(parts), cm); crops.position.y = 0.03; crops.castShadow = true; g.add(crops); g.userData.crops = crops;
+    }
+    for (const [x, z, ry] of [[0, -0.55, 0], [0, 0.55, 0]]) for (let k = -3; k <= 3; k++) mk(GEO.fence, timberMat, k * 0.25, 0, z, ry);
+    g.scale.setScalar(1.3);
   } else if (type === 'garden') {
     mk(GEO.bed, M(0x4a3a24, { roughness: 1 }));
-    for (let k = 0; k < 4; k++) { const a = k * 1.57 + 0.4; mk(GEO.bush, M(0x3f7a34, { flatShading: true }), Math.cos(a) * 0.38, 0.12, Math.sin(a) * 0.38); }
+    for (let k = 0; k < 4; k++) { const a = k * 1.57 + 0.4; mk(GEO.bush, M(0x3a6a30), Math.cos(a) * 0.38, 0.12, Math.sin(a) * 0.38); }
     for (let k = 0; k < 16; k++) { const a = rand(0, 6.28), r = rand(0.05, 0.45); mk(GEO.flower, M(pick(FLOWER_COLS), { roughness: 0.6 }), Math.cos(a) * r, 0.12, Math.sin(a) * r); }
     for (let k = 0; k < 12; k++) { const a = k / 12 * Math.PI * 2; mk(GEO.fence, timberMat, Math.cos(a) * 0.62, 0, Math.sin(a) * 0.62); }
     g.scale.setScalar(1.3);
@@ -1775,6 +2167,17 @@ const logPile = mergeGeos([(() => { const a = new THREE.CylinderGeometry(0.05, 0
                            (() => { const a = new THREE.CylinderGeometry(0.05, 0.05, 0.5, 5); a.rotateZ(-1.2); a.rotateY(1.57); a.translate(0, 0.1, 0); return a; })()]);
 const emberMat = new THREE.MeshStandardMaterial({ color: 0xff7a2a, emissive: 0xff5010, emissiveIntensity: 3 });
 const bannerMats = { p: M(0xd8a030, { side: THREE.DoubleSide }), r: M(0x7a3cc8, { side: THREE.DoubleSide }), n: M(0x8a8478, { side: THREE.DoubleSide }) };
+const CROP_G = new THREE.Color(0x5a9a3a), CROP_Y = new THREE.Color(0xd8b040);
+const pileLog = (() => { const g = new THREE.CylinderGeometry(0.06, 0.065, 0.56, 8); g.rotateZ(Math.PI / 2); return g; })();
+// every village keeps a visible woodpile by its plaza; it grows and shrinks with the wood stock
+function makePile(v) {
+  const a = 1.85, px = v.x + Math.cos(a) * 76, py = v.y + Math.sin(a) * 76, g = new THREE.Group(); g.userData.logs = [];
+  [6, 5, 4, 3, 2, 1].forEach((n, r) => { for (let i = 0; i < n; i++) for (const z of [-0.07, 0.07]) {
+    const l = new THREE.Mesh(pileLog, timberMat); l.position.set((i - (n - 1) / 2) * 0.13, 0.06 + r * 0.11, z + rand(-0.02, 0.02)); l.rotation.y = rand(-0.08, 0.08); l.castShadow = true; g.add(l); g.userData.logs.push(l);
+  } });
+  g.position.set(WX(px), groundPx(px, py), WZ(py)); g.rotation.y = -a + Math.PI / 2; g.scale.setScalar(1.3);
+  scene.add(g); return g;
+}
 function makePlaza(v) {
   const g = new THREE.Group(); g.userData.fires = []; g.userData.banners = [];
   for (let k = 0; k < 6; k++) {
@@ -1814,7 +2217,7 @@ for (const [k, n] of [['torso', 1], ['head', 1], ['hair', 1], ['arm', 2], ['leg'
 }
 const VC = { p: new THREE.Color(0xc89038), r: new THREE.Color(0x7a4ac8), n: new THREE.Color(0xa89878), hurt: new THREE.Color(0xd03a3a), wood: new THREE.Color(0x7a4a20), food: new THREE.Color(0xe8c040) };
 const _B = new THREE.Matrix4(), _H = new THREE.Matrix4(), _U = new THREE.Matrix4(), _Mx = new THREE.Matrix4(), _T = new THREE.Matrix4(), _R = new THREE.Matrix4();
-const _col = new THREE.Color(), _col2 = new THREE.Color();
+const _col = new THREE.Color(), _col2 = new THREE.Color(), CHAR_COL = new THREE.Color(0x15110e);
 function local(parent, tx, ty, tz, rx, rz, out) {
   _T.makeTranslation(tx, ty, tz); out.multiplyMatrices(parent, _T);
   if (rx) { _R.makeRotationX(rx); out.multiply(_R); }
@@ -1824,6 +2227,16 @@ function local(parent, tx, ty, tz, rx, rz, out) {
 function pose(u) {
   const P = { hipY: 0.3, bow: 0, aL: 0.06 * Math.sin(time * 1.3 + u.phase), aR: -0.06 * Math.sin(time * 1.3 + u.phase), lL: 0, lR: 0, y: 0, spin: 0, sway: 0 };
   const swim = u.state === 'swim' || (u.state === 'walk' && groundPx(u.x, u.y) < -0.1);
+  if (u.state === 'zap') {
+    const j = () => Math.random() * 2 - 1;
+    P.aL = -2.3 + j() * 0.9; P.aR = -2.3 + j() * 0.9; P.lL = j() * 0.6; P.lR = j() * 0.6; P.sway = j() * 0.3; P.bow = j() * 0.35; P.y = 0.05 + Math.random() * 0.08;
+    return P;
+  }
+  if (u.state === 'dead') {
+    const k = clamp((4 - u.deadT) / 0.55, 0, 1), e = k * k;   // topple backwards and lie still
+    P.spin = -e * 1.52; P.aL = -2.6 * e; P.aR = -0.5 * e; P.lL = 0.15; P.lR = -0.2; P.hipY = 0.3 - 0.05 * e;
+    return P;
+  }
   if (u.state === 'held') { const f = time * 18 + u.phase; P.aL = -2.6 + Math.sin(f) * 0.6; P.aR = -2.6 + Math.sin(f + 1.7) * 0.6; P.lL = Math.sin(f * 1.1) * 0.8; P.lR = -P.lL; P.sway = Math.sin(time * 3 + u.phase) * 0.35; }
   else if (u.state === 'fly') { P.spin = u.spin; P.aL = -2.8; P.aR = -2.4; P.lL = 0.6; P.lR = -0.5; }
   else if (swim) { const f = time * 6 + u.phase; P.y = -0.42; P.bow = 1.1; P.aL = -2 + Math.sin(f) * 1.1; P.aR = -2 + Math.sin(f + Math.PI) * 1.1; P.lL = Math.sin(f * 1.4) * 0.4; P.lR = -P.lL; }
@@ -1870,9 +2283,11 @@ function syncVillagers() {
     vMesh.load.setMatrixAt(n, u.carry ? local(_U, 0, 0.53, 0, 0, 0, _Mx) : ZERO);
     _col.copy(VC[v.owner || 'n']).offsetHSL(u.look.dh, 0, u.look.dl);
     if (u.hp < 50) _col.lerp(VC.hurt, 0.5);
+    const flash = u.state === 'zap' && Math.random() < 0.55, charK = u.char > 0 ? clamp(u.char / 4, 0, 0.92) : 0;
+    if (flash) _col.setRGB(0.8, 0.92, 1); else if (charK) _col.lerp(CHAR_COL, charK);
     vMesh.torso.setColorAt(n, _col); vMesh.arm.setColorAt(2 * n, _col); vMesh.arm.setColorAt(2 * n + 1, _col); vMesh.skirt.setColorAt(n, _col);
-    vMesh.head.setColorAt(n, _col2.set(u.look.skin));
-    vMesh.hair.setColorAt(n, _col2.set(u.look.hair));
+    _col2.set(u.look.skin); if (flash) _col2.setRGB(0.85, 0.95, 1); else if (charK) _col2.lerp(CHAR_COL, charK); vMesh.head.setColorAt(n, _col2);
+    _col2.set(u.look.hair); if (flash) _col2.setRGB(0.7, 0.85, 1); else if (charK) _col2.lerp(CHAR_COL, charK); vMesh.hair.setColorAt(n, _col2);
     _col2.set(u.look.female ? u.look.skin : u.look.pants);
     vMesh.leg.setColorAt(2 * n, _col2); vMesh.leg.setColorAt(2 * n + 1, _col2);
     vMesh.load.setColorAt(n, VC[u.carry] || VC.wood);
@@ -1999,8 +2414,13 @@ const ghostMat = new THREE.MeshBasicMaterial({ color: 0x7aff9a, transparent: tru
 const ghosts = {};
 const fireLights = Array.from({ length: 6 }, () => { const l = new THREE.PointLight(0xff7a2a, 0, 9, 2); scene.add(l); return l; });
 const flashLight = new THREE.PointLight(0xcfe0ff, 0, 40, 1.5); scene.add(flashLight);
+const zapLight = new THREE.PointLight(0x8ac8ff, 0, 8, 2); scene.add(zapLight);
 const fbLights = Array.from({ length: 2 }, () => { const l = new THREE.PointLight(0xff8a2a, 0, 14, 2); scene.add(l); return l; });
 const fbGeo = new THREE.SphereGeometry(0.4, 14, 10), fbMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(7, 3.2, 0.9) });
+const fbHeldMesh = new THREE.Mesh(fbGeo, fbMat); fbHeldMesh.visible = false; scene.add(fbHeldMesh);
+const fbHeldLight = new THREE.PointLight(0xff8a2a, 0, 14, 2); scene.add(fbHeldLight);
+const waterOrb = new THREE.Mesh(new THREE.SphereGeometry(0.5, 20, 14), new THREE.MeshStandardMaterial({ color: 0x3a9ad8, roughness: 0.05, metalness: 0.1, transparent: true, opacity: 0.75, emissive: 0x0a3050 }));
+waterOrb.visible = false; scene.add(waterOrb);
 
 // ---------- influence borders
 let infLines = [], influenceDirty = true, infT = 0;
@@ -2058,6 +2478,10 @@ function syncWorld(dt) {
     if (key !== v.statueKey) { if (v.statue) scene.remove(v.statue); v.statue = makeStatue(v, style); v.statueKey = key; }
     if (v.statue.userData.orb) { const o = v.statue.userData.orb; o.position.y = 5.25 + Math.sin(time * 1.5) * 0.1; o.scale.setScalar(1 + Math.max(0, v.flash) * 0.6 + (v.festival > 0 ? 0.2 : 0)); }
     if (!v.plaza) v.plaza = makePlaza(v);
+    if (!v.pile) v.pile = makePile(v);
+    const nLogs = clamp(Math.round(v.wood / 2.5), 0, v.pile.userData.logs.length);
+    v.pile.userData.logs.forEach((l, k) => l.visible = k < nLogs);
+    for (const h of v.fields) if (h.mesh && h.mesh.userData.crops) { const c = h.mesh.userData.crops; c.scale.y = 0.12 + 0.88 * h.g; c.material.color.copy(CROP_G).lerp(CROP_Y, clamp((h.g - 0.6) / 0.4, 0, 1)); }
     const lit = !!v.owner;
     for (const f of v.plaza.userData.fires) {
       f.mesh.children[1].visible = lit;
@@ -2079,6 +2503,11 @@ function syncWorld(dt) {
   if (ho) { holdGlow.position.set(WX(ho.x), ho.h + 0.5, WZ(ho.y)); holdBeam.position.set(WX(ho.x), ho.h + 0.6, WZ(ho.y)); holdBeam.scale.set(0.6, 9, 0.6); }
   // fireballs
   fbLights.forEach(l => l.intensity = 0);
+  fbHeldMesh.visible = !!fbHold;
+  if (fbHold) { fbHeldMesh.position.set(WX(fbHold.x), fbHold.h, WZ(fbHold.y)); fbHeldMesh.scale.setScalar(1.1 + Math.sin(time * 20) * 0.08); fbHeldLight.position.copy(fbHeldMesh.position); }
+  fbHeldLight.intensity = fbHold ? 30 : 0;
+  waterOrb.visible = terra.water > 0.05 && mouse.valid;
+  if (waterOrb.visible) { waterOrb.position.set(WX(mouse.wx), surfPx(mouse.wx, mouse.wy) + 2.6, WZ(mouse.wy)); waterOrb.scale.setScalar(0.4 + Math.sqrt(terra.water / WATER_CAP) * 1.2); waterOrb.rotation.y += dt; }
   fireballs.forEach((f, k) => {
     if (!f.mesh) { f.mesh = new THREE.Mesh(fbGeo, fbMat); scene.add(f.mesh); }
     f.mesh.position.set(WX(f.x), f.h, WZ(f.y)); f.mesh.scale.setScalar(f.power * (1 + Math.sin(time * 30) * 0.08));
@@ -2115,6 +2544,9 @@ function syncWorld(dt) {
     r.mesh.material.opacity = clamp(r.life / 0.7, 0, 1);
   }
   rings = rings.filter(r => { if (r.life <= 0) { if (r.mesh) { scene.remove(r.mesh); r.mesh.geometry.dispose(); } return false; } return true; });
+  let zu = null; for (const v of villages) { zu = v.villagers.find(u => u.state === 'zap'); if (zu) break; }
+  zapLight.intensity = zu ? 10 + Math.random() * 40 : 0;
+  if (zu) zapLight.position.set(WX(zu.x), surfPx(zu.x, zu.y) + 0.6, WZ(zu.y));
   syncPhoenix(dt);
   syncCursor();
   syncSelection();
@@ -2131,7 +2563,29 @@ function syncWorld(dt) {
   syncParticles();
   waterMat.uniforms.uTime.value = performance.now() / 1000;
 }
+const domeMat = () => new THREE.ShaderMaterial({
+  transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide,
+  uniforms: { uOp: { value: 0 }, uT: { value: 0 }, uCol: { value: new THREE.Color(1.0, 0.85, 0.45) } },
+  vertexShader: `varying vec3 vN; varying vec3 vV; varying vec3 vP; void main() { vP = position; vec4 mv = modelViewMatrix * vec4(position, 1.0); vN = normalize(normalMatrix * normal); vV = normalize(-mv.xyz); gl_Position = projectionMatrix * mv; }`,
+  fragmentShader: `uniform float uOp; uniform float uT; uniform vec3 uCol; varying vec3 vN; varying vec3 vV; varying vec3 vP;
+    void main() { float f = pow(1.0 - abs(dot(vN, vV)), 2.2); float bands = 0.5 + 0.5 * sin(vP.y * 9.0 - uT * 3.0);
+      float hex = step(0.92, fract(vP.x * 2.2 + vP.z * 1.3)) + step(0.92, fract(vP.z * 2.2 - vP.x * 1.3));
+      float a = (0.05 + f * 0.75 + bands * 0.05 + hex * 0.08) * uOp; gl_FragColor = vec4(uCol * (0.6 + f * 1.6), a); }`,
+});
+function syncShields() {
+  for (const v of villages) {
+    if (v.shield > 0 && !v.dome) {
+      v.dome = new THREE.Mesh(new THREE.SphereGeometry(SHIELD_R / TILE, 40, 20, 0, Math.PI * 2, 0, Math.PI / 2), domeMat());
+      v.dome.position.set(WX(v.x), groundPx(v.x, v.y) - 0.3, WZ(v.y)); v.dome.renderOrder = 7; scene.add(v.dome);
+    }
+    if (!v.dome) continue;
+    if (v.shield <= 0) { scene.remove(v.dome); v.dome.geometry.dispose(); v.dome = null; continue; }
+    const u = v.dome.material.uniforms;
+    u.uT.value = time; u.uOp.value = Math.min(1, v.shield / 3) * (0.55 + 0.1 * Math.sin(time * 3)) + Math.max(0, v.shieldHit) * 1.2;
+  }
+}
 function syncPhoenix(dt) {
+  syncShields();
   const P = pxPalette();
   pxMain.color.copy(P.main); pxMain.emissive.copy(P.emi); pxMain.emissiveIntensity = P.ei;
   pxSec.color.copy(P.sec); pxSec.emissive.copy(P.emi); pxSec.emissiveIntensity = P.ei * 0.35;
@@ -2170,17 +2624,23 @@ function syncCursor() {
     ghostMat.color.set(ok ? 0x7aff9a : 0xff5a5a);
     return;
   }
+  if (TMY[selected]) {
+    const R = (selected === 'plant' || selected === 'water' ? 2.6 : TERRA_R) * TILE, okT = inInfluence('p', mouse.wx, mouse.wy) && (selected === 'plant' || !terraBlocked(mouse.wx, mouse.wy, TERRA_R * TILE));
+    const cc = okT ? new THREE.Color(TCOL[selected]).getHex() : 0xff5050;
+    cursorRing.material.color.set(cc); cursorDisc.material.color.set(cc);
+    cursorRing.position.set(WX(mouse.wx), cy, WZ(mouse.wy)); cursorRing.scale.setScalar(R / TILE);
+    cursorDisc.position.copy(cursorRing.position); cursorDisc.scale.setScalar(R / TILE);
+    cursorRing.visible = cursorDisc.visible = true;
+    return;
+  }
   const m = MBY[selected];
   let ok = inInfluence('p', mouse.wx, mouse.wy), cx = mouse.wx, cz = mouse.wy;
-  if (aim) {
-    // aiming a fireball: draw the arc from the launch point to the (range-limited) target
-    let bx = mouse.wx, by = mouse.wy; const d = dist(aim.x, aim.y, bx, by);
-    if (d > FB_RANGE) { bx = aim.x + (bx - aim.x) * FB_RANGE / d; by = aim.y + (by - aim.y) * FB_RANGE / d; }
-    const pos = aimLine.geometry.attributes.position, h0 = surfPx(aim.x, aim.y) + 2.5, h1 = surfPx(bx, by), arc = 2.5 + dist(aim.x, aim.y, bx, by) / 100;
-    for (let k = 0; k <= 40; k++) { const t = k / 40, x = aim.x + (bx - aim.x) * t, y = aim.y + (by - aim.y) * t; pos.setXYZ(k, WX(x), h0 + (h1 - h0) * t + arc * 4 * t * (1 - t), WZ(y)); }
-    pos.needsUpdate = true; aimLine.computeLineDistances(); aimLine.visible = true;
-    aimLine.material.color.set(d > FB_RANGE ? 0xff5050 : 0xffa040);
-    ok = true; cx = bx; cz = by;
+  if (fbHold) {
+    // holding a fireball: show where it would fly if released now
+    const v = fbVelocity(fbHold), pts = predictFlight(fbHold, v), pos = aimLine.geometry.attributes.position;
+    for (let k = 0; k <= 40; k++) { const q = pts[Math.min(pts.length - 1, Math.round(k / 40 * (pts.length - 1)))]; pos.setXYZ(k, WX(q[0]), q[2], WZ(q[1])); }
+    pos.needsUpdate = true; aimLine.computeLineDistances(); aimLine.visible = v.sp > 0; aimLine.material.color.set(0xffa040);
+    const end = pts[pts.length - 1]; ok = true; cx = end[0]; cz = end[1];
   }
   const afford = gods.p.mana >= costOf('p', selected);
   const cc = !ok ? 0xff5050 : !afford ? 0x9a9a9a : m.good ? 0x9ff6ff : 0xff9a5a;
@@ -2255,12 +2715,15 @@ let hoverB = null;
 function updateHover() {
   hover = null; hoverB = null;
   if (selected !== 'hand' || held || !started) return;
-  let bd = 26;
+  let bd = 1;
   for (const v of villages) for (const u of v.villagers) {
-    if (u.state === 'fly') continue;
-    const s = screenOf(u.x, u.y, surfPx(u.x, u.y) + 0.3);
-    if (s.z > 1) continue;
-    const d = Math.hypot(s.x - mouse.x, s.y - mouse.y);
+    if (u.state === 'fly' || u.state === 'dead' || u.state === 'zap') continue;
+    const g0 = surfPx(u.x, u.y), sc = isChild(u) ? 0.55 : 0.8;
+    const a = screenOf(u.x, u.y, g0), b = screenOf(u.x, u.y, g0 + 0.82 * sc);
+    if (a.z > 1 || b.z > 1) continue;
+    // distance from the pointer to the villager's on-screen body, normalised by how big they look
+    const len = Math.hypot(b.x - a.x, b.y - a.y), tol = Math.max(12, len * 0.45 + 6);
+    const d = segDist(mouse.x, mouse.y, a.x, a.y, b.x, b.y) / tol;
     if (d < bd) { bd = d; hover = { u, v }; }
   }
   if (!hover && mouse.valid) hoverB = pickBuilding(mouse.wx, mouse.wy);
@@ -2278,6 +2741,8 @@ function tryGrab() {
     return;
   }
   if (!mouse.valid) return;
+  const gl = logs.find(l => l.state === 'ground' && dist(l.x, l.y, mouse.wx, mouse.wy) < 24);
+  if (gl) { gl.state = 'held'; held = { o: gl, hist: [] }; S.grab(gl.x, gl.y); return; }
   const bld = pickBuilding(mouse.wx, mouse.wy);
   if (bld) { selectThing(bld); return; }
   const i = tIdx(mouse.wx, mouse.wy);
@@ -2301,7 +2766,7 @@ function pickBuilding(px, py) {
 // right click (without dragging): let go of whatever the Hand holds, cancel aiming/building, or close the details panel
 function cancelAction() {
   if (held) { const o = held.u || held.o; o.vx = o.vy = 0; o.vh = 0; o.state = 'fly'; o.spin = 0; held = null; S.ui(); return; }
-  if (aim) { aim = null; S.ui(); return; }
+  if (fbHold) { fbHold = null; S.ui(); msg('Fireball cancelled', 'info'); return; }
   if (selected !== 'hand') { select('hand'); return; }
   if (sel) selectThing(null);
 }
@@ -2375,7 +2840,56 @@ function msg(text, cls = 'info') {
   logEl.prepend(d); while (logEl.children.length > 9) logEl.lastChild.remove();
   setTimeout(() => d.style.opacity = 0.45, 9000);
 }
-function select(id) { selected = id; aim = null; S.ui(); if (held && id !== 'hand') release(); }
+function select(id) { selected = id; aim = null; fbHold = null; terra.active = false; S.ui(); if (held && id !== 'hand') release(); setTab(MBY[id] ? 'miracles' : BMY[id] ? 'build' : TMY[id] ? 'terra' : dockTab); updDock(); }
+function pushAlert(key, html, opts = {}) {
+  const box = $('alerts'); if (box.querySelector(`[data-key="${key}"]`)) return;
+  const d = document.createElement('div'); d.className = 'alert' + (opts.bad ? ' bad' : opts.good ? ' good' : ''); d.dataset.key = key;
+  d.innerHTML = `<span>${html}</span>${opts.action ? `<button>${opts.action}</button>` : ''}<span class="x">✕</span>`;
+  if (opts.action) d.querySelector('button').addEventListener('mousedown', e => { e.stopPropagation(); opts.onAction(); d.remove(); });
+  d.querySelector('.x').addEventListener('mousedown', e => { e.stopPropagation(); d.remove(); });
+  box.appendChild(d); while (box.children.length > 3) box.firstChild.remove();
+  setTimeout(() => d.remove(), opts.ttl || 14000);
+  S.alert();
+}
+let dockTab = 'miracles';
+const TABS = [['miracles', '✨ Miracles', '1-9'], ['build', '🔨 Build', 'B'], ['terra', '🌿 Land & Nature', 'T']];
+function toolInfo(id) {
+  if (id === 'hand') return { icon: '✋', name: 'Hand', desc: 'Click a villager or building for details. Press and drag to lift and throw villagers and trees. Right click lets go.', cost: 'free' };
+  if (MBY[id]) return { icon: MBY[id].icon, name: MBY[id].name, desc: MBY[id].desc, cost: `${costOf('p', id)} ✦ mana` };
+  if (BMY[id]) return { icon: BMY[id].icon, name: BMY[id].name, desc: BMY[id].desc, cost: `🪵 ${BMY[id].wood} wood (brought by villagers)` };
+  return { icon: TMY[id].icon, name: TMY[id].name, desc: TMY[id].desc, cost: `${TMY[id].cost} ✦ mana ${TMY[id].hold ? 'per pulse' : 'per grove'}` };
+}
+function renderDock() {
+  $('tabs').innerHTML = TABS.map(([id, label, key]) => `<button data-tab="${id}" class="${id === dockTab ? 'on' : ''}">${label}<kbd>${key}</kbd></button>`).join('');
+  const tile = (id, key = '') => { const t = toolInfo(id); return `<div class="tile" data-id="${id}" style="--c:${TCOL[id]}">${key ? `<span class="key">${key}</span>` : ''}<span class="cost"></span><div class="orb">${t.icon}</div><span class="nm">${t.name}</span></div>`; };
+  let html = tile('hand', 'G') + '<div class="tray-sep"></div>';
+  if (dockTab === 'miracles') html += MIRACLES.map((m, k) => tile(m.id, String(k + 1))).join('');
+  else if (dockTab === 'build') html += '<span class="tray-grp">HOMES</span>' + BUILDS.filter(b => b.cat === 'house').map(b => tile(b.id)).join('') + '<div class="tray-sep"></div><span class="tray-grp">FACILITIES</span>' + BUILDS.filter(b => b.cat === 'fac').map(b => tile(b.id)).join('');
+  else html += TERRA.map(t => tile(t.id)).join('');
+  $('tray').innerHTML = html;
+  updDock();
+}
+function setTab(t) { if (dockTab !== t) { dockTab = t; renderDock(); } }
+function updDock() {
+  for (const b of document.querySelectorAll('.tile')) {
+    const id = b.dataset.id;
+    b.classList.toggle('sel', id === selected);
+    const c = b.querySelector('.cost');
+    if (MBY[id]) { const k = costOf('p', id); b.classList.toggle('off', gods.p.mana < k); c.textContent = `${k}✦`; }
+    else if (BMY[id]) c.textContent = `🪵${BMY[id].wood}`;
+    else if (TMY[id]) { b.classList.toggle('off', gods.p.mana < TMY[id].cost); c.textContent = `${TMY[id].cost}✦`; }
+    else c.textContent = held ? 'holding' : 'free';
+  }
+}
+$('tabs').addEventListener('mousedown', e => { e.stopPropagation(); const b = e.target.closest('[data-tab]'); if (b) { setTab(b.dataset.tab); S.ui(0.6); } });
+$('tray').addEventListener('mousedown', e => { e.stopPropagation(); const b = e.target.closest('.tile'); if (b) select(b.dataset.id); });
+$('tray').addEventListener('mouseover', e => {
+  const b = e.target.closest('.tile'), tip = $('tip'); if (!b) return;
+  const t = toolInfo(b.dataset.id), r = b.getBoundingClientRect();
+  tip.innerHTML = `<b>${t.icon} ${t.name}</b><div>${t.desc}</div><div class="tc">${t.cost}</div>`;
+  tip.style.left = (r.left + r.width / 2) + 'px'; tip.style.top = (r.top - 8) + 'px'; tip.style.display = 'block';
+});
+$('tray').addEventListener('mouseleave', () => $('tip').style.display = 'none');
 function makeBtn(parent, id, icon, name, key, cls, title) {
   const b = document.createElement('div');
   b.className = 'mbtn ' + cls; b.dataset.id = id; b.title = title;
@@ -2383,15 +2897,7 @@ function makeBtn(parent, id, icon, name, key, cls, title) {
   b.addEventListener('mousedown', e => { e.stopPropagation(); select(id); });
   parent.appendChild(b); return b;
 }
-const toolsEl = $('tools'), buildsEl = $('builds');
-makeBtn(toolsEl, 'hand', '✋', 'Hand', 'G', 'hand', 'Lift villagers and trees, and throw them');
-toolsEl.appendChild(Object.assign(document.createElement('div'), { className: 'sep' }));
-MIRACLES.forEach((m, k) => makeBtn(toolsEl, m.id, m.icon, m.name, String(k + 1), m.good ? '' : 'bad', m.desc));
-buildsEl.appendChild(Object.assign(document.createElement('span'), { className: 'grp', textContent: 'Homes' }));
-BUILDS.filter(b => b.cat === 'house').forEach(b => makeBtn(buildsEl, b.id, b.icon, b.name, '', 'build', b.desc));
-buildsEl.appendChild(Object.assign(document.createElement('div'), { className: 'sep' }));
-buildsEl.appendChild(Object.assign(document.createElement('span'), { className: 'grp', textContent: 'Facilities' }));
-BUILDS.filter(b => b.cat === 'fac').forEach(b => makeBtn(buildsEl, b.id, b.icon, b.name, '', 'build', b.desc));
+renderDock();
 
 // ---------- details panel for the selected villager / building / building site
 const infoEl = $('info');
@@ -2460,13 +2966,7 @@ function updHUD() {
   const phase = ((time / DAY_LEN) + 0.1) % 1;
   $('clock').textContent = (phase > 0.25 && phase < 0.75 ? '🌙' : '☀') + ' ' + Math.floor(time / 60) + ':' + String(Math.floor(time % 60)).padStart(2, '0');
   $('spFill').style.width = spirit.energy + '%';
-  for (const b of document.querySelectorAll('.mbtn')) {
-    const id = b.dataset.id;
-    b.classList.toggle('sel', id === selected);
-    if (MBY[id]) { const c = costOf('p', id); b.classList.toggle('off', P.mana < c); b.querySelector('.c').textContent = `${c} ✦`; }
-    else if (BMY[id]) b.querySelector('.c').textContent = `🪵${BMY[id].wood}`;
-    else b.querySelector('.c').textContent = held ? 'holding…' : 'free';
-  }
+  updDock();
   for (const v of villages) {
     ensureLabel(v);
     const L = v.label, title = L.querySelector('b');
@@ -2475,7 +2975,7 @@ function updHUD() {
     title.style.color = v.owner ? COLORS[v.owner] : '#ddd';
     const bars = L.querySelectorAll('.bb i'); bars[0].style.width = v.belief.p + '%'; bars[1].style.width = v.belief.r + '%';
     const mood = v.festival > 0 ? '🎉' : v.happy > 70 ? '😄' : v.happy > 45 ? '🙂' : v.happy > 25 ? '😐' : '😢';
-    L.querySelector('.res').textContent = `${mood} · 🪵${Math.floor(v.wood)} · 🌾${Math.floor(v.food)} · 🏠${v.villagers.length}/${v.cap}${v.sites.length ? ` · 🔨${v.sites.length}` : ''}`;
+    L.querySelector('.res').textContent = `${v.shield > 0 ? `🛡${Math.ceil(v.shield)}s · ` : ''}${mood} · 🪵${Math.floor(v.wood)} · 🌾${Math.floor(v.food)} · 🏠${v.villagers.length}/${v.cap}${v.sites.length ? ` · 🔨${v.sites.length}` : ''}`;
     L.querySelector('.h').style.display = v.food < v.villagers.length * 1.5 ? 'block' : 'none';
   }
   if (lastActDirty) {
@@ -2522,10 +3022,13 @@ function placeLabels() {
     else if (hoverB) tip = hoverB.kind === 's' ? `🔨 ${BMY[hoverB.s.type].name} ${Math.floor(hoverB.s.progress / hoverB.s.need * 100)}% · click for details`
       : `${BMY[hoverB.h.type].icon} ${BMY[hoverB.h.type].name}${BMY[hoverB.h.type].cat === 'house' ? ` — ${(hoverB.h.residents || []).length}/${BMY[hoverB.h.type].cap} residents` : ''} · click for details`;
   } else if (held && held.u) tip = `${held.u.name} — release to drop or throw · right click: let go gently`;
+  else if (selected === 'water' && mouse.valid) tip = `🪣 Water carried: ${Math.round(terra.water / WATER_CAP * 100)}% · ${groundPx(mouse.wx, mouse.wy) < -0.02 ? 'hold to scoop' : terra.water > 0.05 ? 'hold to dig & pour' : 'scoop from a lake or the sea first'}`;
+  else if (fbHold) tip = '☄️ Fling it! Move the mouse fast and release · right click: cancel';
+  else if (started && selected === 'fireball' && mouse.valid) tip = inInfluence('p', mouse.wx, mouse.wy) ? '☄️ Press to conjure a fireball, then throw it' : 'Conjure the fireball inside your influence';
   hn.style.display = tip ? 'block' : 'none';
   if (tip) { hn.textContent = tip; hn.style.left = mouse.x + 'px'; hn.style.top = mouse.y + 'px'; }
   const ci = $('cursorIcon');
-  ci.textContent = selected === 'hand' ? (held ? '✊' : hover ? '🖐' : '✋') : (MBY[selected] || BMY[selected]).icon;
+  ci.textContent = selected === 'hand' ? (held ? '✊' : hover ? '🖐' : '✋') : (MBY[selected] || BMY[selected] || TMY[selected]).icon;
   ci.style.left = mouse.x + 'px'; ci.style.top = mouse.y + 'px';
   ci.style.display = mouse.valid && started && !ended ? 'block' : 'none';
 }
@@ -2540,7 +3043,8 @@ function praise(good) {
 $('praise').onclick = () => praise(true);
 $('scold').onclick = () => praise(false);
 function toggleMusic() { AU.musicOn = !AU.musicOn; $('musBtn').classList.toggle('off', !AU.musicOn); if (AU.ctx) AU.music.gain.setTargetAtTime(AU.musicOn ? 0.38 : 0, AU.ctx.currentTime, 0.3); }
-function toggleSfx() { AU.sfxOn = !AU.sfxOn; $('sfxBtn').classList.toggle('off', !AU.sfxOn); if (AU.ctx) { AU.amb.gain.setTargetAtTime(AU.sfxOn ? 0.55 : 0, AU.ctx.currentTime, 0.3); AU.voice.gain.setTargetAtTime(AU.sfxOn ? 0.9 : 0, AU.ctx.currentTime, 0.3); } }
+function toggleSfx() { if (AU.sfxOn && VOICE.ok) { speechSynthesis.cancel(); VOICE.speaking = false; } AU.sfxOn = !AU.sfxOn; $('sfxBtn').classList.toggle('off', !AU.sfxOn); if (AU.ctx) { AU.amb.gain.setTargetAtTime(AU.sfxOn ? 0.55 : 0, AU.ctx.currentTime, 0.3); AU.voice.gain.setTargetAtTime(AU.sfxOn ? 0.9 : 0, AU.ctx.currentTime, 0.3); } }
+$('voiceBtn').onclick = toggleVoice;
 $('musBtn').onclick = toggleMusic; $('sfxBtn').onclick = toggleSfx;
 
 // ============================================================ input
@@ -2560,24 +3064,28 @@ canvas.addEventListener('mousedown', e => {
   updateMouseWorld();
   if (selected === 'hand') tryGrab();
   else if (BMY[selected]) { if (mouse.valid) tryPlace(selected, mouse.wx, mouse.wy); }
-  else if (selected === 'fireball') { if (mouse.valid) startAim(); }
+  else if (TMY[selected]) { if (mouse.valid) { terra.warned = false; applyTerra(selected, mouse.wx, mouse.wy); terra.active = TMY[selected].hold; terra.t = 0.2; } }
+  else if (selected === 'fireball') { if (mouse.valid) startFireballHold(); }
   else if (mouse.valid) playerCast(mouse.wx, mouse.wy);
 });
 addEventListener('mouseup', e => {
-  if (e.button === 0) { if (held) release(); if (aim) finishAim(); }
+  if (e.button === 0) { if (held) release(); if (fbHold) throwFireball(); terra.active = false; }
   if (e.button === 2) { if (mouse.rdrag && Math.hypot(e.clientX - mouse.rsx, e.clientY - mouse.rsy) < 6) cancelAction(); mouse.rdrag = false; }
   if (e.button === 1) mouse.mdrag = false;
 });
 canvas.addEventListener('wheel', e => { e.preventDefault(); camS.dist *= e.deltaY < 0 ? 0.9 : 1.1; }, { passive: false });
 addEventListener('keydown', e => {
   keys[e.code] = true;
-  const n = /^Digit([1-8])$/.exec(e.code); if (n) select(MIRACLES[+n[1] - 1].id);
+  const n = /^Digit([1-9])$/.exec(e.code); if (n) select(MIRACLES[+n[1] - 1].id);
   if (e.code === 'KeyG' || e.code === 'Digit0') select('hand');
   if (e.code === 'Escape') cancelAction();
   if (e.code === 'KeyZ') praise(true);
   if (e.code === 'KeyX') praise(false);
   if (e.code === 'KeyM') toggleMusic();
   if (e.code === 'KeyN') toggleSfx();
+  if (e.code === 'KeyB') setTab('build');
+  if (e.code === 'KeyT') setTab('terra');
+  if (e.code === 'KeyV') toggleVoice();
   if (e.code === 'Space' && started && !ended) { paused = !paused; $('pauseTag').style.display = paused ? 'block' : 'none'; e.preventDefault(); }
 });
 addEventListener('keyup', e => keys[e.code] = false);
@@ -2588,22 +3096,48 @@ function playerCast(x, y) {
   const ctxName = ctxAt(x, y);
   if (cast('p', selected, x, y)) { gods.p.mana -= c; if (ctxName !== 'wild') spiritLearn(ctxName, selected, 1); }
 }
-function startAim() {
-  if (!inInfluence('p', mouse.wx, mouse.wy)) { msg('Launch a fireball from inside your influence', 'info'); return; }
+let fbHold = null;
+function startFireballHold() {
+  if (!inInfluence('p', mouse.wx, mouse.wy)) { msg('Conjure the fireball inside your influence — then fling it anywhere', 'info'); return; }
   if (gods.p.mana < costOf('p', 'fireball')) { msg('Not enough mana — your villages need to pray more', 'info'); return; }
-  aim = { x: mouse.wx, y: mouse.wy };
+  fbHold = { x: mouse.wx, y: mouse.wy, h: surfPx(mouse.wx, mouse.wy) + 3, hist: [] };
+  S.grab(mouse.wx, mouse.wy); S.fire(mouse.wx, mouse.wy);
 }
-function finishAim() {
-  const a = aim; aim = null;
-  if (!mouse.valid || dist(a.x, a.y, mouse.wx, mouse.wy) < 40) { msg('Drag from the launch point to the target, then release', 'info'); return; }
+function updFbHold(dt) {
+  const f = fbHold; if (!f) return;
+  if (mouse.valid) { const k = Math.min(1, dt * 16); f.x += (mouse.wx - f.x) * k; f.y += (mouse.wy - f.y) * k; }
+  f.h = surfPx(f.x, f.y) + 3;
+  const now = performance.now(); f.hist.push({ t: now, x: mouse.wx, y: mouse.wy });
+  while (f.hist.length > 2 && now - f.hist[0].t > 140) f.hist.shift();
+  for (let q = 0; q < 3; q++) spawn(f.x + rand(-5, 5), f.y + rand(-5, 5), f.h + rand(-0.3, 0.3), rand(-.4, .4), rand(0, 1), rand(-.4, .4), rand(0.3, 0.6), pick([0xff7a1a, 0xffc04a, 0xff4a1a]), rand(0.35, 0.6), true);
+}
+function fbVelocity(f) {
+  let vx = 0, vy = 0; const h = f.hist;
+  if (h.length >= 2) { const a = h[0], b = h[h.length - 1], dt = (b.t - a.t) / 1000; if (dt > 0.01) { vx = (b.x - a.x) / dt; vy = (b.y - a.y) / dt; } }
+  let sp = Math.hypot(vx, vy);
+  if (sp > 1400) { vx *= 1400 / sp; vy *= 1400 / sp; sp = 1400; }
+  if (sp < 80) return { vx: 0, vy: 0, vh: 0, sp: 0 };
+  return { vx: vx * 1.15, vy: vy * 1.15, vh: 4 + sp / 120, sp };
+}
+// where would a fireball thrown right now come down? (used to draw the flight arc)
+function predictFlight(f, v) {
+  const pts = []; let x = f.x, y = f.y, h = f.h, vh = v.vh;
+  for (let k = 0; k < 160; k++) {
+    pts.push([x, y, h]);
+    x += v.vx * 0.03; y += v.vy * 0.03; h += vh * 0.03; vh -= 18 * 0.03;
+    if (x < 0 || y < 0 || x > WW || y > WH || h <= surfPx(x, y)) { pts.push([x, y, Math.max(h, surfPx(x, y))]); break; }
+  }
+  return pts;
+}
+function throwFireball() {
+  const f = fbHold; fbHold = null; if (!f) return;
   const c = costOf('p', 'fireball'); if (gods.p.mana < c) return;
   gods.p.mana -= c;
-  let bx = mouse.wx, by = mouse.wy; const d = dist(a.x, a.y, bx, by);
-  if (d > FB_RANGE) { bx = a.x + (bx - a.x) * FB_RANGE / d; by = a.y + (by - a.y) * FB_RANGE / d; }
-  const ctxName = ctxAt(bx, by);
-  castFireball('p', a.x, a.y, bx, by);
-  if (ctxName !== 'wild') spiritLearn(ctxName, 'fireball', 1);
+  const v = fbVelocity(f);
+  fireballs.push({ g: 'p', ballistic: true, x: f.x, y: f.y, h: f.h, vx: v.vx, vy: v.vy, vh: v.vh, power: 1, mesh: null });
+  S.launch(f.x, f.y); S.whoosh(f.x, f.y, clamp(v.sp / 900, 0, 1));
 }
+
 
 // ============================================================ flow
 function endGame(win) {
@@ -2638,6 +3172,8 @@ function frame(now) {
   if (keys.KeyF) camS.tilt -= 0.8 * dt;
   AU.budget = Math.max(0, AU.budget - dt * 25);
   updateCamera(); updateMouseWorld();
+  if (started && !paused && !ended) updFbHold(dt);
+  if (started && !paused && !ended && terra.active && mouse.valid && TMY[selected]) { terra.t -= dt; if (terra.t <= 0) { terra.t = 0.18; applyTerra(selected, mouse.wx, mouse.wy); } }
   if (started && !paused && !ended) {
     updHeld(dt); update(dt); updAdvisors(dt);
     tipT -= dt; if (tipT <= 0) { tipT = 1e9; advise('tipBuild'); }
@@ -2665,13 +3201,15 @@ mouse.x = innerWidth / 2; mouse.y = innerHeight / 2;
 $('startBtn').disabled = false; $('startBtn').textContent = 'Begin';
 $('startBtn').onclick = () => {
   auInit();
+  // unlock speech synthesis with a silent utterance inside the click (browsers require a user gesture)
+  if (VOICE.ok) { pickVoices(); const w = new SpeechSynthesisUtterance(' '); w.volume = 0; speechSynthesis.speak(w); }
   $('overlay').style.display = 'none'; started = true;
   msg('Dawnmere prays to you. Spread your faith!', 'good');
   msg('Tip: ✋ lift a villager and set them down in another village — they will move there', 'info');
   advise('start');
 };
 window.__ready = true;
-window.__game = { selectThing, sel: () => sel, pickBuilding, cancelAction, holdBeam, holdGlow, villages: () => villages, gods, spirit, cast, castFireball, update, owned, reachPoint, costOf, ctxAt, spiritLearn, time: () => time, camS, screenOf, surfPx,
+window.__game = { terra, treeG, tiles, fbHold: () => fbHold, shieldAt, applyTerra, pushAlert, setTab, hc: () => hc, selectThing, sel: () => sel, pickBuilding, cancelAction, holdBeam, holdGlow, villages: () => villages, gods, spirit, cast, castFireball, update, owned, reachPoint, costOf, ctxAt, spiritLearn, time: () => time, camS, screenOf, surfPx,
   tryPlace, canPlace, held: () => held, logs: () => logs, fireballs: () => fireballs, AU, select: id => select(id) };
 requestAnimationFrame(frame);
 </script>

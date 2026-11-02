@@ -16,6 +16,16 @@ An original 3D god game in a single HTML file. Open `index.html` in a modern bro
 - **Rival god:** the Tidewraith courts villages, attacks yours, and hurls fireballs late in the game.
 - **Sound:** generative music that follows your morality, day/night and festivals; synthesized effects, voices and ambience. M / N toggle music / sound.
 
+## Also
+- Start: one village each, at opposite ends of a large island — both gods expand by founding settlements.
+- 🛡 Shield miracle; ☄️ fireballs are flung with the mouse (predicted arc shown).
+- 🌿 Land & Nature: raise land, dig ponds, flatten, move water (scoop from a lake, pour into a new hole), plant trees.
+- Trees grow over time and much faster in the rain; chopping shrinks them; bigger trees give more wood.
+- 🌽 Fields (double food, harvests), visible village woodpiles, loose logs that villagers fetch.
+- Alerts for homeless villagers, hunger, lost villages and incoming fireballs.
+- Lightning electrocutes; the dead collapse before fading. Advisors speak with the browser's speech voices (V to toggle).
+- Textured stone, plaster, timber, thatch and slate buildings.
+
 ## Your artwork
 Drop these files into `assets/` and the game uses them automatically (otherwise built-in placeholder portraits are drawn):
 - `assets/advisor-good.png` — the light advisor portrait

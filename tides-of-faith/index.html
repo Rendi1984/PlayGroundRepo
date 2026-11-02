@@ -77,6 +77,24 @@
   #overlay ul { padding-left: 18px; margin: 8px 0; }
   #overlay .go { font-size: 18px; padding: 10px 26px; margin-top: 12px; background: #b8862b; border-color: #e0b050; }
   #pauseTag { position: absolute; top: 50%; width: 100%; text-align: center; font-size: 40px; color: #fff; text-shadow: 0 0 10px #000; display: none; pointer-events: none; }
+  #info { right: 10px; bottom: 12px; width: 290px; font-size: 13px; display: none; max-height: 360px; overflow: auto; }
+  #info .ih { display: flex; justify-content: space-between; align-items: center; }
+  #info .ih b { font-size: 16px; color: #ffd36b; }
+  #info .x { cursor: pointer; padding: 0 6px; font-size: 16px; opacity: .7; }
+  #info .x:hover { opacity: 1; }
+  #info .sub { color: #9ab; font-size: 12px; margin-bottom: 6px; }
+  #info .row2 { margin: 3px 0; }
+  #info .meter { display: flex; align-items: center; gap: 6px; margin: 3px 0; font-size: 12px; }
+  #info .meter span:first-child { width: 72px; color: #bcd; }
+  #info .meter .bar { width: 140px; height: 8px; }
+  #info .feel { display: inline-block; background: rgba(255,255,255,.08); border-radius: 10px; padding: 1px 8px; margin: 2px 3px 2px 0; font-size: 12px; }
+  #info .res { cursor: pointer; padding: 2px 4px; border-radius: 5px; }
+  #info .res:hover { background: rgba(255,255,255,.12); }
+  #info button { font-size: 12px; padding: 3px 8px; margin-top: 6px; }
+  .slbl { position: absolute; transform: translate(-50%, -100%); background: rgba(8,10,16,.72); border: 1px solid rgba(255,210,120,.45); border-radius: 7px; padding: 2px 7px 4px; font-size: 11px; white-space: nowrap; text-align: center; }
+  .slbl .pb { width: 96px; height: 6px; background: #333; border-radius: 3px; overflow: hidden; margin: 2px auto 0; }
+  .slbl .pb i { display: block; height: 100%; background: linear-gradient(90deg, #c9862b, #ffd36b); }
+  #hoverName { position: absolute; pointer-events: none; font-size: 12px; background: rgba(8,10,16,.8); padding: 2px 7px; border-radius: 6px; transform: translate(14px, 10px); display: none; white-space: nowrap; }
   kbd { background: #2a2f40; border-radius: 4px; padding: 0 5px; font-size: 12px; border: 1px solid #445; }
 </style>
 <script type="importmap">
@@ -94,7 +112,7 @@
 <div id="top" class="panel">
   <span>✦ Mana <span class="bar"><i id="manaFill"></i></span> <b id="manaTxt">0</b> <span id="manaRate"></span></span>
   <span>Ruin <span id="moral"><i id="moralMark"></i></span> Creation</span>
-  <span title="Villages that believe in you">🏛 <b id="vCount">0</b></span>
+  <span title="Villages that believe in you / villages needed to win">🏛 <b id="vCount">0</b></span>
   <span title="Believers">👥 <b id="popCount">0</b></span>
   <span style="color:#c9a0ff" title="Villages of the Tidewraith">🜏 <b id="rCount">0</b></span>
   <span id="clock">☀</span>
@@ -127,6 +145,8 @@
 <div id="tools" class="panel"></div>
 <div id="miniWrap" class="panel"><canvas id="mini" width="200" height="138"></canvas></div>
 <div id="pauseTag">⏸ Paused</div>
+<div id="info" class="panel"></div>
+<div id="hoverName"></div>
 
 <div id="overlay">
   <div class="box" id="ovBox">
@@ -141,11 +161,11 @@
       <li><b>🔨 Build:</b> four house styles, granary, well, garden and shrine — and found <b>new settlements</b>. Villagers haul the wood and build it themselves.</li>
       <li><b>Happiness &amp; children:</b> happy, well-fed villages have children; children grow up; more people means more mana and wider influence.</li>
       <li><b>Ember, your Phoenix,</b> learns from what you do — and its form follows your soul: Benevolent Guardian, Awakening, or Harbinger of Destruction. Two advisors, <b>Aurel</b> and <b>Cinder</b>, whisper opposite counsel.</li>
-      <li><b>Win:</b> every village believes in you. <b>Lose:</b> none does.</li>
+      <li><b>Win:</b> 5 of the 7 villages believe in you (or the Tidewraith has none left). <b>Lose:</b> no village believes in you for 40 seconds.</li>
     </ul>
     <p style="color:#9ab;font-size:13px">
       <kbd>G</kbd> Hand · <kbd>1</kbd>–<kbd>8</kbd> miracles · Left click: act · Right drag / <kbd>WASD</kbd>: pan ·
-      Middle drag / <kbd>Q</kbd><kbd>E</kbd> rotate · <kbd>R</kbd><kbd>F</kbd> tilt · Wheel: zoom · <kbd>Z</kbd>/<kbd>X</kbd> praise/scold ·
+      Middle drag / <kbd>Q</kbd><kbd>E</kbd> rotate · <kbd>R</kbd><kbd>F</kbd> tilt · Wheel: zoom · Click a villager or building for details · <b>Right click</b>: let go / cancel · <kbd>Z</kbd>/<kbd>X</kbd> praise/scold ·
       <kbd>M</kbd>/<kbd>N</kbd> music/sound · <kbd>Space</kbd> pause · <kbd>Esc</kbd> back to Hand
     </p>
     <button class="go" id="startBtn" disabled>Loading world…</button>
@@ -165,9 +185,9 @@ import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js'
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 
 // ============================================================ constants
-const TILE = 20, MW = 90, MH = 62, WW = MW * TILE, WH = MH * TILE;
+const TILE = 20, MW = 125, MH = 85, WW = MW * TILE, WH = MH * TILE;
 const T = { WATER: 0, SAND: 1, GRASS: 2, FOREST: 3, ROCK: 4, BURNT: 5 };
-const DAY_LEN = 150, HSCALE = 13, CHILD_AGE = 70, FB_RANGE = 1000, PLAZA = 100;
+const DAY_LEN = 150, HSCALE = 13, CHILD_AGE = 70, FB_RANGE = 1300, PLAZA = 100;
 
 const MIRACLES = [
   { id: 'rain',     name: 'Rain',      icon: '🌧', cost: 25, good: true,  radius: 90,  desc: 'Puts out fires, regrows forests, enriches fields' },
@@ -229,7 +249,7 @@ function segDist(px, py, ax, ay, bx, by) {
 const tiles = new Uint8Array(MW * MH), elev = new Float32Array(MW * MH), shade = new Float32Array(MW * MH);
 const fire = new Float32Array(MW * MH), burnVis = new Uint8Array(MW * MH);
 const CW = MW + 1, CH = MH + 1, hc = new Float32Array(CW * CH);
-let villages = [], clouds = [], parts = [], bolts = [], rings = [], logs = [], fireballs = [], pendingMoves = [];
+let homeV = null, villages = [], clouds = [], parts = [], bolts = [], rings = [], logs = [], fireballs = [], pendingMoves = [];
 const gods = { p: { mana: 60, morality: 0, rate: 0 }, r: { mana: 60, morality: -0.4, rate: 0 } };
 let selected = 'hand', time = 0, paused = false, started = false, ended = false, shake = 0, held = null, hover = null, aim = null, newNameIdx = 0;
 const mouse = { x: 0, y: 0, wx: 0, wy: 0, rdrag: false, mdrag: false, lx: 0, ly: 0, valid: false };
@@ -261,11 +281,12 @@ function generate() {
     else if (nf(x, y) > 0.58) t = T.FOREST;
     tiles[i] = t;
   }
-  const spots = [[0.24, 0.68, 'p', 9], [0.76, 0.32, 'r', 9], [0.5, 0.5, null, 6], [0.24, 0.26, null, 5],
+  const spots = [[0.22, 0.7, 'p', 10], [0.78, 0.3, 'r', 9], [0.5, 0.5, null, 6], [0.24, 0.26, null, 5],
                  [0.76, 0.74, null, 5], [0.52, 0.17, null, 6], [0.48, 0.84, null, 6]];
   const sites = spots.map(([nx, ny]) => prepareSite(nx, ny));
   buildHeights();
   villages = spots.map(([, , own, pop], k) => makeVillageAt(VNAMES[k], sites[k].tx * TILE + TILE / 2, sites[k].ty * TILE + TILE / 2, own, pop));
+  homeV = villages[0];
 }
 function prepareSite(nx, ny) {
   const tx = Math.round(nx * MW), ty = Math.round(ny * MH);
@@ -344,12 +365,20 @@ const SKINS = [0xf3cfae, 0xe0b08a, 0xc68a5e, 0x9a6844, 0x6e4a30];
 const HAIRS = [0x2a1a10, 0x4a2c16, 0x7a5228, 0xc9a060, 0x1a1a1a, 0x9a9a9a, 0x8a3a1a];
 const PANTS = [0x4a3a2a, 0x3a3a44, 0x5a4a36, 0x2e3e2e];
 const isChild = u => u.age < CHILD_AGE;
+const NAMES_M = ['Aldo', 'Bram', 'Cael', 'Dorin', 'Edric', 'Finn', 'Garrin', 'Hob', 'Ivo', 'Jory', 'Kellan', 'Loric', 'Milo', 'Ned', 'Oren', 'Piers', 'Rowan', 'Silas', 'Tamsin', 'Ulf', 'Varo', 'Wat', 'Yorick', 'Zeb'];
+const NAMES_F = ['Ada', 'Brin', 'Cora', 'Della', 'Elsa', 'Fern', 'Greta', 'Hilde', 'Isla', 'Jenna', 'Kira', 'Lark', 'Maud', 'Nell', 'Orla', 'Pella', 'Rosa', 'Sage', 'Tilda', 'Una', 'Vesna', 'Wren', 'Ysa', 'Zora'];
+const TRAITS = [
+  { name: 'Devout', faith: 15 }, { name: 'Cheerful', mood: 12 }, { name: 'Timid', fear: 1.6, mood: -4 }, { name: 'Hard-working', mood: -2 },
+  { name: 'Grumpy', mood: -12 }, { name: 'Skeptical', faith: -15 }, { name: 'Kind', mood: 6 }, { name: 'Curious', mood: 3 }, { name: 'Brave', fear: 0.5 },
+];
+let uidSeq = 0;
 function addVillager(v, child, x, y) {
   const female = Math.random() < 0.5;
   v.villagers.push({
     x: x ?? v.x + rand(-40, 40), y: y ?? v.y + rand(-40, 40), h: 0, tx: 0, ty: 0, state: 'idle', goal: null,
     t: Math.random() * 2, hp: 100, task: null, carry: null, fear: 0, phase: Math.random() * 6, dir: 0, hitT: 0,
     age: child ? 0 : rand(CHILD_AGE, 400), vx: 0, vy: 0, vh: 0, spin: 0,
+    id: ++uidSeq, name: (() => { const pool = (female ? NAMES_F : NAMES_M).filter(n => !v.villagers.some(o => o.name === n)); return pick(pool.length ? pool : female ? NAMES_F : NAMES_M); })(), trait: pick(TRAITS), mood: 60, fearT: 0, home: null,
     look: { female, skin: pick(SKINS), hair: pick(HAIRS), pants: pick(PANTS), dh: rand(-0.04, 0.04), dl: rand(-0.12, 0.08) },
   });
 }
@@ -365,10 +394,14 @@ function spawn(px, py, h, vx, vh, vz, life, color, size, add, grav = 0) {
 // ============================================================ influence & belief
 const owned = g => villages.filter(v => v.owner === g);
 const believers = g => owned(g).reduce((s, v) => s + v.villagers.length, 0);
-const infR = v => Math.min(660, 230 + v.villagers.length * 10 + 70 * Math.min(2, v.nShrine));
-function inInfluence(g, x, y) { return villages.some(v => v.owner === g && dist(v.x, v.y, x, y) <= infR(v)); }
+const infR = v => Math.min(950, 300 + v.villagers.length * 13 + 80 * Math.min(2, v.nShrine));
+function inInfluence(g, x, y) {
+  if (villages.some(v => v.owner === g && dist(v.x, v.y, x, y) <= infR(v))) return true;
+  // a god who has lost every village keeps a small foothold around its old home, to win it back
+  return g === 'p' && !owned('p').length && homeV && dist(homeV.x, homeV.y, x, y) <= 320;
+}
 // a point inside g's influence from which village v can be reached, within `range` beyond the border
-function reachPoint(g, v, range = 125) {
+function reachPoint(g, v, range = 160) {
   let best = null, bd = 1e9;
   for (const o of owned(g)) {
     const d = dist(o.x, o.y, v.x, v.y), R = infR(o);
@@ -615,9 +648,9 @@ function rivalThink() {
   for (const v of mine) { const f = fireNear(v.x, v.y, 110); if (f && can('rain')) return doCast('rain', f.x, f.y); }
   for (const v of mine) if (v.food < v.villagers.length * 1.3 && can('bounty')) return doCast('bounty', v.x, v.y);
   const aggression = Math.min(0.4, 0.1 + time / 1200);
-  const targets = villages.filter(v => v.owner !== 'r').map(v => ({ v, pt: reachPoint('r', v) })).filter(o => o.pt);
+  const targets = villages.filter(v => v.owner !== 'r' && (v.owner !== 'p' || time > 180)).map(v => ({ v, pt: reachPoint('r', v) })).filter(o => o.pt);
   const pv = targets.find(o => o.v.owner === 'p');
-  if (pv && Math.random() < aggression && can('bolt') && R.mana > 70) {
+  if (pv && time > 180 && Math.random() < aggression && can('bolt') && R.mana > 70) {
     const h = pv.v.houses[(Math.random() * pv.v.houses.length) | 0];
     const tgt = h && inInfluence('r', h.x, h.y) ? h : pv.pt;
     return doCast(Math.random() < 0.5 ? 'bolt' : 'fire', tgt.x, tgt.y);
@@ -765,6 +798,7 @@ function completeSite(s) {
   const v = s.v, i = v.sites.indexOf(s); if (i < 0) return;
   v.sites.splice(i, 1);
   if (s.mesh) scene.remove(s.mesh);
+  if (s.label) s.label.remove();
   if (s.type === 'settle') foundVillage(s.x, s.y, v);
   else { v.houses.push({ type: s.type, x: s.x, y: s.y, hp: 100, rot: Math.atan2(v.y - s.y, v.x - s.x), mesh: null, props: Math.random() }); recount(v); }
   S.complete(s.x, s.y);
@@ -805,7 +839,11 @@ function tryPlace(type, x, y) {
   const r = canPlace(type, x, y);
   if (!r.ok) { msg(r.why, 'info'); S.ui(0.6); return; }
   const b = BMY[type];
-  r.v.sites.push({ type, x, y, v: r.v, need: b.wood, progress: 0, mesh: null });
+  const site = { type, x, y, v: r.v, need: b.wood, progress: 0, mesh: null };
+  r.v.sites.push(site);
+  const tx = Math.floor(x / TILE), ty = Math.floor(y / TILE);
+  for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) if (inMap(tx + dx, ty + dy) && tiles[(ty + dy) * MW + tx + dx] === T.FOREST) setTile((ty + dy) * MW + tx + dx, T.GRASS);
+  selectThing({ kind: 's', s: site, v: r.v });
   S.place(x, y); layoutDirty = true;
   msg(`Building site: ${b.name} — the people of ${r.v.name} will bring ${b.wood} wood`, 'info');
 }
@@ -813,7 +851,8 @@ function tryPlace(type, x, y) {
 // ============================================================ villages
 function updVillage(v, dt) {
   const pop = v.villagers.length, kids = v.villagers.filter(isChild).length, eaters = pop - kids * 0.5;
-  for (const u of v.villagers) updVillager(u, v, dt);
+  for (const u of v.villagers) { updVillager(u, v, dt); updMood(u, v, dt); }
+  v.homeT = (v.homeT || 0) - dt; if (v.homeT <= 0) { v.homeT = 1; assignHomes(v); }
   for (let k = v.villagers.length - 1; k >= 0; k--) {
     const u = v.villagers[k];
     if (u.hp <= 0) {
@@ -858,11 +897,13 @@ function updVillage(v, dt) {
       gods[g].mana += rate * dt; gods[g].rateAcc += rate;
     } else {
       v.belief[g] -= 0.12 * dt;
-      for (const o of villages) if (o.owner === g && o !== v && o.villagers.length >= 6 && dist(o.x, o.y, v.x, v.y) < 580)
-        v.belief[g] += 0.12 * dt * (o.villagers.length / 10) * (0.5 + o.happy / 100);
+      // thriving villages win over their undecided neighbours (a village that already has a god is swayed only by miracles)
+      if (!v.owner) for (const o of villages) if (o.owner === g && o !== v && o.villagers.length >= 6 && dist(o.x, o.y, v.x, v.y) < 820)
+        v.belief[g] += 0.25 * dt * (o.villagers.length / 10) * (0.5 + o.happy / 100);
     }
     v.belief[g] = clamp(v.belief[g], 0, 100);
   }
+  if (v === homeV && v.owner === 'p' && time < 240) v.belief.p = Math.max(v.belief.p, 62);   // a newborn god's first village holds firm
   if (pop === 0 && !(v.grace > 0)) { v.belief.p = Math.min(v.belief.p, 10); v.belief.r = Math.min(v.belief.r, 10); }
   const prev = v.owner;
   for (const g of ['p', 'r']) {
@@ -884,6 +925,58 @@ function updVillage(v, dt) {
     else if (v.happy < 28 && pop > 0) adviseOnce(v, 'unhappy', 60);
     if (fireNear(v.x, v.y, 130)) adviseOnce(v, 'fire', 30);
   }
+}
+// ---------- every believer has a home, a mood, and feelings
+function assignHomes(v) {
+  const hs = v.houses.filter(h => BMY[h.type].cat === 'house');
+  for (const h of hs) h.residents = [];
+  const rest = [];
+  for (const u of v.villagers) {
+    if (u.home && hs.includes(u.home) && u.home.residents.length < BMY[u.home.type].cap) u.home.residents.push(u);
+    else { u.home = null; rest.push(u); }
+  }
+  for (const u of rest) { const h = hs.find(q => q.residents.length < BMY[q.type].cap); if (h) { u.home = h; h.residents.push(u); } }
+}
+function updMood(u, v, dt) {
+  const scared = u.fear > 0 || u.state === 'held' || u.state === 'fly';
+  const t = v.happy + (u.trait.mood || 0) - (u.hp < 50 ? 25 : 0) - (scared ? 30 * (u.trait.fear || 1) : 0) - (u.home || isChild(u) ? 0 : 15)
+          + (u.state === 'pray' ? 5 : 0) + (u.state === 'dance' ? 15 : 0);
+  u.mood += (clamp(t, 0, 100) - u.mood) * Math.min(1, dt * 0.6);
+  u.fearT = scared ? Math.min(100, u.fearT + dt * 60 * (u.trait.fear || 1)) : Math.max(0, u.fearT - dt * 15);
+}
+const faithOf = (u, v) => v.owner ? clamp(v.belief[v.owner] + (u.trait.faith || 0), 0, 100) : 0;
+const moodEmoji = u => u.mood > 75 ? '😄' : u.mood > 55 ? '🙂' : u.mood > 35 ? '😐' : '😞';
+const yearsOf = u => isChild(u) ? Math.floor(u.age / CHILD_AGE * 15) : Math.min(80, 16 + Math.floor((u.age - CHILD_AGE) / 8));
+function feelings(u, v) {
+  const f = [];
+  if (u.state === 'held' || u.state === 'fly') f.push('😱 Terrified');
+  else if (u.fear > 0) f.push('😨 Afraid');
+  if (u.hp < 50) f.push('🤕 In pain');
+  if (v.food <= 0) f.push('🍽 Starving'); else if (v.food < v.villagers.length * 1.5) f.push('😟 Hungry');
+  if (!u.home && !isChild(u)) f.push('🏚 Homeless');
+  if (v.grief > 15) f.push('😢 Grieving');
+  if (v.festival > 0) f.push('🎉 Celebrating');
+  if (u.state === 'pray') f.push('🙏 Devoted');
+  if (u.mood > 75) f.push('😄 Joyful'); else if (u.mood > 55) f.push('🙂 Content'); else if (u.mood < 30) f.push('😞 Miserable');
+  if (v.owner === 'p' && faithOf(u, v) > 80) f.push('✨ Loves you');
+  if (v.owner === 'r') f.push('🜏 Follows the Tidewraith');
+  if (isChild(u)) f.push('🧸 Playful');
+  return f.slice(0, 6);
+}
+function activity(u) {
+  if (u.state === 'held') return 'Dangling from your Hand!';
+  if (u.state === 'fly') return 'Flying through the air!';
+  if (u.state === 'swim') return 'Swimming back to shore';
+  if (u.state === 'pray') return 'Praying at the statue';
+  if (u.state === 'dance') return 'Dancing at the festival';
+  if (isChild(u)) return 'Playing';
+  if (u.state === 'work') return u.task === 'food' ? 'Farming the fields' : u.task === 'wood' ? 'Chopping wood' : u.task === 'build' ? 'Building' + (u.site ? ' a ' + BMY[u.site.type].name.toLowerCase() : '') : 'Working';
+  if (u.state === 'walk') {
+    if (u.carry) return `Carrying ${u.carry} home`;
+    if (u.goal === 'work') return u.task === 'wood' ? 'Heading to the forest' : u.task === 'build' ? 'Bringing wood to a building site' : 'Heading to the fields';
+    return u.goal === 'pray' ? 'Going to pray' : u.goal === 'dance' ? 'Joining the dance' : 'Walking home';
+  }
+  return 'Resting';
 }
 function adviseOnce(v, ev, gap) { if ((v.warnT[ev] || -1e9) + gap < time) { v.warnT[ev] = time; advise(ev, { v: v.name }); } }
 
@@ -968,14 +1061,20 @@ function update(dt) {
   for (const b of bolts) b.life -= dt;
   for (const r of rings) { r.life -= dt; r.r += (r.max - r.r) * Math.min(1, dt * 7); }
   if (shake > 0) shake -= dt;
-  checkEnd();
+  checkEnd(dt);
 }
 const manaCap = g => 150 + 50 * owned(g).length + 2 * believers(g);
-function checkEnd() {
+const goalCount = () => Math.ceil(villages.length * 0.7);
+let faithlessT = 0;
+function checkEnd(dt) {
   if (ended) return;
   const mine = owned('p').length;
-  if (mine === villages.length) endGame(true);
-  else if (mine === 0 && time > 5) endGame(false);
+  if (mine >= goalCount() || (mine > 0 && !owned('r').length)) return endGame(true);
+  if (mine === 0) {
+    if (faithlessT === 0) msg('No village believes in you! Win one back within 40 seconds — you can still work miracles around your old home.', 'bad');
+    faithlessT += dt;
+    if (faithlessT > 40) endGame(false);
+  } else faithlessT = 0;
 }
 
 // ============================================================ audio (everything is synthesized at runtime)
@@ -1885,6 +1984,14 @@ cursorDisc.rotation.x = -Math.PI / 2; cursorDisc.renderOrder = 9;
 const hoverRing = new THREE.Mesh(new THREE.RingGeometry(0.3, 0.38, 32), new THREE.MeshBasicMaterial({ color: new THREE.Color(2, 2, 2), transparent: true, depthTest: false }));
 hoverRing.rotation.x = -Math.PI / 2; hoverRing.renderOrder = 11;
 const cursorLight = new THREE.PointLight(0xffffff, 2.5, 7, 2);
+const selRing = new THREE.Mesh(new THREE.RingGeometry(0.82, 1, 48), new THREE.MeshBasicMaterial({ color: new THREE.Color(2.2, 1.8, 0.6), transparent: true, depthTest: false }));
+selRing.rotation.x = -Math.PI / 2; selRing.renderOrder = 11; selRing.visible = false; scene.add(selRing);
+function syncSelection() {
+  if (!sel) { selRing.visible = false; return; }
+  let x, y, r;
+  if (sel.kind === 'v') { x = sel.u.x; y = sel.u.y; r = 0.42; } else if (sel.kind === 'b') { x = sel.h.x; y = sel.h.y; r = 1.15; } else { x = sel.s.x; y = sel.s.y; r = 1.3; }
+  selRing.visible = true; selRing.position.set(WX(x), surfPx(x, y) + 0.06, WZ(y)); selRing.scale.setScalar(r * (1 + Math.sin(time * 4) * 0.06));
+}
 const aimLine = new THREE.Line(new THREE.BufferGeometry().setFromPoints(Array.from({ length: 41 }, () => new THREE.Vector3())), new THREE.LineDashedMaterial({ color: 0xffa040, dashSize: 0.6, gapSize: 0.35, depthTest: false, transparent: true }));
 aimLine.renderOrder = 12; aimLine.visible = false; aimLine.frustumCulled = false;
 scene.add(cursorRing, cursorDisc, hoverRing, cursorLight, aimLine);
@@ -2010,6 +2117,7 @@ function syncWorld(dt) {
   rings = rings.filter(r => { if (r.life <= 0) { if (r.mesh) { scene.remove(r.mesh); r.mesh.geometry.dispose(); } return false; } return true; });
   syncPhoenix(dt);
   syncCursor();
+  syncSelection();
   fireLightT -= dt;
   if (fireLightT <= 0) {
     fireLightT = 0.3; const burning = [];
@@ -2107,10 +2215,10 @@ function updateLighting() {
 
 // ============================================================ camera & picking
 function updateCamera() {
-  camS.dist = clamp(camS.dist, 8, 95);
+  camS.dist = clamp(camS.dist, 8, 120);
   camS.tx = clamp(camS.tx, -MW / 2, MW / 2); camS.tz = clamp(camS.tz, -MH / 2, MH / 2);
   camS.tilt = clamp(camS.tilt, -0.4, 0.5);
-  const pitch = clamp(0.5 + (camS.dist - 8) / 87 * 0.65 + camS.tilt, 0.18, 1.45);
+  const pitch = clamp(0.5 + (camS.dist - 8) / 112 * 0.65 + camS.tilt, 0.18, 1.45);
   const ty = Math.max(0, hGrid(camS.tx + MW / 2, camS.tz + MH / 2));
   const sx = shake > 0 ? rand(-0.3, 0.3) : 0, sz = shake > 0 ? rand(-0.3, 0.3) : 0;
   camera.position.set(camS.tx + Math.sin(camS.yaw) * Math.cos(pitch) * camS.dist + sx, ty + Math.sin(pitch) * camS.dist, camS.tz + Math.cos(camS.yaw) * Math.cos(pitch) * camS.dist + sz);
@@ -2143,8 +2251,9 @@ function updateMouseWorld() {
   if (p && p.px >= 0 && p.py >= 0 && p.px <= WW && p.py <= WH) { mouse.wx = p.px; mouse.wy = p.py; mouse.valid = true; } else mouse.valid = false;
 }
 function screenOf(px, py, h) { _v3.set(WX(px), h, WZ(py)).project(camera); return { x: (_v3.x + 1) / 2 * innerWidth, y: (1 - _v3.y) / 2 * innerHeight, z: _v3.z }; }
+let hoverB = null;
 function updateHover() {
-  hover = null;
+  hover = null; hoverB = null;
   if (selected !== 'hand' || held || !started) return;
   let bd = 26;
   for (const v of villages) for (const u of v.villagers) {
@@ -2154,6 +2263,7 @@ function updateHover() {
     const d = Math.hypot(s.x - mouse.x, s.y - mouse.y);
     if (d < bd) { bd = d; hover = { u, v }; }
   }
+  if (!hover && mouse.valid) hoverB = pickBuilding(mouse.wx, mouse.wy);
 }
 function centerOnPx(px, py) { camS.tx = WX(px); camS.tz = WZ(py); }
 
@@ -2162,12 +2272,14 @@ function tryGrab() {
   if (hover) {
     const { u, v } = hover;
     if (!inInfluence('p', u.x, u.y)) { msg('Outside your influence', 'info'); return; }
-    held = { u, v, hist: [] }; u.state = 'held'; u.h = surfPx(u.x, u.y); u.fear = 0; if (u.task === 'build') u.task = null;
+    held = { u, v, hist: [], t0: performance.now(), sx: mouse.x, sy: mouse.y }; u.state = 'held'; u.h = surfPx(u.x, u.y); u.fear = 0; if (u.task === 'build') u.task = null;
     S.grab(u.x, u.y); S.yelp(u.x, u.y, u.look.female);
     if (Math.random() < 0.4) advise('grab');
     return;
   }
   if (!mouse.valid) return;
+  const bld = pickBuilding(mouse.wx, mouse.wy);
+  if (bld) { selectThing(bld); return; }
   const i = tIdx(mouse.wx, mouse.wy);
   if (i >= 0 && tiles[i] === T.FOREST && fire[i] <= 0) {
     if (!inInfluence('p', mouse.wx, mouse.wy)) { msg('Outside your influence', 'info'); return; }
@@ -2176,7 +2288,22 @@ function tryGrab() {
     logs.push(lg); held = { o: lg, hist: [] };
     S.uproot(mouse.wx, mouse.wy);
     for (let k = 0; k < 20; k++) spawn(mouse.wx, mouse.wy, surfPx(mouse.wx, mouse.wy) + 0.1, rand(-1.5, 1.5), rand(1, 3), rand(-1.5, 1.5), 1, 0x6a5232, rand(0.15, 0.3), false, -10);
+  } else if (sel) selectThing(null);
+}
+function pickBuilding(px, py) {
+  let best = null, bd = 30;
+  for (const v of villages) {
+    for (const h of v.houses) { const d = dist(h.x, h.y, px, py); if (d < bd) { bd = d; best = { kind: 'b', h, v }; } }
+    for (const s of v.sites) { const d = dist(s.x, s.y, px, py); if (d < bd) { bd = d; best = { kind: 's', s, v }; } }
   }
+  return best;
+}
+// right click (without dragging): let go of whatever the Hand holds, cancel aiming/building, or close the details panel
+function cancelAction() {
+  if (held) { const o = held.u || held.o; o.vx = o.vy = 0; o.vh = 0; o.state = 'fly'; o.spin = 0; held = null; S.ui(); return; }
+  if (aim) { aim = null; S.ui(); return; }
+  if (selected !== 'hand') { select('hand'); return; }
+  if (sel) selectThing(null);
 }
 function updHeld(dt) {
   if (!held) return;
@@ -2190,6 +2317,11 @@ function updHeld(dt) {
 }
 function release() {
   if (!held) return;
+  // a quick click (no drag) on a villager inspects them instead of throwing
+  if (held.u && performance.now() - held.t0 < 240 && Math.hypot(mouse.x - held.sx, mouse.y - held.sy) < 8) {
+    const u = held.u; u.state = 'idle'; u.t = 0.8; u.h = surfPx(u.x, u.y); u.vx = u.vy = u.vh = 0;
+    held = null; selectThing({ kind: 'v', u, follow: false }); return;
+  }
   const o = held.u || held.o, h = held.hist;
   let vx = 0, vy = 0;
   if (h.length >= 2) { const a = h[0], b = h[h.length - 1], dt = (b.t - a.t) / 1000; if (dt > 0.01) { vx = (b.x - a.x) / dt; vy = (b.y - a.y) / dt; } }
@@ -2261,6 +2393,60 @@ buildsEl.appendChild(Object.assign(document.createElement('div'), { className: '
 buildsEl.appendChild(Object.assign(document.createElement('span'), { className: 'grp', textContent: 'Facilities' }));
 BUILDS.filter(b => b.cat === 'fac').forEach(b => makeBtn(buildsEl, b.id, b.icon, b.name, '', 'build', b.desc));
 
+// ---------- details panel for the selected villager / building / building site
+const infoEl = $('info');
+let sel = null, infoRefs = [], infoT = 0;
+function selectThing(s) { sel = s; S.ui(0.6); infoEl.style.display = s ? 'block' : 'none'; renderInfo(); }
+function renderInfo() {
+  if (!sel) return;
+  infoRefs = [];
+  const meter = (label, val, col) => `<div class="meter"><span>${label}</span><span class="bar"><i style="width:${clamp(val, 0, 100)}%;background:${col}"></i></span> ${Math.round(val)}</div>`;
+  const ref = u => { infoRefs.push(u); return infoRefs.length - 1; };
+  let html = '';
+  if (sel.kind === 'v') {
+    const u = sel.u, v = villages.find(q => q.villagers.includes(u));
+    if (!v) { msg(`${u.name} has died`, 'bad'); sel = null; infoEl.style.display = 'none'; return; }
+    sel.v = v;
+    const home = u.home ? `${BMY[u.home.type].name} in ${v.name}` : (isChild(u) ? `with family in ${v.name}` : 'Homeless');
+    const mates = u.home ? (u.home.residents || []).filter(o => o !== u) : [];
+    html = `<div class="ih"><b>${u.name}</b><span class="x" data-close>✕</span></div>
+      <div class="sub">${isChild(u) ? (u.look.female ? 'Girl' : 'Boy') : (u.look.female ? 'Woman' : 'Man')} · ${yearsOf(u)} years old · ${u.trait.name}</div>
+      <div class="row2">🏘 ${v.name} — ${v.owner === 'p' ? 'believes in you' : v.owner === 'r' ? 'worships the Tidewraith' : 'undecided'}</div>
+      <div class="row2">🏠 ${home}${mates.length ? ` · lives with ${mates.map(o => `<span class="res" data-ref="${ref(o)}">${o.name}</span>`).join(', ')}` : ''}</div>
+      <div class="row2">🛠 ${activity(u)}</div>
+      <div style="margin:5px 0">${feelings(u, v).map(f => `<span class="feel">${f}</span>`).join('')}</div>
+      ${meter('Happiness', u.mood, '#ffd36b')}${meter('Faith', faithOf(u, v), '#9fd8ff')}${meter('Health', u.hp, '#7ae08a')}${meter('Fear', u.fearT, '#ff6a6a')}
+      <button data-follow>${sel.follow ? '📍 Stop following' : '🎥 Follow with camera'}</button>`;
+  } else if (sel.kind === 'b') {
+    const h = sel.h, v = villages.find(q => q.houses.includes(h));
+    if (!v) { msg('That building was destroyed', 'bad'); sel = null; infoEl.style.display = 'none'; return; }
+    const b = BMY[h.type];
+    html = `<div class="ih"><b>${b.icon} ${b.name}</b><span class="x" data-close>✕</span></div><div class="sub">${v.name} · ${b.desc}</div>${meter('Condition', h.hp, '#c9a06a')}`;
+    if (b.cat === 'house') {
+      const r = h.residents || [];
+      html += `<div class="row2" style="margin-top:6px">👪 Residents (${r.length}/${b.cap}) — click a name:</div>`;
+      html += r.length ? r.map(u => `<div class="res" data-ref="${ref(u)}">${moodEmoji(u)} <b style="color:#eee">${u.name}</b> <span style="color:#9ab">· ${yearsOf(u)}y · ${activity(u)}</span></div>`).join('')
+                       : '<div class="sub">Nobody lives here yet.</div>';
+    }
+  } else {
+    const s = sel.s, v = s.v;
+    if (!v.sites.includes(s)) { const h = v.houses.find(q => q.x === s.x && q.y === s.y); sel = h ? { kind: 'b', h, v } : null; if (!sel) infoEl.style.display = 'none'; return renderInfo(); }
+    const b = BMY[s.type], pct = Math.floor(s.progress / s.need * 100), workers = v.villagers.filter(u => u.site === s);
+    html = `<div class="ih"><b>🔨 ${b.name} — ${pct}%</b><span class="x" data-close>✕</span></div><div class="sub">Under construction in ${v.name}</div>
+      ${meter('Progress', pct, '#ffd36b')}
+      <div class="row2">🪵 Wood delivered: ${Math.floor(s.progress)} / ${s.need} · village stock: ${Math.floor(v.wood)}</div>
+      <div class="row2">👷 Builders: ${workers.length ? workers.map(u => `<span class="res" data-ref="${ref(u)}">${u.name}</span>`).join(', ') : 'none right now'}</div>
+      <div class="sub" style="margin-top:4px">Tip: throw logs onto the site to speed it up.</div>`;
+  }
+  infoEl.innerHTML = html;
+}
+infoEl.addEventListener('mousedown', e => {
+  e.stopPropagation();
+  const t = e.target.closest('[data-close],[data-follow],[data-ref]'); if (!t) return;
+  if (t.hasAttribute('data-close')) selectThing(null);
+  else if (t.hasAttribute('data-follow')) { sel.follow = !sel.follow; renderInfo(); }
+  else { const u = infoRefs[+t.dataset.ref]; if (u) selectThing({ kind: 'v', u, follow: false }); }
+});
 let learnedDirty = true, lastActDirty = true, hudT = 0;
 function updHUD() {
   const P = gods.p, cap = manaCap('p');
@@ -2268,7 +2454,7 @@ function updHUD() {
   $('manaTxt').textContent = `${Math.floor(P.mana)}/${cap}`;
   $('manaRate').textContent = `+${P.rate.toFixed(1)}/s`;
   $('moralMark').style.left = `calc(${(1 + P.morality) * 50}% - 2px)`;
-  $('vCount').textContent = `${owned('p').length}/${villages.length}`;
+  $('vCount').textContent = `${owned('p').length}/${goalCount()}`;
   $('popCount').textContent = believers('p');
   $('rCount').textContent = owned('r').length;
   const phase = ((time / DAY_LEN) + 0.1) % 1;
@@ -2318,6 +2504,26 @@ function placeLabels() {
     v.label.style.display = on ? 'block' : 'none';
     if (on) { v.label.style.left = ((_v3.x + 1) / 2 * innerWidth) + 'px'; v.label.style.top = ((1 - _v3.y) / 2 * innerHeight) + 'px'; }
   }
+  for (const v of villages) for (const s of v.sites) {
+    if (!s.label) { s.label = document.createElement('div'); s.label.className = 'slbl'; s.label.innerHTML = '<span></span><div class="pb"><i></i></div>'; labelsEl.appendChild(s.label); }
+    _v3.set(WX(s.x), groundPx(s.x, s.y) + 2.6, WZ(s.y)).project(camera);
+    const on = _v3.z < 1 && Math.abs(_v3.x) < 1.1 && Math.abs(_v3.y) < 1.1 && camS.dist < 75;
+    s.label.style.display = on ? 'block' : 'none';
+    if (on) {
+      const pct = Math.floor(s.progress / s.need * 100);
+      s.label.style.left = ((_v3.x + 1) / 2 * innerWidth) + 'px'; s.label.style.top = ((1 - _v3.y) / 2 * innerHeight) + 'px';
+      s.label.firstChild.textContent = `🔨 ${BMY[s.type].name} ${pct}%`; s.label.querySelector('i').style.width = pct + '%';
+    }
+  }
+  const hn = $('hoverName');
+  let tip = '';
+  if (started && !held && selected === 'hand') {
+    if (hover) tip = `${moodEmoji(hover.u)} ${hover.u.name} — ${activity(hover.u)} · click: details · drag: throw`;
+    else if (hoverB) tip = hoverB.kind === 's' ? `🔨 ${BMY[hoverB.s.type].name} ${Math.floor(hoverB.s.progress / hoverB.s.need * 100)}% · click for details`
+      : `${BMY[hoverB.h.type].icon} ${BMY[hoverB.h.type].name}${BMY[hoverB.h.type].cat === 'house' ? ` — ${(hoverB.h.residents || []).length}/${BMY[hoverB.h.type].cap} residents` : ''} · click for details`;
+  } else if (held && held.u) tip = `${held.u.name} — release to drop or throw · right click: let go gently`;
+  hn.style.display = tip ? 'block' : 'none';
+  if (tip) { hn.textContent = tip; hn.style.left = mouse.x + 'px'; hn.style.top = mouse.y + 'px'; }
   const ci = $('cursorIcon');
   ci.textContent = selected === 'hand' ? (held ? '✊' : hover ? '🖐' : '✋') : (MBY[selected] || BMY[selected]).icon;
   ci.style.left = mouse.x + 'px'; ci.style.top = mouse.y + 'px';
@@ -2348,7 +2554,7 @@ canvas.addEventListener('mousemove', e => {
 });
 canvas.addEventListener('mousedown', e => {
   mouse.x = mouse.lx = e.clientX; mouse.y = mouse.ly = e.clientY;
-  if (e.button === 2) { mouse.rdrag = true; return; }
+  if (e.button === 2) { mouse.rdrag = true; mouse.rsx = e.clientX; mouse.rsy = e.clientY; return; }
   if (e.button === 1) { mouse.mdrag = true; e.preventDefault(); return; }
   if (e.button !== 0 || !started || ended || paused) return;
   updateMouseWorld();
@@ -2359,14 +2565,15 @@ canvas.addEventListener('mousedown', e => {
 });
 addEventListener('mouseup', e => {
   if (e.button === 0) { if (held) release(); if (aim) finishAim(); }
-  if (e.button === 2) mouse.rdrag = false;
+  if (e.button === 2) { if (mouse.rdrag && Math.hypot(e.clientX - mouse.rsx, e.clientY - mouse.rsy) < 6) cancelAction(); mouse.rdrag = false; }
   if (e.button === 1) mouse.mdrag = false;
 });
 canvas.addEventListener('wheel', e => { e.preventDefault(); camS.dist *= e.deltaY < 0 ? 0.9 : 1.1; }, { passive: false });
 addEventListener('keydown', e => {
   keys[e.code] = true;
   const n = /^Digit([1-8])$/.exec(e.code); if (n) select(MIRACLES[+n[1] - 1].id);
-  if (e.code === 'KeyG' || e.code === 'Digit0' || e.code === 'Escape') select('hand');
+  if (e.code === 'KeyG' || e.code === 'Digit0') select('hand');
+  if (e.code === 'Escape') cancelAction();
   if (e.code === 'KeyZ') praise(true);
   if (e.code === 'KeyX') praise(false);
   if (e.code === 'KeyM') toggleMusic();
@@ -2441,6 +2648,8 @@ function frame(now) {
   composer.render();
   placeLabels();
   hudT -= dt; if (hudT <= 0) { hudT = 0.1; updHUD(); }
+  infoT -= dt; if (infoT <= 0) { infoT = 0.25; renderInfo(); }
+  if (sel && sel.kind === 'v' && sel.follow) { const k = Math.min(1, dt * 4); camS.tx += (WX(sel.u.x) - camS.tx) * k; camS.tz += (WZ(sel.u.y) - camS.tz) * k; }
   miniT -= dt; if (miniT <= 0) { miniT = 0.3; drawMini(); }
   requestAnimationFrame(frame);
 }
@@ -2462,7 +2671,7 @@ $('startBtn').onclick = () => {
   advise('start');
 };
 window.__ready = true;
-window.__game = { holdBeam, holdGlow, villages: () => villages, gods, spirit, cast, castFireball, update, owned, reachPoint, costOf, ctxAt, spiritLearn, time: () => time, camS, screenOf, surfPx,
+window.__game = { selectThing, sel: () => sel, pickBuilding, cancelAction, holdBeam, holdGlow, villages: () => villages, gods, spirit, cast, castFireball, update, owned, reachPoint, costOf, ctxAt, spiritLearn, time: () => time, camS, screenOf, surfPx,
   tryPlace, canPlace, held: () => held, logs: () => logs, fireballs: () => fireballs, AU, select: id => select(id) };
 requestAnimationFrame(frame);
 </script>

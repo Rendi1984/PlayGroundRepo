@@ -11,6 +11,8 @@ An original 3D god game in a single HTML file. Open `index.html` in a modern bro
 - **Happiness:** food, room, wells, gardens, festivals; grief from disasters. Happy villages grow and stay loyal.
 - **Ember, your Phoenix:** learns which miracle you use in which situation and starts doing it itself; praise (Z) / scold (X). Its form follows your morality — *Benevolent Guardian*, *Awakening*, *Harbinger of Destruction*.
 - **Advisors:** Aurel (light) and Cinder (shadow) comment with opposite advice.
+- **Villagers:** every believer has a name, age, personality, home and feelings (happiness, faith, health, fear). Houses list their residents; building sites show % progress.
+- **Win:** 5 of 7 villages (or the rival has none). **Lose:** no village for 40 seconds. Your first village is protected for the first 4 minutes.
 - **Rival god:** the Tidewraith courts villages, attacks yours, and hurls fireballs late in the game.
 - **Sound:** generative music that follows your morality, day/night and festivals; synthesized effects, voices and ambience. M / N toggle music / sound.
 
@@ -21,4 +23,5 @@ Drop these files into `assets/` and the game uses them automatically (otherwise 
 - `assets/phoenix.png` — the three-panel phoenix image (good | neutral | evil, left to right)
 
 ## Controls
+Click a villager, house or building site: details (name, age, personality, feelings, residents, progress) · Press and drag a villager: throw · **Right click: let go / cancel / close** ·
 Left click: act · Right drag / WASD: pan · Middle drag / Q E: rotate · R F: tilt · Wheel: zoom · 1–8 miracles · G hand · Space pause · Esc back to hand.

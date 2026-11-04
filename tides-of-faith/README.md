@@ -29,6 +29,13 @@ An original 3D god game in a single HTML file. Open `index.html` in a modern bro
 - Migration: people move to another god's village when life there is clearly better (in both directions).
 - Advisor voices prefer the most natural speech voices on the device; pick and test them with the 🗣 button.
 
+## Building
+- **Placement grid** — with a building selected, tiles around the cursor turn green (can build) or red (can't), and the tooltip says why: plaza, shoreline, too steep, too close to another building. Any spot inside your influence counts, not just near the village centre.
+- **Rotate before placing** — `R` or Shift+wheel. The ground under a new site is levelled automatically.
+- **Staged construction** — stone foundation, timber frame, walls rising, a material pile that shrinks as it's used, dust from the builders' hammers, and a settle-bounce when finished.
+- **Each building has its own features** — the barracks is a stone-and-timber longhouse with a watchtower (lantern lit at night, waving banner), a training yard with straw dummies, an archery target, a spear rack and a palisade. Soldiers with no war to fight go there to drill. The granary sits on staddle stones with a ladder and sacks, the well has a turning crank and bucket, the shrine has candles, and cottages have window boxes and corner posts.
+- **Close zoom** — scroll right in to rooftop level; shadows sharpen as you zoom.
+
 ## War
 Build a ⚔ Barracks to train soldiers (helmet, shield, spear) from your villagers. In the ⚔ War tab choose 🗡 Attack and click a village: your army marches, fights any defenders, and conquers the village by holding its plaza for 18 seconds. 🏳 Recall brings the army home. The Tidewraith builds barracks and attacks when its army is stronger.
 

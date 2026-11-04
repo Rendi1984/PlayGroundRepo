@@ -409,17 +409,20 @@ function recount(v) {
   }
   layoutDirty = true;
 }
-function freeSpot(x, y, minHouse = 28) {
-  const i = tIdx(x, y); if (i < 0) return false;
-  if (!isLand(tiles[i]) || groundPx(x, y) < 0.15) return false;
-  if (Math.abs(groundPx(x + 12, y) - groundPx(x - 12, y)) > 0.9 || Math.abs(groundPx(x, y + 12) - groundPx(x, y - 12)) > 0.9) return false;
+// why a spot can't take a building ('' = it can); slopes up to a limit are levelled when building
+function freeSpotWhy(x, y, minHouse = 28, slopeMax = 0.9) {
+  const i = tIdx(x, y); if (i < 0) return 'Off the map';
+  if (tiles[i] === T.WATER || groundPx(x, y) < 0.15) return 'Water or shoreline';
+  if (tiles[i] === T.ROCK) return 'Bare rock';
+  if (Math.abs(groundPx(x + 12, y) - groundPx(x - 12, y)) > slopeMax || Math.abs(groundPx(x, y + 12) - groundPx(x, y - 12)) > slopeMax) return 'Too steep — flatten it first (🌿 Land & Nature)';
   for (const v of villages) {
-    if (dist(v.x, v.y, x, y) < PLAZA) return false;
-    for (const h of v.houses) if (dist(h.x, h.y, x, y) < minHouse) return false;
-    for (const s of v.sites) if (dist(s.x, s.y, x, y) < minHouse) return false;
+    if (dist(v.x, v.y, x, y) < PLAZA) return `Inside the plaza of ${v.name}`;
+    for (const h of v.houses) if (dist(h.x, h.y, x, y) < minHouse) return `Too close to a ${BMY[h.type].name.toLowerCase()}`;
+    for (const s of v.sites) if (dist(s.x, s.y, x, y) < minHouse) return 'Too close to another building site';
   }
-  return true;
+  return '';
 }
+const freeSpot = (x, y, minHouse = 28) => !freeSpotWhy(x, y, minHouse);
 function addHouse(v, type) {
   type = type || pick(['hut', 'cottage', 'cottage', 'cottage', 'stone']);
   for (let tries = 0; tries < 70; tries++) {
@@ -856,7 +859,7 @@ function updVillager(u, v, dt) {
       u.hitT -= dt;
       if (u.hitT <= 0) {
         u.hitT = u.task === 'build' ? 0.6 : 0.8;
-        if (u.task === 'build') S.hammer(u.x, u.y); else { S.chop(u.x, u.y); spawn(u.x, u.y, groundPx(u.x, u.y) + 0.4, rand(-1, 1), rand(1, 2), rand(-1, 1), 0.6, 0xc8a070, 0.12, false, -8); }
+        if (u.task === 'build') { S.hammer(u.x, u.y); if (u.site) for (let q = 0; q < 4; q++) spawn(u.site.x + rand(-12, 12), u.site.y + rand(-12, 12), surfPx(u.site.x, u.site.y) + rand(0.2, 0.9), rand(-.6, .6), rand(0.2, 0.9), rand(-.6, .6), 0.9, q ? 0xb8a888 : 0xffe0a0, rand(0.12, 0.25), q === 0, -2); } else { S.chop(u.x, u.y); spawn(u.x, u.y, groundPx(u.x, u.y) + 0.4, rand(-1, 1), rand(1, 2), rand(-1, 1), 0.6, 0xc8a070, 0.12, false, -8); }
       }
     }
     if (u.state === 'dance') u.dir += dt * 2.2;
@@ -872,6 +875,9 @@ function chooseTask(u, v) {
   if (u.soldier && v.owner) {
     const T = gods[v.owner].war.target;
     if (T && T.owner !== v.owner) return walkTo(u, ...ringPoint(T, 20, PLAZA + 30), 'war');
+    const bk = v.houses.find(h => h.type === 'barracks');
+    if (bk && Math.random() < 0.55) { const r = bk.rot || 0, yx = bk.x + Math.cos(r) * 22, yy = bk.y + Math.sin(r) * 22; u.drill = { x: yx, y: yy }; return walkTo(u, yx + rand(-9, 9), yy + rand(-7, 7), 'drill'); }
+    u.drill = null;
     return walkTo(u, ...ringPoint(v, PLAZA + 10, PLAZA + 80), 'guard');
   }
   // food comes first: a hungry village sends nearly everyone to the fields
@@ -915,7 +921,8 @@ function arrive(u, v) {
   } else if (u.goal === 'pray') { u.state = 'pray'; u.t = rand(5, 9); u.dir = Math.atan2(v.x - u.x, v.y - u.y); }
   else if (u.goal === 'dance') { u.state = 'dance'; u.t = rand(4, 7); }
   else if (u.goal === 'play') { u.state = 'idle'; u.t = rand(0.2, 1.5); }
-  else if (u.goal === 'guard' || u.goal === 'war') { u.state = 'guard'; u.t = u.goal === 'war' ? rand(1.5, 3) : rand(3, 7); }
+  else if (u.goal === 'guard' || u.goal === 'war') { u.state = 'guard'; u.drill = null; u.t = u.goal === 'war' ? rand(1.5, 3) : rand(3, 7); }
+  else if (u.goal === 'drill') { u.state = 'guard'; u.t = rand(5, 10); if (u.drill) u.dir = Math.atan2(u.drill.x - u.x, u.drill.y - u.y) + rand(-0.6, 0.6); }
   else {
     if (u.carry === 'food') v.food += 2.2 * (v.fert > 0 ? 2 : 1) * (1 + 0.25 * v.nGranary) * (u.foodMul || 1);
     else if (u.carry === 'wood') v.wood += u.woodAmt || 1.5;
@@ -1007,7 +1014,9 @@ function completeSite(s) {
   if (s.mesh) scene.remove(s.mesh);
   if (s.label) s.label.remove();
   if (s.type === 'settle') foundVillage(s.x, s.y, v);
-  else { v.houses.push({ type: s.type, x: s.x, y: s.y, hp: 100, rot: Math.atan2(v.y - s.y, v.x - s.x), mesh: null, props: Math.random() }); recount(v); }
+  else { v.houses.push({ type: s.type, x: s.x, y: s.y, hp: 100, rot: s.rot ?? Math.atan2(v.y - s.y, v.x - s.x), mesh: null, props: Math.random(), born: time }); recount(v); }
+  const gy0 = surfPx(s.x, s.y);
+  for (let k = 0; k < 36; k++) { const a = k / 36 * Math.PI * 2; spawn(s.x + Math.cos(a) * 14, s.y + Math.sin(a) * 14, gy0 + 0.1, Math.cos(a) * 2.5, 0.4, Math.sin(a) * 2.5, 1.1, 0x9a8a6a, rand(0.3, 0.5), false); }
   S.complete(s.x, s.y);
   const gy = surfPx(s.x, s.y);
   for (let k = 0; k < 40; k++) spawn(s.x, s.y, gy + 1, rand(-2, 2), rand(1, 3), rand(-2, 2), 1.2, 0xffe7a0, 0.25, true, -3);
@@ -1029,16 +1038,17 @@ function canPlace(type, x, y) {
   if (!inInfluence('p', x, y)) return { ok: false, why: 'Outside your influence' };
   if (type === 'settle') {
     if (villages.some(v => dist(v.x, v.y, x, y) < 330)) return { ok: false, why: 'A settlement must be farther from existing villages' };
-    if (!freeSpot(x, y, 40)) return { ok: false, why: "Can't build here (water, rock, slope or crowding)" };
+    const w = freeSpotWhy(x, y, 40, 1.8); if (w) return { ok: false, why: w };
     const parent = nearestVillage(x, y, 1e9, v => v.owner === 'p' && dist(v.x, v.y, x, y) <= infR(v));
     if (!parent) return { ok: false, why: 'Outside your influence' };
     if (parent.villagers.length < 6) return { ok: false, why: `${parent.name} needs at least 6 villagers to found a settlement` };
     if (parent.sites.length >= 4) return { ok: false, why: `${parent.name} already has 4 building sites` };
     return { ok: true, v: parent };
   }
-  if (!freeSpot(x, y, 30)) return { ok: false, why: "Can't build here (plaza, water, rock, slope or crowding)" };
-  const v = nearestVillage(x, y, 210, o => o.owner === 'p');
-  if (!v) return { ok: false, why: 'Build close to a village that believes in you' };
+  const w = freeSpotWhy(x, y, type === 'field' ? 36 : type === 'barracks' ? 44 : 30, 1.8); if (w) return { ok: false, why: w };
+  // the site belongs to the nearest of your villages whose influence covers it
+  const v = nearestVillage(x, y, 1e9, o => o.owner === 'p' && dist(o.x, o.y, x, y) <= infR(o));
+  if (!v) return { ok: false, why: 'Outside your influence' };
   if (v.sites.length >= 4) return { ok: false, why: `${v.name} already has 4 building sites` };
   return { ok: true, v };
 }
@@ -1046,10 +1056,11 @@ function tryPlace(type, x, y) {
   const r = canPlace(type, x, y);
   if (!r.ok) { msg(r.why, 'info'); S.ui(0.6); return; }
   const b = BMY[type];
-  const site = { type, x, y, v: r.v, need: b.wood, progress: 0, mesh: null };
+  const site = { type, x, y, v: r.v, need: b.wood, progress: 0, shown: 0, mesh: null, rot: Math.atan2(r.v.y - y, r.v.x - x) + buildRot };
   r.v.sites.push(site);
-  const tx = Math.floor(x / TILE), ty = Math.floor(y / TILE);
-  for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) if (inMap(tx + dx, ty + dy) && tiles[(ty + dy) * MW + tx + dx] === T.FOREST) setTile((ty + dy) * MW + tx + dx, T.GRASS);
+  levelGround(x, y, type === 'settle' ? 2.4 : type === 'barracks' ? 2.0 : 1.4);
+  const tx = Math.floor(x / TILE), ty = Math.floor(y / TILE), cr = type === 'barracks' ? 2 : 1;
+  for (let dy = -cr; dy <= cr; dy++) for (let dx = -cr; dx <= cr; dx++) if (inMap(tx + dx, ty + dy) && tiles[(ty + dy) * MW + tx + dx] === T.FOREST) setTile((ty + dy) * MW + tx + dx, T.GRASS);
   selectThing({ kind: 's', s: site, v: r.v });
   S.place(x, y); layoutDirty = true;
   msg(`Building site: ${b.name} — the people of ${r.v.name} will bring ${b.wood} wood`, 'info');
@@ -1197,7 +1208,7 @@ function feelings(u, v) {
 function activity(u) {
   if (u.soldier && u.state === 'fight') return '⚔ Fighting!';
   if (u.soldier && u.state === 'walk' && u.goal === 'war') return 'Marching to war';
-  if (u.soldier && u.state === 'guard') return 'Standing guard';
+  if (u.soldier && u.state === 'guard') return u.drill ? 'Training at the barracks' : 'Standing guard';
   if (u.state === 'held') return 'Dangling from your Hand!';
   if (u.state === 'fly') return 'Flying through the air!';
   if (u.state === 'swim') return 'Swimming back to shore';
@@ -1867,7 +1878,7 @@ view.appendChild(renderer.domElement);
 const scene = new THREE.Scene();
 scene.fog = new THREE.Fog(0x8ec5ea, 60, 180);
 scene.background = new THREE.Color(0x8ec5ea);
-const camera = new THREE.PerspectiveCamera(45, 1, 0.3, 600);
+const camera = new THREE.PerspectiveCamera(45, 1, 0.08, 600);
 const camS = { tx: 0, tz: 0, dist: 42, yaw: 0.35, tilt: 0 };
 
 const hemi = new THREE.HemisphereLight(0xcfe6ff, 0x4a3a28, 0.9); scene.add(hemi);
@@ -1940,17 +1951,20 @@ function buildTerrain() {
   dirtV = new Float32Array(pos.count);
   const tmat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.95, metalness: 0, envMapIntensity: 0.6 });
   tmat.onBeforeCompile = sh => {
+    sh.uniforms.uDetail = { value: TEX.ground };
     sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vWPos; varying vec3 vWNorm;')
       .replace('#include <begin_vertex>', '#include <begin_vertex>\nvWPos = (modelMatrix * vec4(transformed, 1.0)).xyz;')
       .replace('#include <beginnormal_vertex>', '#include <beginnormal_vertex>\nvWNorm = normalize(mat3(modelMatrix) * objectNormal);');
     sh.fragmentShader = sh.fragmentShader.replace('#include <common>', `#include <common>
-      varying vec3 vWPos; varying vec3 vWNorm;
+      varying vec3 vWPos; varying vec3 vWNorm; uniform sampler2D uDetail;
       float hsh(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
       float vnoise(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
         return mix(mix(hsh(i), hsh(i + vec2(1, 0)), f.x), mix(hsh(i + vec2(0, 1)), hsh(i + vec2(1, 1)), f.x), f.y); }`)
       .replace('#include <color_fragment>', `#include <color_fragment>
         float n1 = vnoise(vWPos.xz * 1.6), n2 = vnoise(vWPos.xz * 6.5), n3 = vnoise(vWPos.xz * 0.3);
         diffuseColor.rgb *= 0.8 + 0.3 * n1 + 0.14 * (n2 - 0.5);
+        float det = texture2D(uDetail, vWPos.xz * 0.55).r * 0.6 + texture2D(uDetail, vWPos.xz * 0.13 + 0.37).r * 0.4;
+        diffuseColor.rgb *= 0.55 + det * 0.9;
         diffuseColor.rgb *= mix(vec3(1.0), vec3(1.06, 1.0, 0.86), n3 * 0.7);
         float slope = 1.0 - clamp(vWNorm.y, 0.0, 1.0);
         vec3 rock = vec3(0.36, 0.34, 0.31) * (0.75 + 0.5 * n2);
@@ -2093,9 +2107,9 @@ class Scatter {
 let trunks = null, pines, broads, rocks;
 const BURN_COL = new THREE.Color(0x6a2408);
 function mergeGeos(list) {
-  const pos = [], nor = [], idx = []; let off = 0;
+  const pos = [], nor = [], idx = [], uv = []; let off = 0; const hasUV = list.every(g => g.attributes.uv);
   for (const g of list) {
-    pos.push(...g.attributes.position.array); nor.push(...g.attributes.normal.array);
+    pos.push(...g.attributes.position.array); nor.push(...g.attributes.normal.array); if (hasUV) uv.push(...g.attributes.uv.array);
     if (g.index) for (const k of g.index.array) idx.push(k + off);
     else for (let k = 0; k < g.attributes.position.count; k++) idx.push(k + off);
     off += g.attributes.position.count;
@@ -2103,6 +2117,7 @@ function mergeGeos(list) {
   const out = new THREE.BufferGeometry();
   out.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
   out.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3));
+  if (hasUV) out.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
   out.setIndex(idx); return out;
 }
 function buildScatter() {
@@ -2219,6 +2234,23 @@ function applyTerra(id, x, y) {
     else if (id === 'lower') hc[k] = Math.max(-4.5, hc[k] - 0.55 * w);
     else hc[k] += (target - hc[k]) * 0.4 * w;
   }
+  reshapeArea(x0, x1, z0, z1);
+  const gy = surfPx(x, y);
+  for (let k = 0; k < 10; k++) spawn(x + rand(-50, 50), y + rand(-50, 50), gy + 0.1, rand(-.5, .5), rand(0.5, 1.6), rand(-.5, .5), 1.2, id === 'lower' && gy <= 0.05 ? 0xcfeaff : 0x9a8462, rand(0.3, 0.6), false);
+  if (id === 'water') for (let k = 0; k < 14; k++) spawn(x + rand(-30, 30), y + rand(-30, 30), scoop ? 0.1 : gy + 2.5, rand(-.3, .3), scoop ? rand(2, 4) : -rand(3, 6), rand(-.3, .3), 0.6, 0xbfe4ff, rand(0.12, 0.22), false, scoop ? 0 : -8);
+  terra.sndT -= 1; if (terra.sndT <= 0) { terra.sndT = 2; id === 'water' || (id === 'lower' && gy <= 0.05) ? S.splash(x, y) : S.rumble(x, y); }
+}
+// level a small patch under a new building (walls should not hang over a slope)
+function levelGround(x, y, R) {
+  const gx = x / TILE, gz = y / TILE, target = Math.max(0.3, hGrid(gx, gz));
+  const x0 = Math.max(0, Math.floor(gx - R - 1)), x1 = Math.min(CW - 1, Math.ceil(gx + R + 1)), z0 = Math.max(0, Math.floor(gz - R - 1)), z1 = Math.min(CH - 1, Math.ceil(gz + R + 1));
+  for (let z = z0; z <= z1; z++) for (let xx = x0; xx <= x1; xx++) {
+    const d = Math.hypot(xx - gx, z - gz); if (d > R + 1) continue;
+    const w = d <= R ? 1 : 1 - (d - R), k = z * CW + xx; hc[k] += (target - hc[k]) * w;
+  }
+  reshapeArea(x0, x1, z0, z1);
+}
+function reshapeArea(x0, x1, z0, z1) {
   for (let tz = z0; tz < z1; tz++) for (let tx = x0; tx < x1; tx++) {
     if (!inMap(tx, tz)) continue;
     const i = tz * MW + tx, h = (hc[tz * CW + tx] + hc[tz * CW + tx + 1] + hc[(tz + 1) * CW + tx] + hc[(tz + 1) * CW + tx + 1]) / 4;
@@ -2240,11 +2272,12 @@ function applyTerra(id, x, y) {
   const data = waterTex.image.data;
   for (let z = z0; z <= z1; z++) for (let xx = x0; xx <= x1; xx++) { const k = z * CW + xx, v = clamp((hc[k] + 6) / 10, 0, 1) * 255; data[k * 4] = data[k * 4 + 1] = data[k * 4 + 2] = v; }
   waterTex.needsUpdate = true;
-  terrainDirty = true; miniDirty = true; influenceDirty = true;
-  const gy = surfPx(x, y);
-  for (let k = 0; k < 10; k++) spawn(x + rand(-50, 50), y + rand(-50, 50), gy + 0.1, rand(-.5, .5), rand(0.5, 1.6), rand(-.5, .5), 1.2, id === 'lower' && gy <= 0.05 ? 0xcfeaff : 0x9a8462, rand(0.3, 0.6), false);
-  if (id === 'water') for (let k = 0; k < 14; k++) spawn(x + rand(-30, 30), y + rand(-30, 30), scoop ? 0.1 : gy + 2.5, rand(-.3, .3), scoop ? rand(2, 4) : -rand(3, 6), rand(-.3, .3), 0.6, 0xbfe4ff, rand(0.12, 0.22), false, scoop ? 0 : -8);
-  terra.sndT -= 1; if (terra.sndT <= 0) { terra.sndT = 2; id === 'water' || (id === 'lower' && gy <= 0.05) ? S.splash(x, y) : S.rumble(x, y); }
+  terrainDirty = true; miniDirty = true; influenceDirty = true; grassState.dirtyT = 0;
+  // buildings, sites and plazas follow the new ground
+  for (const v of villages) {
+    for (const h of v.houses) if (h.mesh) h.mesh.position.y = groundPx(h.x, h.y) - 0.02;
+    for (const st of v.sites) if (st.mesh) st.mesh.position.y = groundPx(st.x, st.y) - 0.02;
+  }
 }
 function plantTrees(x, y) {
   let n = 0;
@@ -2280,47 +2313,59 @@ function canvasTex(size, draw, rep = 1) {
 }
 const noise = (g, n, w, a) => { for (let k = 0; k < n; k++) { g.fillStyle = `rgba(${Math.random() < 0.5 ? '0,0,0' : '255,255,255'},${Math.random() * a})`; g.fillRect(Math.random() * w, Math.random() * w, 1 + Math.random() * 2, 1 + Math.random() * 2); } };
 const TEX = {
-  stone: canvasTex(256, (g, w) => {          // irregular coursed fieldstone with dark mortar
-    g.fillStyle = '#4a453e'; g.fillRect(0, 0, w, w);
-    for (let y = 0; y < w;) { const rh = 18 + Math.random() * 14;
-      for (let x = -Math.random() * 30; x < w;) { const bw = 24 + Math.random() * 30, l = 42 + Math.random() * 20;
-        g.fillStyle = `hsl(${28 + Math.random() * 14},${6 + Math.random() * 8}%,${l}%)`;
-        g.beginPath(); g.roundRect(x + 2, y + 2, bw - 4, rh - 4, 5); g.fill();
-        g.fillStyle = 'rgba(255,255,255,0.07)'; g.fillRect(x + 4, y + 3, bw - 10, 3); x += bw; }
+  stone: canvasTex(512, (g, w) => {          // irregular coursed fieldstone: shaded stones, dark mortar, a little moss
+    g.fillStyle = '#3e3a33'; g.fillRect(0, 0, w, w);
+    for (let y = 0; y < w;) { const rh = 30 + Math.random() * 26;
+      for (let x = -Math.random() * 50; x < w;) { const bw = 40 + Math.random() * 56, l = 40 + Math.random() * 22, hue = 26 + Math.random() * 16;
+        const gr = g.createLinearGradient(x, y, x + bw, y + rh); gr.addColorStop(0, `hsl(${hue},${7 + Math.random() * 8}%,${l + 8}%)`); gr.addColorStop(1, `hsl(${hue},${6 + Math.random() * 6}%,${l - 10}%)`);
+        g.fillStyle = gr; g.beginPath(); g.roundRect(x + 3, y + 3, bw - 6, rh - 6, 9); g.fill();
+        g.strokeStyle = 'rgba(0,0,0,0.25)'; g.lineWidth = 1; if (Math.random() < 0.3) { g.beginPath(); g.moveTo(x + bw * 0.3, y + 5); g.lineTo(x + bw * 0.45, y + rh * 0.6); g.lineTo(x + bw * 0.4, y + rh - 5); g.stroke(); }
+        if (Math.random() < 0.18) { g.fillStyle = 'rgba(80,110,50,0.35)'; g.beginPath(); g.ellipse(x + bw * 0.5, y + rh - 6, bw * 0.3, 5, 0, 0, 7); g.fill(); }
+        x += bw; }
       y += rh; }
-    noise(g, 9000, w, 0.12);
+    noise(g, 30000, w, 0.12);
   }),
   plaster: canvasTex(256, (g, w) => {
     g.fillStyle = '#d6ccb8'; g.fillRect(0, 0, w, w); noise(g, 12000, w, 0.06);
     for (let k = 0; k < 7; k++) { const x = Math.random() * w, y = Math.random() * w, r = 20 + Math.random() * 50, gr = g.createRadialGradient(x, y, 0, x, y, r); gr.addColorStop(0, 'rgba(120,96,60,0.12)'); gr.addColorStop(1, 'rgba(120,96,60,0)'); g.fillStyle = gr; g.fillRect(0, 0, w, w); }
   }),
-  planks: canvasTex(256, (g, w) => {
-    for (let x = 0; x < w; x += 21) { g.fillStyle = `hsl(${25 + Math.random() * 8},${30 + Math.random() * 12}%,${26 + Math.random() * 10}%)`; g.fillRect(x, 0, 21, w);
-      g.strokeStyle = 'rgba(0,0,0,0.18)'; for (let k = 0; k < 5; k++) { g.beginPath(); const ox = x + 3 + Math.random() * 15; g.moveTo(ox, 0); for (let y = 0; y < w; y += 16) g.lineTo(ox + Math.sin(y * 0.05 + k) * 1.5, y); g.stroke(); }
-      g.fillStyle = '#1c130c'; g.fillRect(x, 0, 2, w); }
-    noise(g, 4000, w, 0.08);
+  planks: canvasTex(512, (g, w) => {
+    for (let x = 0; x < w; x += 42) { g.fillStyle = `hsl(${25 + Math.random() * 8},${30 + Math.random() * 12}%,${26 + Math.random() * 10}%)`; g.fillRect(x, 0, 42, w);
+      for (let k = 0; k < 2; k++) { const ky = Math.random() * w; g.fillStyle = 'rgba(30,18,8,0.5)'; g.beginPath(); g.ellipse(x + 10 + Math.random() * 22, ky, 4, 7, 0, 0, 7); g.fill(); }
+      g.strokeStyle = 'rgba(0,0,0,0.18)'; for (let k = 0; k < 9; k++) { g.beginPath(); const ox = x + 3 + Math.random() * 36; g.moveTo(ox, 0); for (let y = 0; y < w; y += 16) g.lineTo(ox + Math.sin(y * 0.05 + k) * 1.5, y); g.stroke(); }
+      g.fillStyle = '#1c130c'; g.fillRect(x, 0, 3, w); }
+    noise(g, 16000, w, 0.08);
   }),
   soil: canvasTex(256, (g, w) => {
     g.fillStyle = '#5a4128'; g.fillRect(0, 0, w, w);
     for (let y = 0; y < w; y += 16) { g.fillStyle = 'rgba(30,20,10,0.55)'; g.fillRect(0, y, w, 5); g.fillStyle = 'rgba(140,105,70,0.25)'; g.fillRect(0, y + 7, w, 3); }
     noise(g, 9000, w, 0.15);
   }),
-  thatch: canvasTex(256, (g, w) => {          // layered straw in overlapping rows
-    g.fillStyle = '#6e5430'; g.fillRect(0, 0, w, w);
-    for (let row = 0; row < w; row += 22) {
-      for (let k = 0; k < 520; k++) { const x = Math.random() * w, y = row + Math.random() * 26, l = 8 + Math.random() * 14;
+  thatch: canvasTex(512, (g, w) => {          // layered straw in overlapping rows, weathered darker at the bottom of each course
+    g.fillStyle = '#5e4628'; g.fillRect(0, 0, w, w);
+    for (let row = 0; row < w; row += 34) {
+      const gr = g.createLinearGradient(0, row, 0, row + 34); gr.addColorStop(0, 'rgba(255,230,170,0.08)'); gr.addColorStop(1, 'rgba(20,12,4,0.25)'); g.fillStyle = gr; g.fillRect(0, row, w, 34);
+      for (let k = 0; k < 1400; k++) { const x = Math.random() * w, y = row + Math.random() * 40, l = 12 + Math.random() * 22;
         g.strokeStyle = `hsl(${36 + Math.random() * 10},${38 + Math.random() * 18}%,${34 + Math.random() * 26}%)`; g.lineWidth = 1 + Math.random();
         g.beginPath(); g.moveTo(x, y); g.lineTo(x + (Math.random() - 0.5) * 3, y + l); g.stroke(); }
-      g.fillStyle = 'rgba(30,18,6,0.35)'; g.fillRect(0, row + 20, w, 3);
+      g.fillStyle = 'rgba(30,18,6,0.4)'; g.fillRect(0, row + 31, w, 4);
     }
   }, 2),
-  slate: canvasTex(256, (g, w) => {
-    g.fillStyle = '#20262e'; g.fillRect(0, 0, w, w);
-    for (let y = 0, r = 0; y < w; y += 20, r++) for (let x = (r % 2) * 16 - 16; x < w; x += 32) {
-      g.fillStyle = `hsl(${205 + Math.random() * 15},${6 + Math.random() * 8}%,${24 + Math.random() * 14}%)`; g.fillRect(x + 1, y + 1, 30, 21);
-      g.fillStyle = 'rgba(0,0,0,0.35)'; g.fillRect(x + 1, y + 19, 30, 3); }
-    noise(g, 5000, w, 0.08);
+  slate: canvasTex(512, (g, w) => {
+    g.fillStyle = '#1c2128'; g.fillRect(0, 0, w, w);
+    for (let y = 0, r = 0; y < w; y += 36, r++) for (let x = (r % 2) * 28 - 28; x < w; x += 56) {
+      const l = 22 + Math.random() * 15, gr = g.createLinearGradient(0, y, 0, y + 38); gr.addColorStop(0, `hsl(${205 + Math.random() * 15},${6 + Math.random() * 8}%,${l + 6}%)`); gr.addColorStop(1, `hsl(${210},8%,${l - 6}%)`);
+      g.fillStyle = gr; g.beginPath(); g.roundRect(x + 2, y + 2, 52, 38, [0, 0, 6, 6]); g.fill();
+      g.fillStyle = 'rgba(0,0,0,0.4)'; g.fillRect(x + 2, y + 34, 52, 4);
+      if (Math.random() < 0.15) { g.fillStyle = 'rgba(120,130,80,0.3)'; g.fillRect(x + 6, y + 26, 20, 6); } }
+    noise(g, 20000, w, 0.08);
   }, 2),
+  ground: (() => { const t = canvasTex(512, (g, w) => {   // fine detail tiled across the terrain: soil grains, pebbles, grass tufts
+    g.fillStyle = '#808080'; g.fillRect(0, 0, w, w);
+    for (let k = 0; k < 26000; k++) { const v = 90 + Math.random() * 80 | 0; g.fillStyle = `rgba(${v},${v},${v},0.5)`; g.fillRect(Math.random() * w, Math.random() * w, 1 + Math.random() * 2, 1 + Math.random() * 2); }
+    for (let k = 0; k < 2600; k++) { const x = Math.random() * w, y = Math.random() * w; g.strokeStyle = `rgba(${Math.random() < 0.5 ? 60 : 190},${Math.random() < 0.5 ? 60 : 190},${Math.random() < 0.5 ? 60 : 190},0.35)`; g.lineWidth = 1; g.beginPath(); g.moveTo(x, y); g.lineTo(x + rand(-2, 2), y - rand(3, 8)); g.stroke(); }
+    for (let k = 0; k < 120; k++) { const x = Math.random() * w, y = Math.random() * w, r = 1.5 + Math.random() * 3; g.fillStyle = 'rgba(200,200,200,0.5)'; g.beginPath(); g.arc(x, y, r, 0, 7); g.fill(); g.fillStyle = 'rgba(40,40,40,0.4)'; g.beginPath(); g.arc(x + 0.8, y + 0.8, r, 0, 7); g.fill(); }
+  }); t.colorSpace = THREE.NoColorSpace; return t; })(),
   timber: canvasTex(128, (g, w) => { g.fillStyle = '#3e2a18'; g.fillRect(0, 0, w, w); g.strokeStyle = 'rgba(0,0,0,0.3)'; for (let k = 0; k < 14; k++) { g.beginPath(); const y = Math.random() * w; g.moveTo(0, y); g.bezierCurveTo(w / 3, y + 3, w * 2 / 3, y - 3, w, y); g.stroke(); } noise(g, 2000, w, 0.1); }),
 };
 const TM = (map, o = {}) => new THREE.MeshStandardMaterial({ map, bumpMap: map, bumpScale: o.bump ?? 1.2, roughness: o.rough ?? 0.92, color: o.color ?? 0xffffff, side: o.side ?? THREE.FrontSide });
@@ -2377,7 +2422,52 @@ const GEO = {
   barrel: (() => { const g = new THREE.CylinderGeometry(0.1, 0.1, 0.24, 8); g.translate(0, 0.12, 0); return g; })(),
   fence: box(0.04, 0.22, 0.04, 0, 0.11, 0),
   rail: box(0.5, 0.03, 0.03, 0, 0.16, 0),
+  // barracks: stone-and-timber longhouse, watchtower, training yard
+  bkBase: box(1.7, 0.16, 1.0, 0, -0.02, 0),
+  bkLow: box(1.55, 0.42, 0.82, 0, 0.2, 0),
+  bkUp: box(1.58, 0.42, 0.85, 0, 0.62, 0),
+  bkRoof: (() => { const g = gable(1.05, 0.52, 1.78); g.rotateY(Math.PI / 2); g.translate(0, 0.83, 0); return g; })(),
+  bkRidge: box(1.82, 0.06, 0.06, 0, 1.36, 0),
+  bkPost: box(0.07, 0.86, 0.07, 0, 0.41, 0),
+  slit: box(0.04, 0.16, 0.03),
+  shieldDisc: (() => { const g = new THREE.CylinderGeometry(0.1, 0.1, 0.025, 12); g.rotateX(Math.PI / 2); return g; })(),
+  boss: new THREE.SphereGeometry(0.03, 6, 4),
+  twPost: box(0.06, 1.75, 0.06, 0, 0.87, 0),
+  twDeck: box(0.52, 0.05, 0.52, 0, 1.55, 0),
+  twRail: box(0.52, 0.16, 0.03, 0, 1.66, 0),
+  twBrace: box(0.03, 0.75, 0.03),
+  twRoof: (() => { const g = new THREE.ConeGeometry(0.44, 0.38, 4); g.rotateY(Math.PI / 4); g.translate(0, 2.0, 0); return g; })(),
+  lantern: box(0.07, 0.09, 0.07, 0, 1.76, 0),
+  ladder: mergeGeos([box(0.025, 1.55, 0.025, -0.07, 0.77, 0), box(0.025, 1.55, 0.025, 0.07, 0.77, 0), ...[0, 1, 2, 3, 4, 5, 6, 7].map(k => box(0.14, 0.02, 0.02, 0, 0.12 + k * 0.18, 0))]),
+  sand: (() => { const g = new THREE.CircleGeometry(0.62, 22); g.rotateX(-Math.PI / 2); g.translate(0, 0.012, 0); return g; })(),
+  dumPost: box(0.045, 0.62, 0.045, 0, 0.31, 0),
+  dumArm: box(0.36, 0.035, 0.035, 0, 0.5, 0),
+  dumBody: (() => { const g = new THREE.CylinderGeometry(0.08, 0.1, 0.28, 8); g.translate(0, 0.38, 0); return g; })(),
+  dumHead: (() => { const g = new THREE.SphereGeometry(0.07, 8, 6); g.translate(0, 0.62, 0); return g; })(),
+  target: (() => { const g = new THREE.CylinderGeometry(0.17, 0.17, 0.05, 18); g.rotateX(Math.PI / 2); g.rotateZ(Math.PI / 2); g.translate(0, 0.4, 0); return g; })(),
+  easel: mergeGeos([(() => { const a = box(0.025, 0.55, 0.025, 0, 0.27, 0); a.rotateX(0.18); a.translate(0, 0, -0.06); return a; })(), box(0.025, 0.5, 0.025, -0.12, 0.25, 0.03), box(0.025, 0.5, 0.025, 0.12, 0.25, 0.03)]),
+  rack: mergeGeos([box(0.04, 0.42, 0.04, -0.24, 0.21, 0), box(0.04, 0.42, 0.04, 0.24, 0.21, 0), box(0.54, 0.03, 0.04, 0, 0.38, 0), box(0.54, 0.03, 0.04, 0, 0.08, 0)]),
+  spear: mergeGeos([box(0.016, 0.62, 0.016, 0, 0.31, 0), (() => { const c = new THREE.ConeGeometry(0.025, 0.09, 4); c.translate(0, 0.66, 0); return c; })()]),
+  flagPole: box(0.03, 1.25, 0.03, 0, 0.62, 0),
+  flag: (() => { const g = new THREE.PlaneGeometry(0.36, 0.22, 8, 1); g.translate(0.18, 0, 0); return g; })(),
+  palisade: mergeGeos([(() => { const g = new THREE.CylinderGeometry(0.035, 0.04, 0.36, 5); g.translate(0, 0.18, 0); return g; })(), (() => { const c = new THREE.ConeGeometry(0.04, 0.08, 5); c.translate(0, 0.4, 0); return c; })()]),
+  // other facility details
+  staddle: mergeGeos([(() => { const a = new THREE.CylinderGeometry(0.03, 0.06, 0.2, 6); a.translate(0, 0.1, 0); return a; })(), (() => { const b = new THREE.CylinderGeometry(0.09, 0.07, 0.04, 8); b.translate(0, 0.21, 0); return b; })()]),
+  sack: (() => { const g = new THREE.SphereGeometry(0.09, 8, 6); g.scale(1, 1.2, 0.85); g.translate(0, 0.1, 0); return g; })(),
+  axle: (() => { const g = new THREE.CylinderGeometry(0.03, 0.03, 0.7, 6); g.rotateZ(Math.PI / 2); g.translate(0, 0.78, 0); return g; })(),
+  crank: box(0.02, 0.14, 0.02, 0.35, 0.72, 0),
+  rope: box(0.01, 0.4, 0.01, 0, 0.58, 0),
+  bucket: (() => { const g = new THREE.CylinderGeometry(0.06, 0.05, 0.09, 8); g.translate(0, 0.35, 0); return g; })(),
+  step: box(0.95, 0.12, 0.95, 0, -0.28, 0),
+  candle: (() => { const g = new THREE.CylinderGeometry(0.015, 0.015, 0.08, 5); g.translate(0, 0.24, 0); return g; })(),
+  flame: (() => { const g = new THREE.SphereGeometry(0.018, 5, 4); g.scale(1, 1.6, 1); g.translate(0, 0.3, 0); return g; })(),
+  sticks: mergeGeos([0, 1, 2, 3, 4].map(k => { const c = new THREE.CylinderGeometry(0.012, 0.012, 0.42, 4); c.rotateZ(0.12 * (k - 2)); c.translate(k * 0.02 - 0.04, 0.2, 0); return c; })),
+  woodStack: mergeGeos([0, 1, 2, 3, 4, 5].map(k => { const c = new THREE.CylinderGeometry(0.035, 0.035, 0.36, 6); c.rotateX(Math.PI / 2); c.translate(((k % 3) - 1) * 0.075 + (k > 2 ? 0.037 : 0), 0.035 + (k > 2 ? 0.065 : 0), 0); return c; })),
+  winBox: box(0.22, 0.05, 0.07),
 };
+const ironMat = M(0x6a6e76, { roughness: 0.4, metalness: 0.75 }), sackMat = M(0xb8a27a, { roughness: 1 }), sandMat = TM(TEX.soil, { color: 0xe0c8a0, bump: 0.4 }), strawMat = M(0xc8a860, { roughness: 1 });
+const flameMat = new THREE.MeshBasicMaterial({ color: 0xffc860 });
+const targetMat = new THREE.MeshStandardMaterial({ roughness: 0.9, map: canvasTex(128, (g, w) => { const cols = ['#e8e0c8', '#b02a2a', '#e8e0c8', '#b02a2a', '#e8c040']; for (let k = 0; k < 5; k++) { g.fillStyle = cols[k]; g.beginPath(); g.arc(w / 2, w / 2, w / 2 * (1 - k / 5), 0, 7); g.fill(); } }) });
 function makeModel(type, owner, override) {
   const g = new THREE.Group();
   const mk = (geo, mat, x = 0, y = 0, z = 0, ry = 0) => { const m = new THREE.Mesh(geo, override || mat); m.position.set(x, y, z); m.rotation.y = ry; m.castShadow = !override; m.receiveShadow = !override; g.add(m); return m; };
@@ -2388,13 +2478,17 @@ function makeModel(type, owner, override) {
   if (type === 'cottage') {
     mk(GEO.cotWall, roughStoneMat); g.userData.roof = mk(GEO.cotRoof, thatchMat); mk(GEO.ridge, thatchMat, 0, 1.11, 0); mk(GEO.doorFrame, timberMat); mk(GEO.door, doorMat); mk(GEO.chim, roughStoneMat);
     win(0.27, 0.32, 0.36); win(-0.27, 0.32, 0.36);
+    if (!override) { for (const x of [0.27, -0.27]) { mk(GEO.winBox, plankMat, x, 0.22, 0.39); for (let k = 0; k < 3; k++) mk(GEO.flower, M(pick(FLOWER_COLS), { roughness: 0.6 }), x - 0.07 + k * 0.07, 0.26, 0.39).scale.setScalar(0.6); }
+      for (const x of [-0.43, 0.43]) for (const z of [-0.36, 0.36]) mk(GEO.bkPost, timberMat, x, -0.12, z).scale.y = 0.72; }
     g.scale.setScalar(1.3);
   } else if (type === 'hut') {
-    mk(GEO.hutWall, plankMat); mk(GEO.hutRoof, thatchMat); mk(GEO.door, doorMat, 0, 0, 0.05);
+    mk(GEO.hutWall, plankMat); mk(GEO.hutRoof, thatchMat); mk(GEO.doorFrame, timberMat, 0, 0, 0.04); mk(GEO.door, doorMat, 0, 0, 0.05);
+    if (!override) { mk(GEO.sticks, timberMat, 0.42, 0, 0.1); mk(GEO.sticks, timberMat, 0.4, 0, -0.05).rotation.y = 0.7; mk(GEO.woodStack, timberMat, -0.4, 0, 0.2, 0.4); }
     g.scale.setScalar(1.2);
   } else if (type === 'stone') {
     mk(GEO.stoneWall, stoneWallMat); g.userData.roof = mk(GEO.slate, slateMat); mk(GEO.doorFrame, timberMat, 0, 0, 0.05); mk(GEO.door, doorMat, 0, 0, 0.05); mk(GEO.chim, stoneWallMat, 0, 0.1, 0);
     win(0.27, 0.36, 0.41); win(-0.27, 0.36, 0.41);
+    if (!override) { mk(GEO.woodStack, timberMat, -0.56, 0, 0.1, Math.PI / 2); mk(GEO.woodStack, timberMat, -0.56, 0.13, 0.1, Math.PI / 2); }
     g.scale.setScalar(1.3);
   } else if (type === 'manor') {
     mk(GEO.manorBase, roughStoneMat); mk(GEO.manorUpper, wallMat); g.userData.roof = mk(GEO.manorRoof, slateMat); mk(GEO.door, doorMat, 0, -0.02, 0.06);
@@ -2405,11 +2499,17 @@ function makeModel(type, owner, override) {
     win(-0.3, 0.3, 0.44); win(0.3, 0.3, 0.44); mk(GEO.doorFrame, timberMat, 0, -0.02, 0.06); mk(GEO.chim, roughStoneMat, 0.05, 0.55, 0.05);
     g.scale.setScalar(1.3);
   } else if (type === 'granary') {
-    mk(GEO.granBody, plankMat); mk(GEO.granBand, timberMat, 0, 0.2, 0); mk(GEO.granBand, timberMat, 0, 0.6, 0); mk(GEO.granRoof, thatchMat);
+    // raised on staddle stones against rats, with a ladder to the hatch and sacks waiting
+    const body = new THREE.Group(); body.position.y = 0.18; g.add(body);
+    for (const m of [mk(GEO.granBody, plankMat), mk(GEO.granBand, timberMat, 0, 0.2, 0), mk(GEO.granBand, timberMat, 0, 0.6, 0), mk(GEO.granBand, timberMat, 0, -0.2, 0), mk(GEO.granRoof, thatchMat)]) body.add(m);
+    for (let k = 0; k < 5; k++) { const a = k / 5 * 6.283; mk(GEO.staddle, roughStoneMat, Math.cos(a) * 0.3, -0.12, Math.sin(a) * 0.3); }
+    if (!override) { const l = mk(GEO.ladder, timberMat, 0, -0.1, 0.5); l.rotation.x = -0.32; l.scale.y = 0.62; mk(GEO.door, doorMat, 0, 0.5, 0.04).scale.set(1.2, 0.8, 1);
+      for (const [x, z] of [[0.45, 0.3], [0.55, 0.12], [0.48, 0.2]]) mk(GEO.sack, sackMat, x, -0.12 + (z === 0.2 ? 0.14 : 0), z); }
     g.scale.setScalar(1.3);
   } else if (type === 'well') {
     mk(GEO.wellRing, roughStoneMat); mk(GEO.wellRim, stoneMat); mk(GEO.wellWater, waterMat2);
     mk(GEO.post, timberMat, -0.3, 0, 0); mk(GEO.post, timberMat, 0.3, 0, 0); mk(GEO.wellRoof, thatchMat);
+    if (!override) { const ax = mk(GEO.axle, timberMat); g.userData.crankAxle = ax; mk(GEO.crank, timberMat); mk(GEO.rope, sackMat); g.userData.bucket = mk(GEO.bucket, plankMat); mk(GEO.barrel, timberMat, 0.45, -0.1, 0.25); }
     g.scale.setScalar(1.3);
   } else if (type === 'field') {
     mk(new THREE.BoxGeometry(1.5, 0.06, 1.0), override || TM(TEX.soil, { bump: 2 }), 0, 0.0, 0);
@@ -2428,8 +2528,43 @@ function makeModel(type, owner, override) {
     for (let k = 0; k < 12; k++) { const a = k / 12 * Math.PI * 2; mk(GEO.fence, timberMat, Math.cos(a) * 0.62, 0, Math.sin(a) * 0.62); }
     g.scale.setScalar(1.3);
   } else if (type === 'shrine') {
-    mk(GEO.shrBase, mossStone); mk(GEO.shrObel, mossStone); g.userData.crystal = mk(GEO.crystal, crystalMats[owner || 'n'], 0, 1.75, 0);
+    mk(GEO.step, roughStoneMat); mk(GEO.shrBase, mossStone); mk(GEO.shrObel, mossStone); g.userData.crystal = mk(GEO.crystal, crystalMats[owner || 'n'], 0, 1.75, 0);
+    if (!override) for (let k = 0; k < 6; k++) { const a = k / 6 * 6.283 + 0.3, x = Math.cos(a) * 0.4, z = Math.sin(a) * 0.4; mk(GEO.candle, M(0xeee6d0), x, -0.24, z); const f = mk(GEO.flame, flameMat, x, -0.24, z); f.castShadow = false; }
     g.scale.setScalar(1.2);
+  } else if (type === 'barracks') {
+    // longhouse: stone footing, plank upper walls, slate roof, arrow slits and the village's shields
+    mk(GEO.bkBase, roughStoneMat); mk(GEO.bkLow, roughStoneMat); mk(GEO.bkUp, plankMat); g.userData.roof = mk(GEO.bkRoof, slateMat); mk(GEO.bkRidge, timberMat);
+    for (const x of [-0.78, -0.26, 0.26, 0.78]) for (const z of [-0.425, 0.425]) mk(GEO.bkPost, timberMat, x, 0.0, z);
+    mk(GEO.doorFrame, timberMat, 0, 0, 0.07).scale.set(1.3, 1.2, 1); mk(GEO.door, doorMat, 0, 0, 0.08).scale.set(1.4, 1.2, 1);
+    if (!override) {
+      for (const x of [-0.52, 0.52]) { mk(GEO.slit, M(0x14100c), x, 0.62, 0.43); mk(GEO.slit, M(0x14100c), x, 0.62, -0.43); }
+      for (const x of [-0.26, 0.26]) { mk(GEO.shieldDisc, bannerMats[owner || 'n'], x, 0.62, 0.44); mk(GEO.boss, ironMat, x, 0.62, 0.46); }
+      mk(GEO.shieldDisc, bannerMats[owner || 'n'], 0, 0.62, 0.44).scale.setScalar(0.6);
+      // watchtower at the back corner, lantern lit at night, ladder up the side
+      const T0 = [-0.95, -0.62];
+      for (const [dx, dz] of [[-0.2, -0.2], [0.2, -0.2], [-0.2, 0.2], [0.2, 0.2]]) mk(GEO.twPost, timberMat, T0[0] + dx, -0.05, T0[1] + dz);
+      for (const [dx, dz, r] of [[0, -0.2, 0.5], [0, 0.2, -0.5]]) { const b = mk(GEO.twBrace, timberMat, T0[0] + dx, 0.6, T0[1] + dz); b.rotation.z = r; }
+      mk(GEO.twDeck, plankMat, T0[0], -0.05, T0[1]);
+      for (const [dx, dz, ry] of [[0, -0.25, 0], [0, 0.25, 0], [-0.25, 0, Math.PI / 2], [0.25, 0, Math.PI / 2]]) mk(GEO.twRail, plankMat, T0[0] + dx, -0.05, T0[1] + dz, ry);
+      for (const [dx, dz] of [[-0.2, -0.2], [0.2, -0.2], [-0.2, 0.2], [0.2, 0.2]]) mk(GEO.post, timberMat, T0[0] + dx, 1.0, T0[1] + dz).scale.y = 0.62;
+      mk(GEO.twRoof, slateMat, T0[0], -0.05, T0[1]); mk(GEO.lantern, winMat, T0[0], -0.05, T0[1]);
+      const ld = mk(GEO.ladder, timberMat, T0[0] + 0.33, -0.05, T0[1], Math.PI / 2); ld.rotation.z = 0.2;
+      const pole = mk(GEO.flagPole, timberMat, T0[0], 1.98, T0[1]); pole.scale.y = 0.55;
+      g.userData.flag = mk(GEO.flag, bannerMats[owner || 'n'], T0[0] + 0.015, 2.55, T0[1]);
+      // training yard out front: sand ring, straw dummies, archery target, weapon rack, low palisade
+      const Y0 = 0.98;
+      mk(GEO.sand, sandMat, 0, -0.07, Y0);
+      g.userData.dummies = [];
+      for (const [x, z] of [[-0.3, Y0 - 0.1], [0.28, Y0 + 0.18]]) { const d = new THREE.Group(); d.position.set(x, -0.07, z); g.add(d);
+        for (const [geo, mat] of [[GEO.dumPost, timberMat], [GEO.dumArm, timberMat], [GEO.dumBody, strawMat], [GEO.dumHead, sackMat]]) { const m = new THREE.Mesh(geo, mat); m.castShadow = true; d.add(m); }
+        g.userData.dummies.push(d); }
+      mk(GEO.easel, timberMat, 0.78, -0.07, Y0 - 0.25, -0.5); mk(GEO.target, targetMat, 0.78, -0.07, Y0 - 0.25, -0.5 + Math.PI / 2);
+      mk(GEO.rack, timberMat, -0.82, -0.07, Y0 + 0.05, Math.PI / 2);
+      for (let k = 0; k < 4; k++) { const sp = mk(GEO.spear, ironMat, -0.84, -0.07, Y0 - 0.15 + k * 0.1); sp.rotation.z = -0.22; }
+      mk(GEO.barrel, timberMat, -0.82, -0.07, Y0 + 0.4); mk(GEO.crate, plankMat, 0.75, -0.07, 0.5, 0.4);
+      for (let k = 0; k < 15; k++) { const a = Math.PI * (0.08 + k / 14 * 0.84), x = Math.cos(a) * 1.05, z = Y0 - 0.25 + Math.sin(a) * 0.72; if (Math.abs(x) < 0.16) continue; mk(GEO.palisade, timberMat, x, -0.07, z); }
+    }
+    g.scale.setScalar(1.15);
   } else if (type === 'settle') {
     mk(new THREE.CylinderGeometry(1.5, 1.7, 0.8, 12), mossStone, 0, -0.1, 0);
     mk(new THREE.CylinderGeometry(1.15, 1.3, 0.3, 12), mossStone, 0, 0.45, 0);
@@ -2448,15 +2583,27 @@ function makeBuildingMesh(h, v) {
   g.rotation.y = -h.rot + Math.PI / 2 + (h.type === 'hut' ? Math.PI : 0);
   scene.add(g); return g;
 }
+// construction happens in stages: staked-out foundation, timber frame, walls rising, roof; materials pile up and get used
 function makeSiteMesh(s) {
   const g = new THREE.Group();
   const inner = makeModel(s.type, 'p'); g.add(inner); g.userData.inner = inner; inner.userData.s0 = inner.scale.x;
-  const R = s.type === 'settle' ? 1.6 : 0.7;
-  for (const [x, z] of [[-R, -R], [R, -R], [-R, R], [R, R]]) { const m = new THREE.Mesh(GEO.pole, plankMat); m.position.set(x, 0.5, z); m.castShadow = true; g.add(m); }
-  for (const z of [-R, R]) { const m = new THREE.Mesh(new THREE.BoxGeometry(2 * R, 0.04, 0.04), plankMat); m.position.set(0, 0.95, z); g.add(m); }
-  for (const x of [-R, R]) { const m = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.04, 2 * R), plankMat); m.position.set(x, 0.95, 0); g.add(m); }
+  const R = s.type === 'settle' ? 1.6 : s.type === 'barracks' ? 1.0 : 0.62;
+  const found = new THREE.Mesh(new THREE.BoxGeometry(2 * R + 0.1, 0.1, 2 * R * 0.85 + 0.1), roughStoneMat); found.position.y = 0.03; found.receiveShadow = true; g.add(found);
+  const frame = new THREE.Group(); g.add(frame); g.userData.frame = frame;
+  const post = new THREE.BoxGeometry(0.06, 1.0, 0.06); post.translate(0, 0.5, 0);
+  for (const [x, z] of [[-R, -R * 0.85], [R, -R * 0.85], [-R, R * 0.85], [R, R * 0.85], [0, -R * 0.85], [0, R * 0.85]]) { const m = new THREE.Mesh(post, timberMat); m.position.set(x, 0, z); m.castShadow = true; frame.add(m); }
+  for (const z of [-R * 0.85, R * 0.85]) { const m = new THREE.Mesh(new THREE.BoxGeometry(2 * R, 0.05, 0.05), timberMat); m.position.set(0, 1.0, z); frame.add(m); const d = new THREE.Mesh(new THREE.BoxGeometry(0.04, 1.2, 0.04), timberMat); d.position.set(R / 2, 0.5, z); d.rotation.z = 0.9; frame.add(d); }
+  for (const x of [-R, R]) { const m = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.05, 2 * R * 0.85), timberMat); m.position.set(x, 1.0, 0); frame.add(m); }
+  // scaffold poles and planks around it
+  for (const [x, z] of [[-R - 0.18, -R], [R + 0.18, -R], [-R - 0.18, R], [R + 0.18, R]]) { const m = new THREE.Mesh(GEO.pole, plankMat); m.position.set(x, 0.62, z); m.castShadow = true; g.add(m); }
+  for (const y of [0.45, 0.95]) for (const z of [-R - 0.05, R + 0.05]) { const m = new THREE.Mesh(new THREE.BoxGeometry(2 * R + 0.4, 0.03, 0.14), plankMat); m.position.set(0, y, z); m.castShadow = true; g.add(m); }
+  // pile of building material beside the site
+  const pile = new THREE.Group(); pile.position.set(R + 0.55, 0, 0.2); g.add(pile); g.userData.pile = pile;
+  for (let k = 0; k < 8; k++) { const l = new THREE.Mesh(pileLog, timberMat); l.position.set(0, 0.06 + Math.floor(k / 3) * 0.11, (k % 3 - 1) * 0.13); l.rotation.y = Math.PI / 2 + rand(-0.1, 0.1); l.castShadow = true; pile.add(l); }
+  for (let k = 0; k < 4; k++) { const st = new THREE.Mesh(GEO.crate, roughStoneMat); st.position.set(rand(-0.25, 0.1), 0, rand(0.35, 0.6)); st.scale.setScalar(rand(0.6, 0.9)); st.castShadow = true; pile.add(st); }
   g.position.set(WX(s.x), groundPx(s.x, s.y) - 0.02, WZ(s.y));
-  g.rotation.y = -Math.atan2(s.v.y - s.y, s.v.x - s.x) + Math.PI / 2;
+  g.rotation.y = -(s.rot ?? Math.atan2(s.v.y - s.y, s.v.x - s.x)) + Math.PI / 2 + (s.type === 'hut' ? Math.PI : 0);
+  inner.visible = false; frame.scale.y = 0.01;
   scene.add(g); return g;
 }
 
@@ -2577,7 +2724,8 @@ function pose(u) {
       const f = time * 9 + u.phase;
       P.aR = -1.0 - 0.7 * Math.max(0, Math.sin(f)); P.aL = -1.0; P.bow = 0.12;
       if (u.moving) { const s = Math.sin(time * 14 + u.phase); P.lL = s * 0.6; P.lR = -s * 0.6; }
-    } else if (u.state === 'guard') { P.aR = -0.15; P.aL = -0.55; }
+    } else if (u.state === 'guard' && u.drill) { const f = time * 5 + u.phase; P.aR = -0.6 - 0.9 * Math.max(0, Math.sin(f)); P.aL = -0.8; P.bow = 0.06 + 0.06 * Math.max(0, Math.sin(f)); P.lL = 0.25; P.lR = -0.2; }   // sparring drill
+    else if (u.state === 'guard') { P.aR = -0.15; P.aL = -0.55; }
     else if (u.state === 'walk' && !u.carry) { P.aR = -0.25; P.aL = -0.55; }
   }
   return P;
@@ -2810,17 +2958,44 @@ cursorDisc.rotation.x = -Math.PI / 2; cursorDisc.renderOrder = 9;
 const hoverRing = new THREE.Mesh(new THREE.RingGeometry(0.3, 0.38, 32), new THREE.MeshBasicMaterial({ color: new THREE.Color(2, 2, 2), transparent: true, depthTest: false }));
 hoverRing.rotation.x = -Math.PI / 2; hoverRing.renderOrder = 11;
 const cursorLight = new THREE.PointLight(0xffffff, 2.5, 7, 2);
-const selRing = new THREE.Mesh(new THREE.RingGeometry(0.82, 1, 48), new THREE.MeshBasicMaterial({ color: new THREE.Color(2.2, 1.8, 0.6), transparent: true, depthTest: false }));
+const selRing = new THREE.Mesh(new THREE.RingGeometry(0.82, 1, 48), new THREE.MeshBasicMaterial({ color: new THREE.Color(1.35, 1.1, 0.45), transparent: true, opacity: 0.85, depthTest: false }));
 selRing.rotation.x = -Math.PI / 2; selRing.renderOrder = 11; selRing.visible = false; scene.add(selRing);
 function syncSelection() {
   if (!sel) { selRing.visible = false; return; }
   let x, y, r;
   if (sel.kind === 'v') { x = sel.u.x; y = sel.u.y; r = 0.42; } else if (sel.kind === 'b') { x = sel.h.x; y = sel.h.y; r = 1.15; } else { x = sel.s.x; y = sel.s.y; r = 1.3; }
-  selRing.visible = true; selRing.position.set(WX(x), surfPx(x, y) + 0.06, WZ(y)); selRing.scale.setScalar(r * (1 + Math.sin(time * 4) * 0.06));
+  selRing.visible = true; selRing.position.set(WX(x), surfPx(x, y) + 0.06, WZ(y)); selRing.scale.setScalar(r * (1 + Math.sin(time * 4) * 0.04)); selRing.material.opacity = camS.dist < 10 ? 0.45 : 0.85;   // softer up close so it doesn't swamp the model
 }
 const aimLine = new THREE.Line(new THREE.BufferGeometry().setFromPoints(Array.from({ length: 41 }, () => new THREE.Vector3())), new THREE.LineDashedMaterial({ color: 0xffa040, dashSize: 0.6, gapSize: 0.35, depthTest: false, transparent: true }));
 aimLine.renderOrder = 12; aimLine.visible = false; aimLine.frustumCulled = false;
 scene.add(cursorRing, cursorDisc, hoverRing, cursorLight, aimLine);
+let buildRot = 0, placeWhy = '';
+// a grid of tiles around the cursor showing where the selected building can go
+const BG_N = 21 * 21, buildGrid = new THREE.InstancedMesh((() => { const g = new THREE.PlaneGeometry(0.9, 0.9); g.rotateX(-Math.PI / 2); return g; })(),
+  new THREE.MeshBasicMaterial({ transparent: true, opacity: 0.3, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 }), BG_N);   // depth-tested: buildings hide it instead of getting painted red
+buildGrid.renderOrder = 6; buildGrid.frustumCulled = false; buildGrid.count = 0; buildGrid.visible = false; scene.add(buildGrid);
+const BG_OK = new THREE.Color(0x5af08a), BG_NO = new THREE.Color(0xe84848);
+let bgT = 0, bgKey = '';
+function syncBuildGrid(dt) {
+  const on = !!BMY[selected] && mouse.valid && started && !ended;
+  buildGrid.visible = on; if (!on) { bgKey = ''; return; }
+  bgT -= dt;
+  const cx = Math.floor(mouse.wx / TILE), cy = Math.floor(mouse.wy / TILE), key = selected + cx + ',' + cy;
+  if (bgT > 0 && key === bgKey) return;
+  bgT = 0.25; bgKey = key;
+  const m = new THREE.Matrix4(); let n = 0;
+  for (let dy = -10; dy <= 10; dy++) for (let dx = -10; dx <= 10; dx++) {
+    if (dx * dx + dy * dy > 100) continue;
+    const tx = cx + dx, ty = cy + dy; if (!inMap(tx, ty)) continue;
+    const px = tx * TILE + 10, py = ty * TILE + 10;
+    if (!inInfluence('p', px, py) && dx * dx + dy * dy > 4) continue;   // only paint inside your influence (plus right under the cursor)
+    const ok = canPlace(selected, px, py).ok;
+    const fall = 1 - Math.sqrt(dx * dx + dy * dy) / 10 * 0.45;   // tiles shrink away from the cursor, so the grid reads as a soft spotlight
+    m.makeScale(fall, 1, fall).setPosition(WX(px), surfPx(px, py) + 0.05, WZ(py));
+    buildGrid.setMatrixAt(n, m); buildGrid.setColorAt(n, ok ? BG_OK : BG_NO); n++;
+  }
+  buildGrid.count = n; buildGrid.instanceMatrix.needsUpdate = true; if (buildGrid.instanceColor) buildGrid.instanceColor.needsUpdate = true;
+}
 const ghostMat = new THREE.MeshBasicMaterial({ color: 0x7aff9a, transparent: true, opacity: 0.45, depthWrite: false });
 const ghosts = {};
 const fireLights = Array.from({ length: 6 }, () => { const l = new THREE.PointLight(0xff7a2a, 0, 9, 2); scene.add(l); return l; });
@@ -2874,15 +3049,29 @@ function syncWorld(dt) {
   const mor = gods.p.morality;
   for (const v of villages) {
     for (const h of v.houses) {
-      if (!h.mesh) h.mesh = makeBuildingMesh(h, v);
+      if (!h.mesh) { h.mesh = makeBuildingMesh(h, v); h.mesh.userData.s0 = h.mesh.scale.x; }
+      if (h.born !== undefined) {
+        const k = (time - h.born) / 0.7;
+        if (k >= 1) { h.mesh.scale.setScalar(h.mesh.userData.s0); h.born = undefined; }
+        else { const e = 1 + 0.12 * Math.sin(k * Math.PI * 2.5) * (1 - k); h.mesh.scale.set(h.mesh.userData.s0 * (2 - e), h.mesh.userData.s0 * e, h.mesh.userData.s0 * (2 - e)); }
+      }
+      { const U = h.mesh.userData;
+        if (U.flag) { const a = U.flag.geometry.attributes.position; if (!U.flag.userData.own) { U.flag.geometry = U.flag.geometry.clone(); U.flag.userData.own = true; } const pa = U.flag.geometry.attributes.position; for (let k = 0; k < pa.count; k++) { const x = pa.getX(k); pa.setZ(k, Math.sin(time * 4 + x * 14 + h.x) * x * 0.12); } pa.needsUpdate = true; U.flag.material = bannerMats[v.owner || 'n']; }
+        if (U.dummies) { const fighting = v.villagers.some(o => o.soldier && o.drill && o.state === 'guard' && dist(o.x, o.y, h.x, h.y) < 45); U.dummies.forEach((d, k) => { d.rotation.z = Math.sin(time * (fighting ? 9 : 1.3) + k * 2) * (fighting ? 0.18 : 0.03); }); }
+        if (U.crankAxle) { U.crankAxle.rotation.x = time * 0.8; U.bucket.position.y = Math.sin(time * 0.4) * 0.12; }
+      }
       if (h.mesh.userData.crystal) { const c = h.mesh.userData.crystal; c.rotation.y += dt * 1.5; c.position.y = 1.75 + Math.sin(time * 2) * 0.08; c.material = crystalMats[v.owner || 'n']; }
       if (h.hp < 60 && Math.random() < 0.05) spawn(h.x, h.y, groundPx(h.x, h.y) + 1, 0, 1, 0, 1.6, 0x3a3a3a, 0.4, false);
       else if (BMY[h.type].cat === 'house' && h.type !== 'hut' && Math.random() < 0.025) spawn(h.x, h.y, groundPx(h.x, h.y) + 1.8, rand(-.1, .1), 0.6, rand(-.1, .1), 3.5, 0xd8d8d8, 0.35, false);
     }
     for (const s of v.sites) {
       if (!s.mesh) s.mesh = makeSiteMesh(s);
-      const inner = s.mesh.userData.inner, s0 = inner.userData.s0, f = Math.max(0.06, s.progress / s.need);
-      inner.scale.set(s0, s0 * f, s0);
+      s.shown = (s.shown || 0) + (s.progress / s.need - (s.shown || 0)) * Math.min(1, dt * 2.5);   // walls rise smoothly between deliveries
+      const f = s.shown, U = s.mesh.userData, inner = U.inner, s0 = inner.userData.s0;
+      U.frame.scale.y = clamp(f / 0.25, 0.01, 1); U.frame.visible = f < 0.97;
+      const wall = clamp((f - 0.2) / 0.8, 0, 1);
+      inner.visible = wall > 0.01; inner.scale.set(s0, s0 * Math.max(0.02, wall), s0);
+      U.pile.children.forEach((c, k) => c.visible = k / U.pile.children.length >= f * 0.9);
     }
     const style = !v.owner ? 'plain' : (v.owner === 'r' || (v.owner === 'p' && mor < -0.3)) ? 'evil' : 'good';
     const key = (v.owner || 'n') + style;
@@ -2961,6 +3150,7 @@ function syncWorld(dt) {
   if (zu) zapLight.position.set(WX(zu.x), surfPx(zu.x, zu.y) + 0.6, WZ(zu.y));
   syncPhoenix(dt);
   syncCursor();
+  syncBuildGrid(dt);
   syncSelection();
   fireLightT -= dt;
   if (fireLightT <= 0) {
@@ -2998,7 +3188,7 @@ function syncShields() {
 }
 const GRASS_N = 36000, GRASS_R = 26;
 const grassMesh = (() => {
-  const g = new THREE.BufferGeometry(), H = 0.24, W = 0.045, pos = [], nor = [];
+  const g = new THREE.BufferGeometry(), H = 0.24, W = 0.034, pos = [], nor = [];
   const ys = [0, 0.4, 0.75, 1], ws = [1, 0.75, 0.45, 0];
   for (let k = 0; k < 3; k++) {
     const y0 = ys[k] * H, y1 = ys[k + 1] * H, w0 = ws[k] * W / 2, w1 = ws[k + 1] * W / 2, b0 = ys[k] * ys[k] * 0.06, b1 = ys[k + 1] * ys[k + 1] * 0.06;
@@ -3091,9 +3281,12 @@ function syncCursor() {
   }
   if (BMY[selected]) {
     if (!ghosts[selected]) { ghosts[selected] = makeModel(selected, 'p', ghostMat); scene.add(ghosts[selected]); }
-    const gh = ghosts[selected], ok = canPlace(selected, mouse.wx, mouse.wy).ok;
+    const gh = ghosts[selected], r = canPlace(selected, mouse.wx, mouse.wy);
+    const base = r.v ? Math.atan2(r.v.y - mouse.wy, r.v.x - mouse.wx) : (homeV ? Math.atan2(homeV.y - mouse.wy, homeV.x - mouse.wx) : 0);
     gh.visible = true; gh.position.set(WX(mouse.wx), groundPx(mouse.wx, mouse.wy), WZ(mouse.wy));
-    ghostMat.color.set(ok ? 0x7aff9a : 0xff5a5a);
+    gh.rotation.y = -(base + buildRot) + Math.PI / 2 + (selected === 'hut' ? Math.PI : 0);
+    ghostMat.color.set(r.ok ? 0x7aff9a : 0xff5a5a);
+    placeWhy = r.ok ? '' : r.why;
     return;
   }
   if (selected === 'attack') {
@@ -3135,6 +3328,7 @@ function updateLighting() {
   const dir = new THREE.Vector3(Math.sin(ang) * 0.9, Math.max(0.18, Math.abs(el)), 0.45).normalize();
   sun.position.set(camS.tx + dir.x * 70, dir.y * 70, camS.tz + dir.z * 70);
   sun.target.position.set(camS.tx, 0, camS.tz);
+  { const ext = clamp(camS.dist * 1.6, 9, 45), sc = sun.shadow.camera; if (Math.abs(sc.right - ext) > 0.5) { sc.left = sc.bottom = -ext; sc.right = sc.top = ext; sc.updateProjectionMatrix(); } }   // tighter = crisper shadows up close
   sun.color.set(0xfff1d6).lerp(new THREE.Color(0xff9a5a), duskK);
   if (el < 0) sun.color.lerp(new THREE.Color(0x7a9aff), clamp(-el * 2, 0, 1));
   sun.intensity = 0.55 + 2.2 * dayK;
@@ -3157,14 +3351,14 @@ function updateLighting() {
 
 // ============================================================ camera & picking
 function updateCamera() {
-  camS.dist = clamp(camS.dist, 8, 120);
+  camS.dist = clamp(camS.dist, 2.6, 120);
   camS.tx = clamp(camS.tx, -MW / 2, MW / 2); camS.tz = clamp(camS.tz, -MH / 2, MH / 2);
   camS.tilt = clamp(camS.tilt, -0.4, 0.5);
-  const pitch = clamp(0.5 + (camS.dist - 8) / 112 * 0.65 + camS.tilt, 0.18, 1.45);
+  const pitch = clamp((camS.dist < 8 ? 0.3 + (camS.dist - 2.6) / 5.4 * 0.2 : 0.5 + (camS.dist - 8) / 112 * 0.65) + camS.tilt, 0.14, 1.45);   // close-up: a lower, over-the-rooftops angle
   const ty = Math.max(0, hGrid(camS.tx + MW / 2, camS.tz + MH / 2));
   const sx = shake > 0 ? rand(-0.3, 0.3) : 0, sz = shake > 0 ? rand(-0.3, 0.3) : 0;
   camera.position.set(camS.tx + Math.sin(camS.yaw) * Math.cos(pitch) * camS.dist + sx, ty + Math.sin(pitch) * camS.dist, camS.tz + Math.cos(camS.yaw) * Math.cos(pitch) * camS.dist + sz);
-  const minY = surfW(camera.position.x, camera.position.z) + 1.2;
+  const minY = surfW(camera.position.x, camera.position.z) + (camS.dist < 8 ? 0.6 : 1.2);
   if (camera.position.y < minY) camera.position.y = minY;
   camera.lookAt(camS.tx, ty, camS.tz);
   scene.fog.near = camS.dist * 1.7; scene.fog.far = camS.dist * 4.6 + 60;
@@ -3519,6 +3713,7 @@ function placeLabels() {
       : `${BMY[hoverB.h.type].icon} ${BMY[hoverB.h.type].name}${BMY[hoverB.h.type].cat === 'house' ? ` — ${(hoverB.h.residents || []).length}/${BMY[hoverB.h.type].cap} residents` : ''} · click for details`;
   } else if (held && held.u) tip = `${held.u.name} — release to drop or throw · right click: let go gently`;
   else if (selected === 'water' && mouse.valid) tip = `🪣 Water carried: ${Math.round(terra.water / WATER_CAP * 100)}% · ${groundPx(mouse.wx, mouse.wy) < -0.02 ? 'hold to scoop' : terra.water > 0.05 ? 'hold to dig & pour' : 'scoop from a lake or the sea first'}`;
+  else if (BMY[selected] && mouse.valid && started) tip = placeWhy ? `✖ ${placeWhy}` : `✔ ${BMY[selected].name} can go here · R / Shift+wheel: rotate · right click: cancel`;
   else if (fbHold) tip = '☄️ Fling it! Move the mouse fast and release · right click: cancel';
   else if (started && selected === 'fireball' && mouse.valid) tip = inInfluence('p', mouse.wx, mouse.wy) ? '☄️ Press to conjure a fireball, then throw it' : 'Conjure the fireball inside your influence';
   hn.style.display = tip ? 'block' : 'none';
@@ -3578,7 +3773,7 @@ addEventListener('mouseup', e => {
   if (e.button === 2) { if (mouse.rdrag && Math.hypot(e.clientX - mouse.rsx, e.clientY - mouse.rsy) < 6) cancelAction(); mouse.rdrag = false; }
   if (e.button === 1) mouse.mdrag = false;
 });
-canvas.addEventListener('wheel', e => { e.preventDefault(); camS.dist *= e.deltaY < 0 ? 0.9 : 1.1; }, { passive: false });
+canvas.addEventListener('wheel', e => { e.preventDefault(); if (BMY[selected] && e.shiftKey) { buildRot += (e.deltaY < 0 ? 1 : -1) * Math.PI / 8; return; } camS.dist *= e.deltaY < 0 ? 0.9 : 1.1; }, { passive: false });
 addEventListener('keydown', e => {
   keys[e.code] = true;
   const n = /^Digit([1-9])$/.exec(e.code); if (n) select(MIRACLES[+n[1] - 1].id);
@@ -3591,6 +3786,7 @@ addEventListener('keydown', e => {
   if (e.code === 'KeyB') setTab('build');
   if (e.code === 'KeyT') setTab('terra');
   if (e.code === 'KeyK') setTab('war');
+  if (e.code === 'KeyR' && BMY[selected]) { buildRot += Math.PI / 4; S.ui(0.5); }
   if (e.code === 'KeyV') toggleVoice();
   if (e.code === 'Space' && started && !ended) { paused = !paused; $('pauseTag').style.display = paused ? 'block' : 'none'; e.preventDefault(); }
 });
@@ -3674,7 +3870,7 @@ function frame(now) {
   camS.tx += (fx * c + fz * s) * pan; camS.tz += (-fx * s + fz * c) * pan;
   if (keys.KeyQ) camS.yaw += 1.4 * dt;
   if (keys.KeyE) camS.yaw -= 1.4 * dt;
-  if (keys.KeyR) camS.tilt += 0.8 * dt;
+  if (keys.KeyR && !BMY[selected]) camS.tilt += 0.8 * dt;
   if (keys.KeyF) camS.tilt -= 0.8 * dt;
   AU.budget = Math.max(0, AU.budget - dt * 25);
   updateCamera(); updateMouseWorld();
@@ -3716,7 +3912,7 @@ $('startBtn').onclick = () => {
 };
 window.__ready = true;
 window.__game = { declareWar, soldiers: () => SOLDIERS, animals: () => animals, migrationTick, terra, treeG, tiles, fbHold: () => fbHold, shieldAt, applyTerra, pushAlert, setTab, hc: () => hc, selectThing, sel: () => sel, pickBuilding, cancelAction, holdBeam, holdGlow, villages: () => villages, gods, spirit, cast, castFireball, update, owned, reachPoint, costOf, ctxAt, spiritLearn, time: () => time, camS, screenOf, surfPx,
-  tryPlace, canPlace, held: () => held, logs: () => logs, fireballs: () => fireballs, AU, select: id => select(id) };
+  tryPlace, canPlace, completeSite, held: () => held, logs: () => logs, fireballs: () => fireballs, AU, select: id => select(id) };
 requestAnimationFrame(frame);
 </script>
 </body>
